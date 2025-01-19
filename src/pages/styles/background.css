@@ -1,0 +1,84 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.67), #000000); /* Черно-оранжевый градиент */
+    background-size: 200% 200%;
+    animation: gradient-animation 5s ease infinite; /* Анимация для движения градиента */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(0, 0, 0, 0.67);
+    overflow: hidden;
+}
+
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.shine-button {
+    text-decoration: none;
+    display: inline-block;
+    padding: 10px 30px;
+    margin: 10px 20px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgb(255, 255, 255); /* Фиолетовый цвет для границы */
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    color: rgb(255, 255, 255); /* Текст фиолетовый в статике */
+    transition: color 0.3s ease, background 0.3s ease; /* Плавные переходы для текста и фона */
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.shine-button:before {
+    content: "";
+    background: linear-gradient(90deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .5));
+    height: 50px;
+    width: 50px;
+    position: absolute;
+    top: -8px;
+    left: -75px;
+    transform: skewX(-45deg);
+    transition: left 0.5s ease-in-out; /* Плавный переход для передвижения */
+}
+
+/* Анимация изменения фона при наведении */
+.shine-button:hover {
+    background: linear-gradient(135deg, rgba(241, 160, 53, 0.65), #fd9308); /* Фиолетовый градиент на фоне */
+    color: #ffffff; /* Текст белый при наведении */
+}
+
+.shine-button:hover:before {
+    left: 150px; /* Двигаем градиент */
+    transition: left 0.5s ease-in-out; /* Плавный переход для градиента */
+}
+
+/* Дополнительно, можно добавить анимацию для кнопки при обычном состоянии */
+.shine-button {
+    animation: shineEffect 3s infinite; /* Анимация для плавного эффекта */
+}
+
+/* Анимация эффекта для кнопки */
+@keyframes shineEffect {
+    0% {
+        transform: scale(1); /* Начальный размер */
+    }
+    50% {
+        transform: scale(1.05); /* Увеличение */
+    }
+    100% {
+        transform: scale(1); /* Возвращение в исходное состояние */
+    }
+}
