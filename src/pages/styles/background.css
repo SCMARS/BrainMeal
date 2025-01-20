@@ -2,14 +2,12 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.67), #000000); /* Черно-оранжевый градиент */
     background-size: 200% 200%;
     animation: gradient-animation 5s ease infinite; /* Анимация для движения градиента */
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    color: rgba(0, 0, 0, 0.67);
     overflow: hidden;
 }
 
@@ -32,10 +30,8 @@ body {
     margin: 10px 20px;
     position: relative;
     overflow: hidden;
-    border: 2px solid rgb(255, 255, 255); /* Фиолетовый цвет для границы */
     border-radius: 8px;
     font-family: 'Montserrat', sans-serif;
-    color: rgb(255, 255, 255); /* Текст фиолетовый в статике */
     transition: color 0.3s ease, background 0.3s ease; /* Плавные переходы для текста и фона */
     width: 200px;
     text-align: center;
