@@ -9,6 +9,7 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    background: #1a1a1a;
 }
 
 @keyframes gradient-animation {
@@ -47,7 +48,9 @@ body {
     top: -8px;
     left: -75px;
     transform: skewX(-45deg);
-    transition: left 0.5s ease-in-out; /* Плавный переход для передвижения */
+    transition: left 0. 5s ease-in-out;
+
+      /* Плавный переход для передвижения */
 }
 
 /* Анимация изменения фона при наведении */
@@ -78,3 +81,4 @@ body {
         transform: scale(1); /* Возвращение в исходное состояние */
     }
 }
+
