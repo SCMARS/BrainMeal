@@ -1,57 +1,71 @@
-import { Box, Typography, Button } from "@mui/material";
+import  { useState, useEffect } from "react";
+import "./styles/WelcomeScreen.css";
+import roundImg from "./round.jpg";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Импортируем framer-motion
-import './styles/background.css';
 
-function WelcomePage() {
-    const navigate = useNavigate();
 
-    const handleRegister = () => {
-        navigate("/register");
-    };
-
-    const handleLogin = () => {
-        navigate("/login");
+const LinkButton = ({ to, children }) => {
+    const handleClick = () => {
+        window.open(to, '_blank', 'noopener,noreferrer');
     };
 
     return (
-        <div className="App">
-            <div className="parallax"></div> {/* Параллакс фон */}
-            <motion.div
-                className="content-container"
-                textAlign="center"
-                mt={4}
-                initial={{ opacity: 0, y: -30 }} // Начальная позиция (скрыто сверху)
-                animate={{ opacity: 1, y: 0 }}   // Конечное состояние
-                transition={{ duration: 1 }}      // Длительность анимации
-                style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }} // Центрирование по вертикали
-            >
-                <Typography variant="h3" component="h1" gutterBottom>
-                    Добро пожаловать в FoodBrain
-                </Typography>
-                <Typography variant="h5" component="p" gutterBottom>
-                    твой идеальный рацион питания.
-                </Typography>
-                <Box mt={2}>
-                    <motion.div
-                        initial={{ opacity: 0, y: -30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, delay: 0.5 }} // Задержка для анимации кнопок
-                        style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} // Размещение кнопок по вертикали
-                    >
-                        <Button className="shine-button" onClick={handleRegister}>
-                            Регистрация
-                        </Button>
-                        <Button className="shine-button" onClick={handleLogin}>
-                            Войти
-                        </Button>
-                    </motion.div>
-                </Box>
-            </motion.div>
-        </div>
+        <button className="download-button" onClick={handleClick}>
+            {children}
+        </button>
     );
-}
+};
 
-export default WelcomePage;
+const WelcomeScreen = () => {
+    const [loading, setLoading] = useState(true);
+    const [darkMode, setDarkMode] = useState(true);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 1500);
+        return () => clearTimeout(timer);
+    }, []);
 
+    const handleStart = () => {
+        navigate('/login');
+    };
+
+    const toggleTheme = () => {
+        setDarkMode(!darkMode);
+    };
+
+    return (
+        loading ? (
+            <div className="preloader">
+                <div className="spinner"></div>
+            </div>
+        ) : (
+            <div className={`welcome-container ${darkMode ? "dark" : "light"}`}>
+                <button className="theme-toggle-button" onClick={toggleTheme}>
+                    {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                </button>
+                <div className="welcome-content">
+                    <h1 className="welcome-title">Welcome to BrainMeal</h1>
+                    <p className="welcome-description">
+                        Discover personalized meal plans powered by AI. Simple, efficient, and
+                        perfectly tailored to your dietary needs.
+                    </p>
+                    <button className="start-button" onClick={handleStart}>Get Started</button>
+                    <div className="button-group">
+                        <LinkButton to="https://play.google.com/store">
+                            Download on Google Play
+                        </LinkButton>
+                        <LinkButton to="https://www.apple.com/app-store/">
+                            Download on the App Store
+                        </LinkButton>
+                    </div>
+                    <div className="image-container">
+                        <img src={roundImg} alt="Illustration" />
+                    </div>
+                </div>
+            </div>
+        )
+    );
+};
+
+export default WelcomeScreen;

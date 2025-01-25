@@ -1,0 +1,217 @@
+/* Сброс стандартных стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Темная тема */
+.dark {
+    background: black;
+    color: white;
+}
+
+/* Светлая тема */
+.light {
+    background: white;
+    color: black;
+}
+
+.theme-toggle-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #ff8c00;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.theme-toggle-button:hover {
+    background: #ffa500;
+}
+
+/* Фоновые звёзды */
+body {
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Анимация звёзд */
+@keyframes stars {
+    from { transform: translateY(0); }
+    to { transform: translateY(-1000px); }
+}
+
+.stars {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    box-shadow:
+            0 0 2px white,
+            0 0 4px white,
+            0 0 8px white;
+    animation: stars 20s linear infinite;
+}
+
+.stars:nth-child(odd) {
+    animation-duration: 30s;
+    opacity: 0.7;
+}
+
+/* Прелоадер */
+.preloader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: black;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid white;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Контейнер приветствия */
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    animation: fadeIn 2s ease-in-out;
+    z-index: 1;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Содержимое приветствия */
+.welcome-content {
+    max-width: 800px;
+    padding: 20px;
+}
+
+/* Заголовок приветствия */
+.welcome-title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff8c00;
+    text-shadow: 0 0 10px #ff8c00;
+    animation: slideDown 1s ease-out;
+}
+
+/* Анимация заголовка */
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Описание приветствия */
+.welcome-description {
+    margin-top: 20px;
+    font-size: 24px;
+    color: #ddd;
+    line-height: 1.5;
+    animation: fadeInText 2s ease-in-out;
+}
+
+/* Анимация текста */
+@keyframes fadeInText {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Кнопка начала */
+.start-button {
+    margin-top: 30px;
+    padding: 15px 30px;
+    background: linear-gradient(45deg, #ff8c00, #ffa500);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 22px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Группа кнопок */
+.button-group {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Кнопка загрузки */
+.download-button {
+    padding: 12px 25px;
+    background: linear-gradient(45deg, #ff8c00, #ffa500);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Контейнер изображения */
+.image-container {
+    margin-top: 40px;
+    animation: zoomIn 1.5s ease-in-out;
+    display: flex;
+    justify-content: center;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.image-container img {
+    width: 300px;
+    border-radius: 100px;
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.7);
+    transition: transform 0.3s;
+}
+
+.image-container img:hover {
+    transform: scale(1.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .welcome-title {
+        font-size: 36px;
+    }
+    .welcome-description {
+        font-size: 20px;
+    }
+    .start-button, .download-button {
+        font-size: 18px;
+        padding: 12px 20px;
+    }
+}

@@ -1,40 +1,89 @@
+
 .login-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
-    padding: 0 20px;
+    width: 100vw;
+    font-family: Arial, sans-serif;
 }
 
-.image-container {
+.left-section {
+    width: 50%;
+    background-color: #fff; /* Белый фон */
     display: flex;
-    justify-content: flex-start;
-  }
-
-.image-container img {
-    max-width: 100%;
-    height: 600px;
-    object-fit: contain;
+    align-items: center;
+    justify-content: center;
 }
 
-.form-container {
-    flex: 1;
-    max-width: 400px;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+.logo {
+    width: 700px; /* Увеличен логотип */
+    overflow: hidden;
+    border-radius: 5%;
 }
 
-.button-group {
-    width: 100%;
+.right-section {
+    width: 50%;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
 }
 
-.input-field {
+.logo-small {
+    width: 190px; /* Немного увеличен */
+    margin-bottom: 10px;
+
+}
+.login-form {
+    width: 800px; /* Увеличена форма */
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgb(255, 255, 255);
+}
+.input-group {
     width: 100%;
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; /* Убедиться, что элементы идут друг за другом */
+    align-items: flex-start; /* Выравнивание по левому краю */
+    margin-bottom: 15px; /* Добавить отступ */
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%; /* Сделает поля растянутыми */
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 70px;
+}
+
+.checkbox-group input {
+    margin-right: 10px;
+}
+
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 17px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.login-button:hover {
+    background-color: #444;
 }
