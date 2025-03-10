@@ -1,68 +1,67 @@
-import * as tf from '@tensorflow/tfjs';
+const tf = require('@tensorflow/tfjs');
 
-const trainData = [
-    { features: [60, 170, 30, 2500, 'gain'], label: 'gain' },
-    { features: [70, 180, 25, 2200, 'lose'], label: 'lose' },
-    { features: [80, 190, 35, 2300, 'gain'], label: 'gain' },
-    { features: [65, 165, 28, 2000, 'lose'], label: 'lose' },
-    // Добавь больше примеров данных с параметрами
-];
-
-// Функция для преобразования данных
-function preprocessData(data) {
-    return {
-        inputs: data.map(item => item.features.slice(0, 4)), // Вес, рост, возраст, калории
-        outputs: data.map(item => item.label === 'gain' ? [1, 0] : [0, 1]),
-    };
-}
-
-// Подготовка данных
-const { inputs, outputs } = preprocessData(trainData);
-
-// Создание модели
+// Создание продвинутой модели нейронной сети
 const model = tf.sequential();
 
-// Слой с входными данными (4 входных параметра)
-model.add(tf.layers.dense({ units: 16, activation: 'relu', inputShape: [4] }));
+// Входной слой
+model.add(tf.layers.dense({
+    units: 128,
+    activation: 'relu',
+    inputShape: [5]  // Входной слой с 5 входами (вес, рост, пол, возраст, программа питания)
+}));
 
-// Выходной слой с двумя категориями: 'gain' и 'lose'
-model.add(tf.layers.dense({ units: 2, activation: 'softmax' }));
+// Скрытые слои
+model.add(tf.layers.dense({units: 256, activation: 'relu'}));
+model.add(tf.layers.dropout({rate: 0.5}));
+model.add(tf.layers.dense({units: 128, activation: 'relu'}));
+model.add(tf.layers.dense({units: 64, activation: 'relu'}));
 
-// Компиляция модели
+// Выходной слой
+model.add(tf.layers.dense({units: 1, activation: 'linear'}));  // Выходной слой для предсказания
+
 model.compile({
     optimizer: tf.train.adam(),
-    loss: 'categoricalCrossentropy',
-    metrics: ['accuracy'],
+    loss: 'meanSquaredError'
 });
+
+// Вывод структуры модели
+model.summary();
+
+// Функция предварительной обработки данных клиента
+function preprocessData(weight, height, gender, age, mealPlan) {
+    gender = gender === 'male' ? 1 : 0;
+    return [weight, height, gender, age, mealPlan];
+}
+
+// Пример использования функции предварительной обработки данных
+const clientData = preprocessData(70, 180, 'male', 25, 2);
+const tensorData = tf.tensor2d([clientData]);
+
+// Прогнозирование рациона питания
+model.predict(tensorData).print();
+
+// Пример данных для обучения
+const trainX = tf.tensor2d([
+    [70, 180, 1, 25, 2],
+    [65, 165, 0, 30, 3],
+    [80, 175, 1, 20, 1]
+]);
+
+const trainY = tf.tensor2d([
+    [2500],
+    [2200],
+    [2800]
+]);
 
 // Обучение модели
 async function trainModel() {
-    const xs = tf.tensor2d(inputs);
-    const ys = tf.tensor2d(outputs);
-
-    await model.fit(xs, ys, {
+    await model.fit(trainX, trainY, {
         epochs: 100,
-        callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 10 }),
+        callbacks: {
+            onEpochEnd: (epoch, logs) => console.log(`Epoch ${epoch}: loss = ${logs.loss}`)
+        }
     });
-    console.log('Model trained');
+    console.log('Модель обучена');
 }
 
-// Предсказание на основе новых данных
-async function predict(userData) {
-    const prediction = model.predict(tf.tensor2d([userData]));
-    const result = prediction.arraySync();
-
-    return result[0][0] > result[0][1] ? 'gain' : 'lose';
-}
-
-// Обучение модели и предсказание
-async function run() {
-    await trainModel();
-
-    // Пример: предсказание для нового пользователя
-    const userData = [75, 175, 30, 2400]; // Пример пользователя: вес, рост, возраст, калории
-    const plan = await predict(userData);
-    console.log(`User should focus on: ${plan}`);
-}
-
-run();
+trainModel();

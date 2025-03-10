@@ -2,6 +2,7 @@ import  { useState } from 'react';
 import './styles/Login.css';
 import roundImg from './round.jpg';
 import imgpng from './img.png';
+import {useNavigate} from "react-router-dom";
 
 
 const LoginPage = () => {
@@ -12,6 +13,10 @@ const LoginPage = () => {
         e.preventDefault();
         console.log({ email, password });
     };
+    const navigate = useNavigate();
+    const handelProfile = () =>{
+        navigate("/profile");
+    }
 
     return (
         <div className="login-container">
@@ -54,7 +59,7 @@ const LoginPage = () => {
                         <label htmlFor="personalizedMeal" className="checkbox-label">Remember me</label>
                     </div>
 
-                    <button type="submit" className="login-button">
+                    <button  onClick={handelProfile} type="submit" className="login-button">
                         Log In
                     </button>
                 </form>

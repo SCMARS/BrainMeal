@@ -1,129 +1,188 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: white;
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.profile-container {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #202020;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+body {
+    background-color: #f8f8f8;
+    padding: 16px;
 }
 
-.profile-header {
+/* Основной контейнер */
+.brainmeal-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Шапка приложения */
+.brainmeal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
 }
 
-h1 {
-    font-size: 24px;
-}
-
-.save-button {
-    background-color: #ff4500;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.save-button:hover {
-    background-color: #e03d00;
-}
-
-.description {
-    font-size: 14px;
-    margin: 10px 0 20px;
-}
-
-.profile-content {
+.brainmeal-logo {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.profile-picture-section {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    margin-right: 20px;
 }
 
-.profile-picture {
-    width: 100px;
-    height: 100px;
-    background-color: #773344;
-    color: white;
-    font-size: 32px;
+.brainmeal-logo-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #4caf50;
+    border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 50%;
+    margin-right: 10px;
 }
 
-.upload-button {
-    margin-top: 10px;
-    background-color: #007bff;
+.brainmeal-logo-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.brainmeal-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.brainmeal-logout-btn {
+    background-color: #ff7043;
     color: white;
     border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-.upload-button:hover {
-    background-color: #0056b3;
+.brainmeal-logout-btn:hover {
+    background-color: #f4511e;
 }
 
-.form-section {
-    flex-grow: 1;
+/* Основное содержимое */
+.brainmeal-content {
+    padding: 24px;
 }
 
-.form-group {
-    margin-bottom: 15px;
+/* Секции */
+.brainmeal-section {
+    margin-bottom: 24px;
 }
 
-label {
-    display: block;
-    margin-bottom: 5px;
+.brainmeal-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
 }
 
-input {
-    width: calc(100% - 60px);
-    padding: 8px;
-    margin-right: 5px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    background-color: #333;
-    color: white;
-}
-
-.radio-group {
+/* Строки формы */
+.brainmeal-form-row {
     display: flex;
-    gap: 10px;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
-.radio-button {
-    background-color: transparent;
+.brainmeal-form-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Строка с 3 полями */
+.brainmeal-form-row-3 > .brainmeal-form-field {
+    flex: 1;
+}
+
+/* Строка с 2 полями */
+.brainmeal-form-row-2 > .brainmeal-form-field {
+    flex: 1;
+}
+
+/* Поля ввода */
+.brainmeal-form-field {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.brainmeal-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.brainmeal-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #666;
+}
+
+.brainmeal-input::placeholder {
+    color: #aaa;
+}
+
+/* Выбор диеты */
+.brainmeal-diet-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.brainmeal-diet-option {
+    display: flex;
+    align-items: center;
+}
+
+.brainmeal-radio {
+    margin-right: 10px;
+    accent-color: #ff7043;
+}
+
+.brainmeal-radio-label {
+    font-size: 14px;
+    color: #444;
+}
+
+/* Кнопка генерации плана */
+.brainmeal-generate-btn {
+    width: 100%;
+    background-color: #ff7043;
     color: white;
-    border: 2px solid white;
-    padding: 5px 10px;
-    border-radius: 20px;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-.radio-button.active {
-    background-color: #ff4500;
-    border-color: #ff4500;
+.brainmeal-generate-btn:hover {
+    background-color: #f4511e;
 }
 
-.radio-button:hover {
-    background-color: #e03d00;
-}
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .brainmeal-form-row {
+        flex-direction: column;
+    }
+
+    .brainmeal-form-field {
+        margin-bottom: 8px
+    }

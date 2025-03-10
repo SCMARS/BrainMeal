@@ -1,0 +1,133 @@
+/* MealPlanning.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.meal-planning-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-button {
+    color: #3b82f6;
+    text-decoration: none;
+    margin-right: 20px;
+    font-size: 16px;
+}
+
+.title-container {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.main-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.spacer {
+    width: 32px;
+}
+
+/* Plan Cards */
+.plan-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.plan-title {
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.generate-button {
+    width: 100%;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+/* Weekly Grid */
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.day-card {
+    background-color: #e6f0ff;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.day-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.meal-text {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+/* Daily Meals */
+.daily-meals {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.meal-card {
+    background-color: #e6f0ff;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.meal-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 600px) {
+    .week-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .week-grid {
+        grid-template-columns: 1fr;
+    }
+}
