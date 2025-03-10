@@ -1,19 +1,68 @@
 import React, { useState } from 'react';
 import './styles/Profile.css';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const BrainMeal = () => {
-    const [selectedDiet, setSelectedDiet] = useState(null);
+const Profile = () => {
+    const navigate = useNavigate();
+    const [error, setError] = useState('');
 
-    const handleDietChange = (diet) => {
-        setSelectedDiet(diet);
+    const logout = () => {
+        navigate('/login');
     };
 
-    const navigate = useNavigate();
+    // Состояние для хранения данных пользователя
+    const [userData, setUserData] = useState({
+        weight: '',
+        age: '',
+        gender: '',
+        height: '',
+        dietType: 'basic', // По умолчанию
+        mealPreferences: '',
+        breakfast: '',
+        lunch: '',
+        dinner: '',
+        snacks: ''
+    });
 
+    // Обработчик изменения данных
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setUserData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Обработчик изменения типа диеты
+    const handleDietChange = (diet) => {
+        setUserData(prev => ({
+            ...prev,
+            dietType: diet
+        }));
+    };
+
+    const validateData = () => {
+        const { weight, age, height, gender } = userData;
+        if (!weight || !age || !height || !gender) {
+            return "Пожалуйста, заполните все обязательные поля: вес, возраст, рост и пол.";
+        }
+        if (weight < 35 || age < 15) {
+            return "Пожалуйста, заполните все обязательные поля правильно.";
+        }
+        return "";
+    };
+
+
+    // Обработчик генерации плана питания
     const handleGenerateMealPlan = () => {
+        const validationError = validateData();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+        // Сохраняем данные пользователя в localStorage для использования на странице MealPlan
+        localStorage.setItem('userData', JSON.stringify(userData));
         navigate("/MealPlan");
-
     };
 
     return (
@@ -29,36 +78,75 @@ const BrainMeal = () => {
                     </div>
                     <h1 className="brainmeal-title">BrainMeal</h1>
                 </div>
-                <button className="brainmeal-logout-btn">Logout</button>
+                <button className="brainmeal-logout-btn" onClick={logout}>Logout</button>
             </header>
 
             {/* Основной контент */}
             <div className="brainmeal-content">
+                {error && <p className="error-message">{error}</p>}
                 {/* Раздел профиля пользователя */}
                 <section className="brainmeal-section">
                     <h2 className="brainmeal-section-title">User Profile</h2>
                     <div className="brainmeal-form-row brainmeal-form-row-3">
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Weight</label>
-                            <input type="text" className="brainmeal-input" placeholder="Enter weight" />
+                            <label className="brainmeal-label">Weight (kg)</label>
+                            <input
+                                type="number"
+                                name="weight"
+                                className="brainmeal-input"
+                                placeholder="Enter weight"
+                                value={userData.weight}
+                                onChange={handleChange}
+                            />
                         </div>
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Age</label>
-                            <input type="text" className="brainmeal-input" placeholder="Enter age" />
+                            <input
+                                type="number"
+                                name="age"
+                                className="brainmeal-input"
+                                placeholder="Enter age"
+                                value={userData.age}
+                                onChange={handleChange}
+                            />
                         </div>
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Biological Gender</label>
-                            <input type="text" className="brainmeal-input" placeholder="Enter gender" />
+                            <select
+                                name="gender"
+                                className="brainmeal-input"
+                                value={userData.gender}
+                                onChange={handleChange}
+                            >
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
                     </div>
                     <div className="brainmeal-form-row brainmeal-form-row-2">
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Height</label>
-                            <input type="text" className="brainmeal-input" placeholder="Enter height" />
+                            <label className="brainmeal-label">Height (cm)</label>
+                            <input
+                                type="number"
+                                name="height"
+                                className="brainmeal-input"
+                                placeholder="Enter height"
+                                value={userData.height}
+                                onChange={handleChange}
+                            />
                         </div>
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Weight</label>
-                            <input type="text" className="brainmeal-input" placeholder="Enter weight" />
+                            <label className="brainmeal-label">Meal Preferences/Restrictions</label>
+                            <input
+                                type="text"
+                                name="mealPreferences"
+                                className="brainmeal-input"
+                                placeholder="E.g., vegetarian, no nuts, etc."
+                                value={userData.mealPreferences}
+                                onChange={handleChange}
+                            />
                         </div>
                     </div>
                 </section>
@@ -69,21 +157,49 @@ const BrainMeal = () => {
                     <div className="brainmeal-form-row brainmeal-form-row-2">
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Breakfast</label>
-                            <input type="text" className="brainmeal-input" placeholder="Log breakfast details" />
+                            <input
+                                type="text"
+                                name="breakfast"
+                                className="brainmeal-input"
+                                placeholder="Log breakfast details"
+                                value={userData.breakfast}
+                                onChange={handleChange}
+                            />
                         </div>
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Lunch</label>
-                            <input type="text" className="brainmeal-input" placeholder="Log lunch details" />
+                            <input
+                                type="text"
+                                name="lunch"
+                                className="brainmeal-input"
+                                placeholder="Log lunch details"
+                                value={userData.lunch}
+                                onChange={handleChange}
+                            />
                         </div>
                     </div>
                     <div className="brainmeal-form-row brainmeal-form-row-2">
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Dinner</label>
-                            <input type="text" className="brainmeal-input" placeholder="Log dinner details" />
+                            <input
+                                type="text"
+                                name="dinner"
+                                className="brainmeal-input"
+                                placeholder="Log dinner details"
+                                value={userData.dinner}
+                                onChange={handleChange}
+                            />
                         </div>
                         <div className="brainmeal-form-field">
                             <label className="brainmeal-label">Snacks</label>
-                            <input type="text" className="brainmeal-input" placeholder="Log snack details" />
+                            <input
+                                type="text"
+                                name="snacks"
+                                className="brainmeal-input"
+                                placeholder="Log snack details"
+                                value={userData.snacks}
+                                onChange={handleChange}
+                            />
                         </div>
                     </div>
                 </section>
@@ -98,7 +214,7 @@ const BrainMeal = () => {
                                 id="basic-diet"
                                 name="diet"
                                 className="brainmeal-radio"
-                                checked={selectedDiet === 'basic'}
+                                checked={userData.dietType === 'basic'}
                                 onChange={() => handleDietChange('basic')}
                             />
                             <label htmlFor="basic-diet" className="brainmeal-radio-label">
@@ -111,7 +227,7 @@ const BrainMeal = () => {
                                 id="gentle-diet"
                                 name="diet"
                                 className="brainmeal-radio"
-                                checked={selectedDiet === 'gentle'}
+                                checked={userData.dietType === 'gentle'}
                                 onChange={() => handleDietChange('gentle')}
                             />
                             <label htmlFor="gentle-diet" className="brainmeal-radio-label">
@@ -124,7 +240,7 @@ const BrainMeal = () => {
                                 id="protein-diet"
                                 name="diet"
                                 className="brainmeal-radio"
-                                checked={selectedDiet === 'protein'}
+                                checked={userData.dietType === 'protein'}
                                 onChange={() => handleDietChange('protein')}
                             />
                             <label htmlFor="protein-diet" className="brainmeal-radio-label">
@@ -146,7 +262,8 @@ const BrainMeal = () => {
     );
 };
 
-export default BrainMeal;
+export default Profile;
+
 
 
 
