@@ -1,181 +1,726 @@
-/* MealPlanning.css */
-* {
+/* Общие стили */
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    overflow: auto;
+    scroll-behavior: smooth;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8fafc;
+    color: #334155;
 }
 
+body {
+    min-height: 100%;
+    overflow: auto;
+    padding-top: 0;
+}
+
+/* Основной контейнер план питания */
 .meal-planning-container {
-    max-width: 800px;
+    max-width: 2500px;
     margin: 0 auto;
-    padding: 20px;
-    background-color: #f8f9fa;
+    padding: 2300px 30px 50px 30px;
+    position: relative;
+    overflow: visible;
+    background-color: #f8fafc;
 }
 
-/* Header */
+/* Фиксированная шапка - обновленный дизайн */
 .header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-}
-
-.back-button {
-    color: #3b82f6;
-    text-decoration: none;
-    margin-right: 20px;
-    font-size: 16px;
+    margin-bottom: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    min-height: 70px;
+    transition: all 0.3s ease;
 }
 
 .title-container {
-    flex-grow: 1;
     text-align: center;
 }
 
 .main-title {
-    font-size: 22px;
+    font-size: 2.2rem;
+    margin: 0;
+    color: #1e293b;
     font-weight: 600;
-    margin-bottom: 2px;
+    letter-spacing: -0.5px;
 }
 
 .subtitle {
-    font-size: 12px;
-    color: #6c757d;
+    margin: 5px 0 0;
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+.back-button {
+    background-color: transparent;
+    border: 2px solid #3b82f6;
+    color: #3b82f6;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.back-button:hover {
+    background-color: #3b82f6;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
+}
+
+.back-button:active {
+    transform: translateY(0);
 }
 
 .spacer {
-    width: 32px;
+    width: 100px;
 }
 
-/* Plan Cards */
-.plan-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.plan-title {
-    font-size: 18px;
-    font-weight: 500;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.generate-button {
-    width: 100%;
-    background-color: #000;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 14px;
-    margin-bottom: 20px;
-    cursor: pointer;
-}
-
-/* Weekly Grid */
-.week-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.day-card {
-    background-color: #e6f0ff;
-    border-radius: 8px;
-    padding: 12px;
-}
-
-.day-title {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 5px;
-}
-
-.meal-text {
-    font-size: 12px;
-    margin-bottom: 3px;
-}
-
-/* Daily Meals */
-.daily-meals {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.meal-card {
-    background-color: #e6f0ff;
-    border-radius: 8px;
-    padding: 12px;
-}
-
-.meal-title {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 5px;
-}
+/* Сообщение об ошибке */
 .error-message {
-    background-color: #ffebee;
-    color: #c62828;
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    text-align: center;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 18px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    border: 1px solid #fecaca;
+    display: flex;
+    align-items: center;
 }
 
-.generate-button.loading {
-    opacity: 0.7;
-    cursor: not-allowed;
+.error-message:before {
+    content: "⚠️";
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Профиль пользователя */
+.user-profile-summary {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 25px 30px;
+    margin-bottom: 35px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-profile-summary:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.summary-title {
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.summary-details {
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.summary-details p {
+    margin: 8px 0;
+}
+
+/* Новый двухколоночный макет */
+.content-layout {
+    display: flex;
+    gap: 30px;
+    margin-top: 60px;
+    min-height: auto;
+    overflow: visible;
     position: relative;
 }
 
-.generate-button.loading::after {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    top: 50%;
-    right: 20px;
-    margin-top: -10px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
+.meal-plans-container {
+    flex: 3;
+    overflow: visible;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+/* Расширенная панель статистики */
+.nutrition-panel {
+    flex: 2;
+    min-width: 320px;
+    max-width: 600px;
+    position: relative;
 }
 
-/* Улучшенные стили для карточек дней и приемов пищи */
-.day-card, .meal-card {
+/* Карточки планов */
+.plan-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 35px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.plan-title {
+    color: #1e293b;
+    margin-top: 0;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.generate-button {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 25px;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.generate-button:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
+}
+
+.generate-button:active {
+    transform: translateY(0);
+}
+
+.generate-button.loading {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    overflow: visible;
+    margin-bottom: 35px;
+    margin-top: 40px;
+}
+
+/* Карточки дневного плана */
+.daily-meals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(1000px, 1fr));
+    gap: 20px;
+}
+
+.day-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.day-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.selected-day {
+    border: 2px solid #3b82f6;
+    background-color: #eff6ff;
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+}
+
+.day-title {
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.meal-text {
+    margin: 12px 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.small-text {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.total-calories-text {
+    margin-top: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 12px;
+    margin-top: auto;
+}
+
+/* Карточки дневного плана для приема пищи */
+.meal-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.meal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.meal-title {
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.calories-text {
+    margin: 10px 0 5px;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Стили для панели питательных веществ (увеличенная статистика) */
+.nutrition-stats,
+.calorie-stats {
+    background-color: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nutrition-stats:hover,
+.calorie-stats:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.total-calories h4 {
+    margin: 0;
+    color: #64748b;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.calories-value {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 10px 0;
+    letter-spacing: -1px;
+}
+
+.chart-container {
+    margin: 25px 0;
+    height: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.nutrition-placeholder {
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px dashed #cbd5e1;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     transition: all 0.3s ease;
 }
 
-.day-card:hover, .meal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+.nutrition-placeholder:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
 }
 
-/* Стили для меню с калориями */
-.meal-text {
-    margin: 8px 0;
-    line-height: 1.4;
+.nutrition-summary {
+    margin-bottom: 25px;
 }
 
-/* Responsive Adjustments */
-@media screen and (max-width: 600px) {
-    .week-grid {
-        grid-template-columns: repeat(2, 1fr);
+.total-calories {
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.total-calories:hover {
+    background-color: #f1f5f9;
+    transform: translateY(-3px);
+}
+
+.diet-recommendations {
+    margin-top: 25px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.diet-recommendations h4 {
+    margin-top: 0;
+    color: #1e293b;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.diet-recommendations ul {
+    padding-left: 25px;
+    margin: 15px 0;
+}
+
+.diet-recommendations li {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #475569;
+    line-height: 1.6;
+}
+
+/* Стили для статистики калорий */
+.meal-calorie-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e2e8f0;
+    transition: transform 0.2s ease;
+}
+
+.meal-calorie-item:hover {
+    transform: translateX(5px);
+}
+
+.meal-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.meal-calories {
+    color: #475569;
+    font-weight: 500;
+}
+
+.total-calories-card {
+    grid-column: 1 / -1;
+    padding: 15px;
+    background-color: #eff6ff;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #1e40af;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    transition: all 0.3s ease;
+}
+
+.total-calories-card:hover {
+    background-color: #dbeafe;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+}
+
+/* Увеличиваем высоту верхнего отступа */
+.top-visible-spacer {
+    height: 120px;
+    width: 100%;
+    display: block;
+}
+
+/* Стили для элементов приема пищи */
+.meal-item {
+    margin-bottom: 15px;
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.meal-item:hover {
+    padding-left: 5px;
+    border-bottom-color: #cbd5e1;
+}
+
+.meal-item:last-child {
+    border-bottom: none;
+}
+
+/* Edit button styling */
+.edit-meal-button {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 6px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.edit-meal-button:hover {
+    background-color: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Modal styling for meal editing */
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.edit-modal {
+    background-color: white;
+    border-radius: 16px;
+    padding: 30px;
+    width: 90%;
+    max-width: 550px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+    animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }
 
-@media screen and (max-width: 400px) {
+/* Дополнительные стили для форм внутри модального окна */
+.edit-modal input,
+.edit-modal textarea,
+.edit-modal select {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.edit-modal input:focus,
+.edit-modal textarea:focus,
+.edit-modal select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.edit-modal button {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-modal .save-button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    margin-right: 10px;
+}
+
+.edit-modal .save-button:hover {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.edit-modal .cancel-button {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.edit-modal .cancel-button:hover {
+    background-color: #e2e8f0;
+    transform: translateY(-2px);
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 1200px) {
     .week-grid {
+        grid-template-columns: repeat(4, 1fr); /* Показываем по 4 дня на средних экранах */
+    }
+
+    .day-card {
+        min-height: 300px; /* Увеличиваем высоту на средних экранах */
+    }
+}
+
+@media (max-width: 900px) {
+    .content-layout {
+        flex-direction: column;
+        overflow-y: visible;
+    }
+
+    .nutrition-panel {
+        max-width: none;
+        position: relative;
+    }
+
+    .week-grid {
+        grid-template-columns: repeat(3, 1fr); /* Показываем по 3 дня на планшетах */
+    }
+
+    .day-card {
+        min-height: 320px; /* Увеличиваем высоту на планшетах */
+    }
+
+    .daily-meals {
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+
+    /* Корректируем отступ контейнера для мобильных устройств */
+    .meal-planning-container {
+        padding-top: 120px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding-top: 70px;
+    }
+
+    .meal-planning-container {
+        padding-top: 140px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .back-button {
+        margin-bottom: 15px;
+    }
+
+    .spacer {
+        display: none;
+    }
+
+    .week-grid {
+        grid-template-columns: repeat(2, 1fr); /* Показываем по 2 дня в ряд на маленьких экранах */
+        gap: 15px;
+    }
+
+    .day-card {
+        min-height: 340px; /* Увеличиваем высоту на мобильных устройствах */
+        padding: 20px;
+    }
+
+    .daily-meals {
         grid-template-columns: 1fr;
+    }
+
+    .top-visible-spacer {
+        height: 140px;
+    }
+
+    .main-title {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .plan-title {
+        font-size: 1.4rem;
+    }
+
+    .calories-value {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .week-grid {
+        grid-template-columns: 1fr; /* Один день в ряд на очень маленьких экранах */
+    }
+
+    .day-card {
+        min-height: 280px; /* Немного уменьшаем высоту на очень маленьких экранах, так как карточка занимает всю ширину */
     }
 }

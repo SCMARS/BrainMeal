@@ -21,7 +21,10 @@ const Profile = () => {
         breakfast: '',
         lunch: '',
         dinner: '',
-        snacks: ''
+        snacks: '',
+        // New fields for diet-specific data
+        targetWeight: '',
+        targetGain: ''
     });
 
     // Обработчик изменения данных
@@ -49,9 +52,17 @@ const Profile = () => {
         if (weight < 35 || age < 15) {
             return "Пожалуйста, заполните все обязательные поля правильно.";
         }
+
+        // Validate diet-specific fields
+        if (userData.dietType === 'weightloss' && !userData.targetWeight) {
+            return "Пожалуйста, укажите целевой вес для диеты по снижению веса.";
+        }
+        if (userData.dietType === 'weightgain' && !userData.targetGain) {
+            return "Пожалуйста, укажите целевой прирост массы для диеты по набору веса.";
+        }
+
         return "";
     };
-
 
     // Обработчик генерации плана питания
     const handleGenerateMealPlan = () => {
@@ -63,6 +74,42 @@ const Profile = () => {
         // Сохраняем данные пользователя в localStorage для использования на странице MealPlan
         localStorage.setItem('userData', JSON.stringify(userData));
         navigate("/MealPlan");
+    };
+
+    // Рендеринг дополнительных полей в зависимости от типа диеты
+    const renderDietSpecificFields = () => {
+        switch(userData.dietType) {
+            case 'weightloss':
+                return (
+                    <div className="brainmeal-form-field diet-specific-field">
+                        <label className="brainmeal-label">Целевой вес (кг)</label>
+                        <input
+                            type="number"
+                            name="targetWeight"
+                            className="brainmeal-input"
+                            placeholder="Укажите желаемый вес"
+                            value={userData.targetWeight}
+                            onChange={handleChange}
+                        />
+                    </div>
+                );
+            case 'weightgain':
+                return (
+                    <div className="brainmeal-form-field diet-specific-field">
+                        <label className="brainmeal-label">Желаемый прирост массы (кг)</label>
+                        <input
+                            type="number"
+                            name="targetGain"
+                            className="brainmeal-input"
+                            placeholder="Укажите желаемый прирост"
+                            value={userData.targetGain}
+                            onChange={handleChange}
+                        />
+                    </div>
+                );
+            default:
+                return null;
+        }
     };
 
     return (
@@ -247,7 +294,37 @@ const Profile = () => {
                                 High Protein Diet - A diet rich in protein for muscle growth.
                             </label>
                         </div>
+                        {/* New diet types */}
+                        <div className="brainmeal-diet-option">
+                            <input
+                                type="radio"
+                                id="weightloss-diet"
+                                name="diet"
+                                className="brainmeal-radio"
+                                checked={userData.dietType === 'weightloss'}
+                                onChange={() => handleDietChange('weightloss')}
+                            />
+                            <label htmlFor="weightloss-diet" className="brainmeal-radio-label">
+                                Weight Loss Diet - A calorie-controlled diet designed for healthy weight reduction.
+                            </label>
+                        </div>
+                        <div className="brainmeal-diet-option">
+                            <input
+                                type="radio"
+                                id="weightgain-diet"
+                                name="diet"
+                                className="brainmeal-radio"
+                                checked={userData.dietType === 'weightgain'}
+                                onChange={() => handleDietChange('weightgain')}
+                            />
+                            <label htmlFor="weightgain-diet" className="brainmeal-radio-label">
+                                Weight Gain Diet - A nutrient-dense diet designed for healthy weight gain.
+                            </label>
+                        </div>
                     </div>
+
+                    {/* Diet-specific input fields */}
+                    {renderDietSpecificFields()}
                 </section>
 
                 {/* Кнопка генерации плана питания */}

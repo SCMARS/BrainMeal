@@ -142,6 +142,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    margin-bottom: 16px;
 }
 
 .brainmeal-diet-option {
@@ -157,6 +158,24 @@ body {
 .brainmeal-radio-label {
     font-size: 14px;
     color: #444;
+}
+
+/* Diet-specific fields */
+.diet-specific-field {
+    margin-top: 16px;
+    background-color: #fff9f7;
+    border: 1px solid #ffccbc;
+    max-width: 300px;
+}
+
+/* Error message */
+.error-message {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
 }
 
 /* Кнопка генерации плана */
@@ -184,6 +203,10 @@ body {
     }
 
     .brainmeal-form-field {
-        margin-bottom: 8px
-
+        margin-bottom: 8px;
     }
+
+    .diet-specific-field {
+        max-width: 100%;
+    }
+}
