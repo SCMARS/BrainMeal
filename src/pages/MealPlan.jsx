@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./styles/Mealplan.css";
 import { useNavigate } from "react-router-dom";
-import { generateMealPlan } from './servises/llmService.js';
+import { generateMealPlan } from './servises/llmService.jsx';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 function MealPlanningApp() {
@@ -30,14 +30,14 @@ function MealPlanningApp() {
                 setUserData(JSON.parse(storedUserData));
             } catch (err) {
                 console.error("Error parsing user data:", err);
-                setError("Error loading user profile. Please return to profile page.");
+                setError("Ошибка загрузки профиля. Вернитесь на страницу профиля.");
             }
         } else {
-            setError("User data not found. Please complete your profile first.");
+            setError("Данные пользователя не найдены. Пожалуйста, заполните профиль.");
         }
     }, []);
 
-    // Обновление данных питательных веществ при изменении плана или выбранного дня
+    // Обновление статистики при изменении плана или выбранного дня
     useEffect(() => {
         if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
             calculateNutritionStats(weeklyPlan[selectedDay]);
@@ -50,28 +50,23 @@ function MealPlanningApp() {
         navigate("/profile");
     };
 
-    // Расчет питательных веществ по плану питания
+    // Функция расчёта статистики питания (калории и макроэлементы)
     const calculateNutritionStats = (plan) => {
         let totalCalories = 0;
-
         if (plan.breakfast_calories !== undefined) {
-            // Недельный план
-            totalCalories = (
+            totalCalories =
                 (plan.breakfast_calories || 0) +
                 (plan.lunch_calories || 0) +
-                (plan.dinner_calories || 0)
-            );
+                (plan.dinner_calories || 0);
         } else if (plan.breakfast?.calories !== undefined) {
-            // Дневной план
-            totalCalories = (
+            totalCalories =
                 (plan.breakfast?.calories || 0) +
                 (plan.lunch?.calories || 0) +
                 (plan.dinner?.calories || 0) +
-                (plan.snack?.calories || 0)
-            );
+                (plan.snack?.calories || 0);
         }
 
-        // Распределение макроэлементов в зависимости от типа диеты
+        // Распределение макроэлементов по типу диеты
         let proteinPercentage = 0.25;
         let fatPercentage = 0.3;
         let carbsPercentage = 0.45;
@@ -116,13 +111,11 @@ function MealPlanningApp() {
     // Генерация недельного плана питания
     const handleGenerateWeeklyPlan = async () => {
         if (!userData) {
-            setError("User data is missing. Please complete your profile first.");
+            setError("Данные пользователя отсутствуют. Заполните профиль.");
             return;
         }
-
         setIsLoadingWeekly(true);
         setError(null);
-
         try {
             const generatedPlan = await generateMealPlan({
                 ...userData,
@@ -131,7 +124,7 @@ function MealPlanningApp() {
             setWeeklyPlan(generatedPlan);
             setSelectedDay('monday');
         } catch (err) {
-            setError("Failed to generate weekly meal plan. Please try again later.");
+            setError("Не удалось сгенерировать недельный план. Попробуйте позже.");
             console.error(err);
         } finally {
             setIsLoadingWeekly(false);
@@ -141,13 +134,11 @@ function MealPlanningApp() {
     // Генерация дневного плана питания
     const handleGenerateDailyPlan = async () => {
         if (!userData) {
-            setError("User data is missing. Please complete your profile first.");
+            setError("Данные пользователя отсутствуют. Заполните профиль.");
             return;
         }
-
         setIsLoadingDaily(true);
         setError(null);
-
         try {
             const generatedPlan = await generateMealPlan({
                 ...userData,
@@ -156,19 +147,19 @@ function MealPlanningApp() {
             setDailyPlan(generatedPlan);
             setWeeklyPlan(null);
         } catch (err) {
-            setError("Failed to generate daily meal plan. Please try again later.");
+            setError("Не удалось сгенерировать дневной план. Попробуйте позже.");
             console.error(err);
         } finally {
             setIsLoadingDaily(false);
         }
     };
 
-    // Обработка выбора дня в недельном плане
+    // Выбор дня для недельного плана
     const handleDayClick = (day) => {
         setSelectedDay(day);
     };
 
-    // Начало редактирования приема пищи в недельном плане
+    // Редактирование приема пищи в недельном плане
     const startEditingWeeklyMeal = (day, meal) => {
         setIsEditing(true);
         setEditingDay(day);
@@ -177,7 +168,7 @@ function MealPlanningApp() {
         setEditCalories(weeklyPlan[day][`${meal}_calories`]);
     };
 
-    // Начало редактирования приема пищи в дневном плане
+    // Редактирование приема пищи в дневном плане
     const startEditingDailyMeal = (meal) => {
         setIsEditing(true);
         setEditingDay(null);
@@ -186,24 +177,21 @@ function MealPlanningApp() {
         setEditCalories(dailyPlan[meal].calories);
     };
 
-    // Сохранение изменений приема пищи с обновлением диаграммы
+    // Сохранение изменений при редактировании приема пищи
     const saveEditedMeal = () => {
-        if (editingDay) { // Редактирование недельного плана
+        if (editingDay) { // Недельный план
             const updatedWeeklyPlan = { ...weeklyPlan };
-            // Создаем новый объект для выбранного дня, чтобы обновление отразилось
             updatedWeeklyPlan[editingDay] = { ...updatedWeeklyPlan[editingDay] };
             updatedWeeklyPlan[editingDay][editingMeal] = editMealName;
             updatedWeeklyPlan[editingDay][`${editingMeal}_calories`] = parseInt(editCalories) || 0;
             setWeeklyPlan(updatedWeeklyPlan);
-            // Пересчитываем питательные вещества для выбранного дня
             calculateNutritionStats(updatedWeeklyPlan[editingDay]);
-        } else { // Редактирование дневного плана
+        } else { // Дневной план
             const updatedDailyPlan = { ...dailyPlan };
             updatedDailyPlan[editingMeal] = { ...updatedDailyPlan[editingMeal] };
             updatedDailyPlan[editingMeal].meal = editMealName;
             updatedDailyPlan[editingMeal].calories = parseInt(editCalories) || 0;
             setDailyPlan(updatedDailyPlan);
-            // Пересчитываем питательные вещества для дневного плана
             calculateNutritionStats(updatedDailyPlan);
         }
         setIsEditing(false);
@@ -211,14 +199,13 @@ function MealPlanningApp() {
         setEditingDay(null);
     };
 
-    // Отмена редактирования
     const cancelEditing = () => {
         setIsEditing(false);
         setEditingMeal(null);
         setEditingDay(null);
     };
 
-    // Отображение модального окна редактирования
+    // Модальное окно редактирования приема пищи
     const renderEditModal = () => {
         if (!isEditing) return null;
 
@@ -245,7 +232,6 @@ function MealPlanningApp() {
                     <h3>Редактирование приема пищи</h3>
                     {editingDay && <p>День: {dayDisplayNames[editingDay]}</p>}
                     <p>Прием пищи: {mealDisplayNames[editingMeal]}</p>
-
                     <div className="edit-field">
                         <label>Блюдо:</label>
                         <textarea
@@ -254,7 +240,6 @@ function MealPlanningApp() {
                             rows={3}
                         />
                     </div>
-
                     <div className="edit-field">
                         <label>Калории:</label>
                         <input
@@ -264,7 +249,6 @@ function MealPlanningApp() {
                             min="0"
                         />
                     </div>
-
                     <div className="edit-buttons">
                         <button onClick={saveEditedMeal} className="save-button">Сохранить</button>
                         <button onClick={cancelEditing} className="cancel-button">Отмена</button>
@@ -312,9 +296,7 @@ function MealPlanningApp() {
                             <>
                                 <div className="meal-item">
                                     <p className="meal-text"><strong>Завтрак:</strong> {weeklyPlan[engDay].breakfast}</p>
-                                    <p className="meal-text small-text">
-                                        {weeklyPlan[engDay].breakfast_calories || 0} ккал
-                                    </p>
+                                    <p className="meal-text small-text">{weeklyPlan[engDay].breakfast_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
                                         onClick={(e) => {
@@ -325,12 +307,9 @@ function MealPlanningApp() {
                                         Изменить
                                     </button>
                                 </div>
-
                                 <div className="meal-item">
                                     <p className="meal-text"><strong>Обед:</strong> {weeklyPlan[engDay].lunch}</p>
-                                    <p className="meal-text small-text">
-                                        {weeklyPlan[engDay].lunch_calories || 0} ккал
-                                    </p>
+                                    <p className="meal-text small-text">{weeklyPlan[engDay].lunch_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
                                         onClick={(e) => {
@@ -341,12 +320,9 @@ function MealPlanningApp() {
                                         Изменить
                                     </button>
                                 </div>
-
                                 <div className="meal-item">
                                     <p className="meal-text"><strong>Ужин:</strong> {weeklyPlan[engDay].dinner}</p>
-                                    <p className="meal-text small-text">
-                                        {weeklyPlan[engDay].dinner_calories || 0} ккал
-                                    </p>
+                                    <p className="meal-text small-text">{weeklyPlan[engDay].dinner_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
                                         onClick={(e) => {
@@ -357,7 +333,6 @@ function MealPlanningApp() {
                                         Изменить
                                     </button>
                                 </div>
-
                                 <p className="total-calories-text">
                                     Всего: {(weeklyPlan[engDay].breakfast_calories || 0) +
                                     (weeklyPlan[engDay].lunch_calories || 0) +
@@ -405,46 +380,26 @@ function MealPlanningApp() {
                     <h3 className="meal-title">Завтрак</h3>
                     <p className="meal-text">{dailyPlan.breakfast?.meal || "Не указано"}</p>
                     <p className="calories-text">{dailyPlan.breakfast?.calories || 0} ккал</p>
-                    <button
-                        className="edit-meal-button"
-                        onClick={() => startEditingDailyMeal('breakfast')}
-                    >
-                        Изменить
-                    </button>
+                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('breakfast')}>Изменить</button>
                 </div>
                 <div className="meal-card">
                     <h3 className="meal-title">Обед</h3>
                     <p className="meal-text">{dailyPlan.lunch?.meal || "Не указано"}</p>
                     <p className="calories-text">{dailyPlan.lunch?.calories || 0} ккал</p>
-                    <button
-                        className="edit-meal-button"
-                        onClick={() => startEditingDailyMeal('lunch')}
-                    >
-                        Изменить
-                    </button>
+                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('lunch')}>Изменить</button>
                 </div>
                 <div className="meal-card">
                     <h3 className="meal-title">Ужин</h3>
                     <p className="meal-text">{dailyPlan.dinner?.meal || "Не указано"}</p>
                     <p className="calories-text">{dailyPlan.dinner?.calories || 0} ккал</p>
-                    <button
-                        className="edit-meal-button"
-                        onClick={() => startEditingDailyMeal('dinner')}
-                    >
-                        Изменить
-                    </button>
+                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('dinner')}>Изменить</button>
                 </div>
                 {dailyPlan.snack && (
                     <div className="meal-card">
                         <h3 className="meal-title">Перекус</h3>
                         <p className="meal-text">{dailyPlan.snack.meal}</p>
                         <p className="calories-text">{dailyPlan.snack.calories} ккал</p>
-                        <button
-                            className="edit-meal-button"
-                            onClick={() => startEditingDailyMeal('snack')}
-                        >
-                            Изменить
-                        </button>
+                        <button className="edit-meal-button" onClick={() => startEditingDailyMeal('snack')}>Изменить</button>
                     </div>
                 )}
                 <div className="total-calories-card">
@@ -454,7 +409,7 @@ function MealPlanningApp() {
         );
     };
 
-    // Отображение статистики калорийности по приёмам пищи
+    // Отображение статистики калорий по приёмам пищи
     const renderCalorieStats = () => {
         let mealCalories = [];
         if (dailyPlan && dailyPlan.breakfast?.calories !== undefined) {
@@ -493,13 +448,13 @@ function MealPlanningApp() {
         );
     };
 
-    // Отображение диаграммы питательных веществ (макросов)
+    // Отображение диаграммы и рекомендаций по макроэлементам
     const renderNutritionStats = () => {
         if (!nutritionStats) {
             return (
                 <div className="nutrition-placeholder">
                     <h3>Информация о питательных веществах</h3>
-                    <p>Сгенерируйте план питания, чтобы увидеть информацию о питательных веществах.</p>
+                    <p>Сгенерируйте план питания, чтобы увидеть данные.</p>
                 </div>
             );
         }
@@ -551,7 +506,6 @@ function MealPlanningApp() {
                         <h4>Всего калорий</h4>
                         <p className="calories-value">{nutritionStats.calories} ккал</p>
                     </div>
-
                     <div className="macros-list">
                         {nutritionStats.macros.map((macro) => (
                             <div key={macro.name} className="macro-item">
@@ -562,7 +516,6 @@ function MealPlanningApp() {
                         ))}
                     </div>
                 </div>
-
                 <div className="chart-container">
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
@@ -585,12 +538,11 @@ function MealPlanningApp() {
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-
                 <div className="calorie-distribution">
                     <h4>Распределение калорий</h4>
                     <div className="distribution-items">
                         {nutritionStats.macros.map((macro) => {
-                            const calories = macro.name === 'Белки' || macro.name === 'Углеводы'
+                            const calories = (macro.name === 'Белки' || macro.name === 'Углеводы')
                                 ? macro.grams * 4
                                 : macro.grams * 9;
                             const percentage = Math.round((calories / nutritionStats.calories) * 100);
@@ -603,7 +555,6 @@ function MealPlanningApp() {
                         })}
                     </div>
                 </div>
-
                 <div className="diet-recommendations">
                     <h4>Рекомендации</h4>
                     <ul>
@@ -628,9 +579,7 @@ function MealPlanningApp() {
             </div>
 
             {error && (
-                <div className="error-message">
-                    {error}
-                </div>
+                <div className="error-message">{error}</div>
             )}
 
             {userData && (
@@ -688,5 +637,7 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
+
+
 
 

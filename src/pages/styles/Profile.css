@@ -1,212 +1,454 @@
-* {
-    box-sizing: border-box;
+/* Base styles */
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #f8faff 0%, #f0f4fa 100%);
+    color: #334155;
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
-body {
-    background-color: #f8f8f8;
-    padding: 16px;
-}
-
-/* Основной контейнер */
+/* Main container - full screen */
 .brainmeal-container {
-    max-width: 900px;
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 2450px 0 60px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Шапка приложения */
+/* Header styling */
 .brainmeal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid #eee;
+    padding: 20px 40px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .brainmeal-logo {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .brainmeal-logo-icon {
-    width: 32px;
-    height: 32px;
-    background-color: #4caf50;
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    color: #4f46e5;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 12px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-right: 10px;
+    justify-content: center;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brainmeal-logo-icon:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
 }
 
 .brainmeal-logo-icon svg {
-    width: 20px;
-    height: 20px;
-    color: white;
+    width: 26px;
+    height: 26px;
 }
 
-.brainmeal-title {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
+.brainmeal-app-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #4f46e5, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
-.brainmeal-logout-btn {
-    background-color: #ff7043;
-    color: white;
+.brainmeal-logout-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
+    background: linear-gradient(to right, #f9fafb, #f3f4f6);
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.brainmeal-logout-btn:hover {
-    background-color: #f4511e;
+.brainmeal-logout-button:hover {
+    background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+    color: #374151;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Основное содержимое */
+.brainmeal-logout-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Main content area */
 .brainmeal-content {
-    padding: 24px;
-}
-
-/* Секции */
-.brainmeal-section {
-    margin-bottom: 24px;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .brainmeal-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #1e293b, #334155);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 0;
     margin-bottom: 16px;
+    letter-spacing: -0.5px;
 }
 
-/* Строки формы */
+.brainmeal-description {
+    color: #64748b;
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    max-width: 800px;
+}
+
+.brainmeal-error {
+    background: linear-gradient(to right, #fee2e2, #fecaca);
+    color: #b91c1c;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    border-left: 5px solid #ef4444;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.brainmeal-error:before {
+    content: "⚠️";
+    margin-right: 16px;
+    font-size: 1.2rem;
+}
+
+/* Form styling */
+.brainmeal-form {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 50px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brainmeal-form:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+}
+
+.brainmeal-form-section {
+    padding: 35px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.brainmeal-form-section:last-child {
+    border-bottom: none;
+}
+
+.brainmeal-subsection-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 25px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.brainmeal-subsection-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    height: 70%;
+    width: 5px;
+    background: linear-gradient(to bottom, #4f46e5, #6366f1);
+    border-radius: 3px;
+}
+
 .brainmeal-form-row {
     display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 25px;
+    margin-bottom: 25px;
 }
 
-.brainmeal-form-row:last-child {
-    margin-bottom: 0;
-}
-
-/* Строка с 3 полями */
-.brainmeal-form-row-3 > .brainmeal-form-field {
-    flex: 1;
-}
-
-/* Строка с 2 полями */
-.brainmeal-form-row-2 > .brainmeal-form-field {
-    flex: 1;
-}
-
-/* Поля ввода */
 .brainmeal-form-field {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px 12px;
+    flex: 1;
+    margin-bottom: 25px;
 }
 
+/* Input elements */
 .brainmeal-label {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #475569;
+    font-size: 1rem;
 }
 
-.brainmeal-input {
+.brainmeal-input,
+.brainmeal-select,
+.brainmeal-textarea {
     width: 100%;
-    border: none;
+    padding: 14px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #334155;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.brainmeal-input:hover,
+.brainmeal-select:hover,
+.brainmeal-textarea:hover {
+    border-color: #94a3b8;
+}
+
+.brainmeal-input:focus,
+.brainmeal-select:focus,
+.brainmeal-textarea:focus {
     outline: none;
-    font-size: 14px;
-    color: #666;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
 }
 
-.brainmeal-input::placeholder {
-    color: #aaa;
+.brainmeal-textarea {
+    min-height: 120px;
+    resize: vertical;
 }
 
-/* Выбор диеты */
-.brainmeal-diet-options {
+.brainmeal-field-hint {
+    display: block;
+    margin-top: 10px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Checkbox styling */
+.brainmeal-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.brainmeal-checkbox-item {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.brainmeal-checkbox-item:hover {
+    background-color: #f1f5f9;
+    transform: translateY(-2px);
+}
+
+.brainmeal-checkbox-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    accent-color: #4f46e5;
+    cursor: pointer;
+}
+
+.brainmeal-checkbox-item label {
+    font-size: 0.95rem;
+    color: #475569;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Diet type options */
+.brainmeal-diet-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 35px;
 }
 
 .brainmeal-diet-option {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 25px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    background-color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.brainmeal-diet-option:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.08);
+}
+
+.brainmeal-diet-option.selected {
+    border-color: #4f46e5;
+    background: linear-gradient(to bottom right, #eff6ff, #dbeafe);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+}
+
+.brainmeal-diet-option.selected::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 35px 35px 0;
+    border-color: transparent #4f46e5 transparent transparent;
+}
+
+.brainmeal-diet-icon {
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
-}
-
-.brainmeal-radio {
-    margin-right: 10px;
-    accent-color: #ff7043;
-}
-
-.brainmeal-radio-label {
-    font-size: 14px;
-    color: #444;
-}
-
-/* Diet-specific fields */
-.diet-specific-field {
-    margin-top: 16px;
-    background-color: #fff9f7;
-    border: 1px solid #ffccbc;
-    max-width: 300px;
-}
-
-/* Error message */
-.error-message {
-    color: #d32f2f;
-    background-color: #ffebee;
-    padding: 8px 12px;
-    border-radius: 4px;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 50%;
     margin-bottom: 16px;
-    font-size: 14px;
+    color: #4f46e5;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* Кнопка генерации плана */
-.brainmeal-generate-btn {
-    width: 100%;
-    background-color: #ff7043;
+.brainmeal-diet-option.selected .brainmeal-diet-icon {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #2563eb;
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.2);
+    transform: scale(1.1);
+}
+
+.brainmeal-diet-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.brainmeal-diet-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+}
+
+.brainmeal-diet-description {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.diet-specific-field {
+    background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+    margin-top: 0;
+    margin-bottom: 35px;
+    animation: fadeIn 0.4s ease-out;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form action buttons */
+.brainmeal-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    padding: 25px 35px;
+    background: linear-gradient(to right, #f8fafc, #f1f5f9);
+    border-top: 1px solid #e2e8f0;
+}
+
+.brainmeal-button {
+    padding: 14px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.brainmeal-button.primary {
+    background: linear-gradient(to right, #4f46e5, #6366f1);
     color: white;
     border: none;
-    padding: 14px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.25);
 }
 
-.brainmeal-generate-btn:hover {
-    background-color: #f4511e;
+.brainmeal-button.primary:hover {
+    background: linear-gradient(to right, #4338ca, #4f46e5);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
 }
 
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-    .brainmeal-form-row {
-        flex-direction: column;
-    }
+.brainmeal-button.secondary {
+    background: linear-gradient(to right, #ffffff, #f9fafb);
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
 
-    .brainmeal-form-field {
-        margin-bottom: 8px;
-    }
+.brainmeal-button.secondary:hover {
+    background: linear-gradient(to right, #f9fafb, #f3f4f6);
+    color: #374151;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
 
-    .diet-specific-field {
-        max-width: 100%;
-    }
+.brainmeal-button.secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.brainmeal-button.secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
