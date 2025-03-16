@@ -1,74 +1,96 @@
-import  { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles/Login.css';
-import roundImg from './round.jpg';
-import imgpng from './img.png';
-import {useNavigate} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-
-const LoginPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log({ email, password });
-    };
-    const navigate = useNavigate();
-    const handelProfile = () =>{
-        navigate("/profile");
+const translations = {
+    en: {
+        loginTitle: "Login",
+        emailLabel: "Email",
+        emailPlaceholder: "Enter your email",
+        passwordLabel: "Password",
+        passwordPlaceholder: "Enter your password",
+        loginButton: "Login",
+        forgotPassword: "Forgot Password?",
+        register: "Register"
+    },
+    uk: {
+        loginTitle: "Вхід",
+        emailLabel: "Пошта",
+        emailPlaceholder: "Введіть вашу пошту",
+        passwordLabel: "Пароль",
+        passwordPlaceholder: "Введіть ваш пароль",
+        loginButton: "Увійти",
+        forgotPassword: "Забули пароль?",
+        register: "Реєстрація"
     }
+};
+
+const Login = () => {
+    const location = useLocation();
+
+    // Получаем тему из state или localStorage, по умолчанию dark
+    const themeFromNav = location.state?.darkMode !== undefined ?
+        (location.state.darkMode ? 'dark' : 'light') : null;
+    const savedTheme = themeFromNav || localStorage.getItem('theme') || 'dark';
+    const [theme, setTheme] = useState(savedTheme);
+
+    // Получаем язык из state или localStorage, по умолчанию английский
+    const langFromNav = location.state?.language || null;
+    const savedLanguage = langFromNav || localStorage.getItem('language') || 'en';
+    const [language, setLanguage] = useState(savedLanguage);
+
+    // Выбираем переводы в зависимости от языка
+    const t = translations[language];
+
+    const navigate = useNavigate();
+    const handleProfile = () => {
+        navigate("/profile");
+    };
+
+    useEffect(() => {
+        document.body.className = theme;
+        localStorage.setItem('theme', theme);
+        localStorage.setItem('language', language);
+    }, [theme, language]);
+
+    // Переключение темы
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
 
     return (
-        <div className="login-container">
-            {/* Левая часть с логотипом */}
-            <div className="left-section">
-                <img src={imgpng} alt="BrainMeal" className="logo" />
+        <div className={`login-container ${theme}`}>
+            <div className="login-box">
+                <h1 className="form-title">{t.loginTitle}</h1>
+                <div className="input-group">
+                    <label>{t.emailLabel}</label>
+                    <input type="text" placeholder={t.emailPlaceholder} />
+                </div>
+                <div className="input-group">
+                    <label>{t.passwordLabel}</label>
+                    <input type="password" placeholder={t.passwordPlaceholder} />
+                </div>
+                <button className="login-button" onClick={handleProfile}>
+                    {t.loginButton}
+                </button>
+                <div className="auth-links">
+                    <a href="#">{t.forgotPassword}</a> | <a href="#">{t.register}</a>
+                </div>
             </div>
 
-            {/* Правая часть с формой */}
-            <div className="right-section">
-                <img src={roundImg}alt="BrainMeal" className="logo-small" />
+            {/* Кнопка переключения темы */}
+            <button className="theme-toggle" onClick={toggleTheme}>
+                {theme === 'dark' ? '🌞' : '🌙'}
+            </button>
 
-                <form className="login-form" onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <label className="label-orange">Email</label>
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="input-field"
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <label className="label-black">Password</label>
-                        <input
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="input-field"
-                        />
-                    </div>
-
-                    <div className="checkbox-group">
-                        <input type="checkbox" id="personalizedMeal" className="custom-checkbox" />
-                        <label htmlFor="personalizedMeal" className="checkbox-label">Remember me</label>
-                    </div>
-
-                    <button  onClick={handelProfile} type="submit" className="login-button">
-                        Log In
-                    </button>
-                </form>
-            </div>
         </div>
     );
 };
 
-export default LoginPage;
+export default Login;
+
+
+
 
 
 

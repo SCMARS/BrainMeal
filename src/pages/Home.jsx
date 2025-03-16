@@ -1,16 +1,40 @@
-import  { useState, useEffect } from "react";
-import "./styles/WelcomeScreen.css";
-import roundImg from "./round.jpg";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "./styles/WelcomeScreen.css";
 
+// Объект с переводами для разных языков
+const translations = {
+    en: {
+        title: "Welcome to BrainMeal",
+        getStarted: "Get Started",
+        downloadGoogle: "Download Now from Google Play",
+        downloadApple: "Download Now from App Store",
+        pricing: "Pricing",
+        home: "Home",
+        contact: "Contact",
+        language: "Language:",
+        theme: "Theme:"
+    },
+    uk: {
+        title: "Ласкаво просимо до BrainMeal",
+        getStarted: "Почати",
+        downloadGoogle: "Завантажити з Google Play",
+        downloadApple: "Завантажити з App Store",
+        pricing: "Ціни",
+        home: "Головна",
+        contact: "Контакти",
+        language: "Мова:",
+        theme: "Тема:"
+    }
+};
 
-const LinkButton = ({ to, children }) => {
+const LinkButton = ({ to, children, className }) => {
     const handleClick = () => {
         window.open(to, '_blank', 'noopener,noreferrer');
     };
 
     return (
-        <button className="download-button" onClick={handleClick}>
+        <button className={className} onClick={handleClick}>
             {children}
         </button>
     );
@@ -18,54 +42,120 @@ const LinkButton = ({ to, children }) => {
 
 const WelcomeScreen = () => {
     const [loading, setLoading] = useState(true);
-    const [darkMode, setDarkMode] = useState(true);
+
+    // Получаем сохраненные настройки из localStorage или устанавливаем по умолчанию
+    const savedTheme = localStorage.getItem('theme');
+    const savedLanguage = localStorage.getItem('language');
+
+    const [darkMode, setDarkMode] = useState(savedTheme ? savedTheme === 'dark' : true);
+    const [language, setLanguage] = useState(savedLanguage || "en");
     const navigate = useNavigate();
+
+    // Выбираем переводы в зависимости от текущего языка
+    const t = translations[language];
 
     useEffect(() => {
         const timer = setTimeout(() => setLoading(false), 1500);
         return () => clearTimeout(timer);
     }, []);
 
+    // Сохраняем настройки при их изменении
+    useEffect(() => {
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+        localStorage.setItem('language', language);
+    }, [darkMode, language]);
+
+    // Функция перехода на страницу логина с передачей настроек
     const handleStart = () => {
-        navigate('/login');
+        // Сохраняем настройки в localStorage
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+        localStorage.setItem('language', language);
+
+        // Переходим на страницу логина с передачей настроек через state
+        navigate('/login', {
+            state: {
+                darkMode,
+                language
+            }
+        });
     };
 
+    // Переключение темы (темный/светлый фон)
     const toggleTheme = () => {
-        setDarkMode(!darkMode);
+        setDarkMode(prevMode => !prevMode);
     };
 
-    return (
-        loading ? (
+    // Переключение языка
+    const toggleLanguage = () => {
+        setLanguage(prevLang => (prevLang === "en" ? "uk" : "en"));
+    };
+
+    if (loading) {
+        return (
             <div className="preloader">
                 <div className="spinner"></div>
             </div>
-        ) : (
-            <div className={`welcome-container ${darkMode ? "dark" : "light"}`}>
-                <button className="theme-toggle-button" onClick={toggleTheme}>
-                    {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                </button>
-                <div className="welcome-content">
-                    <h1 className="welcome-title">Welcome to BrainMeal</h1>
-                    <p className="welcome-description">
-                        Discover personalized meal plans powered by AI. Simple, efficient, and
-                        perfectly tailored to your dietary needs.
-                    </p>
-                    <button className="start-button" onClick={handleStart}>Get Started</button>
-                    <div className="button-group">
-                        <LinkButton to="https://play.google.com/store">
-                            Download on Google Play
-                        </LinkButton>
-                        <LinkButton to="https://www.apple.com/app-store/">
-                            Download on the App Store
-                        </LinkButton>
+        );
+    }
+
+    return (
+        <div className={`welcome-container ${darkMode ? "dark" : "light"}`}>
+            {/* Header/Navigation */}
+            <header className="header">
+                <div className="logo">
+                    <span className="logo-icon">🍴</span>
+                    <span className="logo-text">BrainMeal</span>
+                </div>
+
+                <div className="controls">
+                    <div className="language-control">
+                        <span>{t.language}</span>
+                        <button
+                            className="language-dropdown"
+                            onClick={toggleLanguage}
+                        >
+                            {language === "en" ? "English" : "Українська"}
+                        </button>
                     </div>
-                    <div className="image-container">
-                        <img src={roundImg} alt="Illustration" />
+                    <div className="theme-control">
+                        <span>{t.theme}</span>
+                        <label className="switch">
+                            <input type="checkbox" checked={darkMode} onChange={toggleTheme} />
+                            <span className="slider round"></span>
+                        </label>
                     </div>
                 </div>
+            </header>
+
+            {/* Main Content */}
+            <div className="welcome-content">
+                <h1 className="welcome-title">{t.title}</h1>
+
+                <div className="cta-container">
+                    <button className="get-started-button" onClick={handleStart}>
+                        {t.getStarted}
+                    </button>
+                </div>
+
+                <div className="download-buttons">
+                    <LinkButton
+                        to="https://play.google.com/store"
+                        className="download-button google-play"
+                    >
+                        {t.downloadGoogle}
+                    </LinkButton>
+
+                    <LinkButton
+                        to="https://www.apple.com/app-store/"
+                        className="download-button app-store"
+                    >
+                        {t.downloadApple}
+                    </LinkButton>
+                </div>
             </div>
-        )
+        </div>
     );
 };
 
 export default WelcomeScreen;
+

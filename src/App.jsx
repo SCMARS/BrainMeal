@@ -14,8 +14,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/SelfData" element={<SelfData />} />
-                <Route path="/Profile" element={<Profile />} />
-                <Route path="MealPlan" element={<MealPlan />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/MealPlan" element={<MealPlan />} />
             </Routes>
         </Router>
     );

@@ -1,39 +1,196 @@
-/* Base styles */
+:root {
+    --bg-gradient-start: #ffffff;
+    --bg-gradient-end: #f0f0f0;
+    --text-color: #000000;
+
+    --header-bg: rgba(255, 255, 255, 0.8);
+    --header-border: rgba(255, 152, 0, 0.8);
+    --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+    --logo-icon-bg: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    --logo-icon-color: #ff9800;
+    --logo-icon-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+
+    --app-title-gradient: linear-gradient(to right, #ff9800, #ffb74d);
+
+    --button-bg: linear-gradient(to right, #f9fafb, #f3f4f6);
+    --button-color: #ff9800;
+    --button-shadow: 0 2px 10px rgba(255, 152, 0, 0.3);
+    --button-hover-bg: linear-gradient(to right, #f3f4f6, #e5e7eb);
+    --button-hover-color: #ffb74d;
+
+    --content-max-width: 100%; /* Changed from 1200px to 100% */
+
+    --form-bg: #ffffff;
+    --form-border: rgba(226, 232, 240, 0.7);
+    --form-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-text: #334155;
+
+    --checkbox-bg: #f8fafc;
+    --checkbox-hover-bg: #f1f5f9;
+
+    --diet-option-bg: #ffffff;
+    --diet-option-border: #e2e8f0;
+    --diet-option-hover-border: #cbd5e1;
+
+    --diet-option-selected-bg: linear-gradient(to bottom right, #eff6ff, #dbeafe);
+    --diet-option-selected-border: #ff9800;
+
+    --diet-icon-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --diet-icon-color: #ff9800;
+    --diet-icon-shadow: 0 4px 10px rgba(255, 152, 0, 0.2);
+
+    --subsection-title-color: #ff9800;
+
+    --error-bg: linear-gradient(to right, #fee2e2, #fecaca);
+    --error-text: #b91c1c;
+    --error-border: #ff9800;
+}
+
+/* Переопределение переменных для тёмной темы */
+.theme-dark {
+    --bg-gradient-start: #000000;
+    --bg-gradient-end: #1a1a1a;
+    --text-color: #ffffff;
+
+    --header-bg: rgba(0, 0, 0, 0.8);
+    --header-border: rgba(255, 152, 0, 0.8);
+    --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    --logo-icon-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    --logo-icon-color: #ff9800;
+    --logo-icon-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+
+    --app-title-gradient: linear-gradient(to right, #ff9800, #ffb74d);
+
+    --button-bg: linear-gradient(to right, #1a1a1a, #000000);
+    --button-color: #ff9800;
+    --button-shadow: 0 2px 10px rgba(255, 152, 0, 0.4);
+    --button-hover-bg: linear-gradient(to right, #000000, #1a1a1a);
+    --button-hover-color: #ffb74d;
+
+    --form-bg: #1a1a1a;
+    --form-border: rgba(255, 152, 0, 0.3);
+    --form-shadow: 0 8px 30px rgba(255, 152, 0, 0.1);
+
+    --input-bg: #333333;
+    --input-border: #ff9800;
+    --input-text: #ffffff;
+
+    --checkbox-bg: #333333;
+    --checkbox-hover-bg: #444444;
+
+    --diet-option-bg: #1a1a1a;
+    --diet-option-border: #ff9800;
+    --diet-option-hover-border: #ffb74d;
+
+    --diet-option-selected-bg: linear-gradient(to bottom right, #1a1a1a, #000000);
+    --diet-option-selected-border: #ff9800;
+
+    --diet-icon-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    --diet-icon-color: #ff9800;
+    --diet-icon-shadow: 0 4px 10px rgba(255, 152, 0, 0.2);
+
+    --subsection-title-color: #ff9800;
+
+    --error-bg: linear-gradient(to right, #7f1d1d, #991b1b);
+    --error-text: #fca5a5;
+    --error-border: #ff9800;
+}
+
+/* ----------------- */
+/* Основные стили */
+/* ----------------- */
+
 html, body {
     height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
     font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #f8faff 0%, #f0f4fa 100%);
-    color: #334155;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
+    transition: background 0.3s ease;
 }
 
-/* Main container - full screen */
+/* Контейнер, растянутый на весь экран */
 .brainmeal-container {
     width: 100%;
     min-height: 100vh;
+    height: auto; /* Changed from 100% to auto to avoid fixed height issues */
     margin: 0;
-    padding: 2450px 0 60px;
+    padding: 0 0 60px;
     display: flex;
     flex-direction: column;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
-/* Header styling */
+/* Шапка */
 .brainmeal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
     margin-bottom: 40px;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid var(--header-border);
+    background-color: var(--header-bg);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--header-shadow);
     position: sticky;
     top: 0;
     z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Added styles for the content area to ensure background coverage */
+.brainmeal-content {
+    flex: 1;
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: 0 40px;
+    box-sizing: border-box;
+    background: transparent; /* Ensure content area has transparent background */
+}
+
+/* Fix for any potential white background elements */
+.brainmeal-form {
+    background-color: var(--form-bg); /* This should pick up the dark theme value */
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brainmeal-form-section {
+    background-color: transparent; /* Make form sections transparent to show parent background */
+    transition: background-color 0.3s ease;
+}
+
+/* Ensure form action buttons have proper background */
+.brainmeal-form-actions {
+    background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
+    transition: background 0.3s ease;
+}
+
+/* Any other content areas that might need fixing */
+.diet-specific-field {
+    background: linear-gradient(to bottom right, var(--form-bg), var(--bg-gradient-end));
+    transition: background 0.3s ease;
+}
+
+/* Add this class to force full height */
+#root, #app, .app-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
 }
 
 .brainmeal-logo {
@@ -45,20 +202,20 @@ html, body {
 .brainmeal-logo-icon {
     width: 42px;
     height: 42px;
-    color: #4f46e5;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: var(--logo-icon-color);
+    background: var(--logo-icon-bg);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 8px;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    box-shadow: var(--logo-icon-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .brainmeal-logo-icon:hover {
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+    box-shadow: var(--logo-icon-hover-shadow);
 }
 
 .brainmeal-logo-icon svg {
@@ -69,11 +226,66 @@ html, body {
 .brainmeal-app-title {
     font-size: 1.8rem;
     font-weight: 800;
-    background: linear-gradient(to right, #4f46e5, #6366f1);
+    background: var(--app-title-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
     letter-spacing: -0.5px;
+}
+
+/* Стили для элементов управления в шапке */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.theme-toggle-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--button-color);
+    background: var(--button-bg);
+    color: var(--button-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--button-shadow);
+}
+
+.theme-toggle-button:hover {
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
+    transform: translateY(-2px);
+}
+
+.language-select {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--button-color);
+    background: var(--button-bg);
+    color: var(--button-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--button-shadow);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%23ff9800' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 30px;
+}
+
+.language-select:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-color);
+    transform: translateY(-2px);
 }
 
 .brainmeal-logout-button {
@@ -83,20 +295,20 @@ html, body {
     padding: 12px 20px;
     border-radius: 10px;
     border: none;
-    background: linear-gradient(to right, #f9fafb, #f3f4f6);
-    color: #4b5563;
+    background: var(--button-bg);
+    color: var(--button-color);
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--button-shadow);
 }
 
 .brainmeal-logout-button:hover {
-    background: linear-gradient(to right, #f3f4f6, #e5e7eb);
-    color: #374151;
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--button-shadow);
 }
 
 .brainmeal-logout-button svg {
@@ -104,19 +316,20 @@ html, body {
     height: 18px;
 }
 
-/* Main content area */
+/* Область основного контента */
 .brainmeal-content {
     flex: 1;
-    width: 100%;
-    max-width: 1200px;
+    width: 100%; /* Full width */
+    max-width: var(--content-max-width);
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 40px; /* Increased side padding */
+    box-sizing: border-box; /* Includes padding in width calculation */
 }
 
 .brainmeal-section-title {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(to right, #1e293b, #334155);
+    background: var(--app-title-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-top: 0;
@@ -125,23 +338,24 @@ html, body {
 }
 
 .brainmeal-description {
-    color: #64748b;
+    color: var(--text-color);
     font-size: 1.1rem;
     margin-bottom: 40px;
-    max-width: 800px;
+    max-width: 100%; /* Changed from 800px to 100% */
+    opacity: 0.8;
 }
 
 .brainmeal-error {
-    background: linear-gradient(to right, #fee2e2, #fecaca);
-    color: #b91c1c;
+    background: var(--error-bg);
+    color: var(--error-text);
     padding: 18px;
     border-radius: 12px;
     margin-bottom: 30px;
     font-size: 1rem;
     display: flex;
     align-items: center;
-    border-left: 5px solid #ef4444;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+    border-left: 5px solid var(--error-border);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.5);
 }
 
 .brainmeal-error:before {
@@ -150,25 +364,27 @@ html, body {
     font-size: 1.2rem;
 }
 
-/* Form styling */
+/* Стили для формы */
 .brainmeal-form {
-    background-color: #ffffff;
+    background-color: var(--form-bg);
     border-radius: 16px;
-    border: 1px solid rgba(226, 232, 240, 0.7);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--form-border);
+    box-shadow: var(--form-shadow);
     overflow: hidden;
     margin-bottom: 50px;
+    width: 100%; /* Added to ensure full width */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .brainmeal-form:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 35px rgba(255, 152, 0, 0.3);
 }
 
 .brainmeal-form-section {
     padding: 35px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--form-border);
+    transition: background-color 0.3s ease;
 }
 
 .brainmeal-form-section:last-child {
@@ -178,7 +394,7 @@ html, body {
 .brainmeal-subsection-title {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--subsection-title-color);
     margin-top: 0;
     margin-bottom: 25px;
     position: relative;
@@ -192,7 +408,7 @@ html, body {
     top: 5px;
     height: 70%;
     width: 5px;
-    background: linear-gradient(to bottom, #4f46e5, #6366f1);
+    background: linear-gradient(to bottom, var(--button-color), var(--button-hover-color));
     border-radius: 3px;
 }
 
@@ -200,19 +416,19 @@ html, body {
     display: flex;
     gap: 25px;
     margin-bottom: 25px;
+    flex-wrap: wrap;
 }
-
 .brainmeal-form-field {
     flex: 1;
     margin-bottom: 25px;
 }
 
-/* Input elements */
+/* Стили для элементов ввода */
 .brainmeal-label {
     display: block;
     margin-bottom: 10px;
     font-weight: 600;
-    color: #475569;
+    color: var(--button-color);
     font-size: 1rem;
 }
 
@@ -221,27 +437,27 @@ html, body {
 .brainmeal-textarea {
     width: 100%;
     padding: 14px 18px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     font-size: 1rem;
-    color: #334155;
-    background-color: #ffffff;
+    color: var(--input-text);
+    background-color: var(--input-bg);
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
 }
 
 .brainmeal-input:hover,
 .brainmeal-select:hover,
 .brainmeal-textarea:hover {
-    border-color: #94a3b8;
+    border-color: var(--button-hover-color);
 }
 
 .brainmeal-input:focus,
 .brainmeal-select:focus,
 .brainmeal-textarea:focus {
     outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    border-color: var(--button-color);
+    box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.3);
 }
 
 .brainmeal-textarea {
@@ -252,12 +468,12 @@ html, body {
 .brainmeal-field-hint {
     display: block;
     margin-top: 10px;
-    color: #94a3b8;
+    color: var(--button-hover-color);
     font-size: 0.9rem;
     font-style: italic;
 }
 
-/* Checkbox styling */
+/* Стили для чекбоксов */
 .brainmeal-checkbox-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -269,13 +485,13 @@ html, body {
     display: flex;
     align-items: center;
     padding: 10px 15px;
-    background-color: #f8fafc;
+    background-color: var(--checkbox-bg);
     border-radius: 8px;
     transition: all 0.2s ease;
 }
 
 .brainmeal-checkbox-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--checkbox-hover-bg);
     transform: translateY(-2px);
 }
 
@@ -283,18 +499,18 @@ html, body {
     width: 20px;
     height: 20px;
     margin-right: 12px;
-    accent-color: #4f46e5;
+    accent-color: var(--button-color);
     cursor: pointer;
 }
 
 .brainmeal-checkbox-item label {
     font-size: 0.95rem;
-    color: #475569;
+    color: var(--button-color);
     cursor: pointer;
     font-weight: 500;
 }
 
-/* Diet type options */
+/* Опции выбора диеты */
 .brainmeal-diet-options {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -303,26 +519,26 @@ html, body {
 }
 
 .brainmeal-diet-option {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--diet-option-border);
     border-radius: 14px;
     padding: 25px;
     cursor: pointer;
     transition: all 0.4s ease;
-    background-color: #ffffff;
+    background-color: var(--diet-option-bg);
     position: relative;
     overflow: hidden;
 }
 
 .brainmeal-diet-option:hover {
-    border-color: #cbd5e1;
+    border-color: var(--diet-option-hover-border);
     transform: translateY(-5px);
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 25px rgba(255, 152, 0, 0.3);
 }
 
 .brainmeal-diet-option.selected {
-    border-color: #4f46e5;
-    background: linear-gradient(to bottom right, #eff6ff, #dbeafe);
-    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.2);
+    border-color: var(--diet-option-selected-border);
+    background: var(--diet-option-selected-bg);
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
 }
 
 .brainmeal-diet-option.selected::after {
@@ -334,7 +550,7 @@ html, body {
     height: 0;
     border-style: solid;
     border-width: 0 35px 35px 0;
-    border-color: transparent #4f46e5 transparent transparent;
+    border-color: transparent var(--diet-option-selected-border) transparent transparent;
 }
 
 .brainmeal-diet-icon {
@@ -343,18 +559,18 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: var(--diet-icon-bg);
     border-radius: 50%;
     margin-bottom: 16px;
-    color: #4f46e5;
+    color: var(--diet-icon-color);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--diet-icon-shadow);
 }
 
 .brainmeal-diet-option.selected .brainmeal-diet-icon {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    color: #2563eb;
-    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.2);
+    background: linear-gradient(135deg, var(--form-bg) 0%, var(--bg-gradient-end) 100%);
+    color: var(--button-hover-color);
+    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
     transform: scale(1.1);
 }
 
@@ -366,26 +582,27 @@ html, body {
 .brainmeal-diet-title {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--button-color);
     margin: 0 0 10px 0;
 }
 
 .brainmeal-diet-description {
     font-size: 0.95rem;
-    color: #64748b;
+    color: var(--text-color);
     margin: 0;
     line-height: 1.6;
+    opacity: 0.8;
 }
 
 .diet-specific-field {
-    background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
+    background: linear-gradient(to bottom right, var(--form-bg), var(--bg-gradient-end));
     border-radius: 12px;
     padding: 25px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--form-border);
     margin-top: 0;
     margin-bottom: 35px;
     animation: fadeIn 0.4s ease-out;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
 }
 
 @keyframes fadeIn {
@@ -393,14 +610,14 @@ html, body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Form action buttons */
+/* Кнопки действий в форме */
 .brainmeal-form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 20px;
     padding: 25px 35px;
-    background: linear-gradient(to right, #f8fafc, #f1f5f9);
-    border-top: 1px solid #e2e8f0;
+    background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
+    border-top: 1px solid var(--form-border);
 }
 
 .brainmeal-button {
@@ -417,38 +634,160 @@ html, body {
 }
 
 .brainmeal-button.primary {
-    background: linear-gradient(to right, #4f46e5, #6366f1);
+    background: linear-gradient(to right, var(--button-color), var(--button-hover-color));
     color: white;
     border: none;
-    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.25);
+    box-shadow: var(--button-shadow);
 }
 
 .brainmeal-button.primary:hover {
-    background: linear-gradient(to right, #4338ca, #4f46e5);
     transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
 }
 
 .brainmeal-button.secondary {
-    background: linear-gradient(to right, #ffffff, #f9fafb);
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    background: var(--button-bg);
+    color: var(--button-color);
+    border: 1px solid var(--button-color);
+    box-shadow: var(--button-shadow);
 }
 
 .brainmeal-button.secondary:hover {
-    background: linear-gradient(to right, #f9fafb, #f3f4f6);
-    color: #374151;
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
 }
 
+.brainmeal-button.primary:active,
 .brainmeal-button.secondary:active {
     transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
 }
 
-.brainmeal-button.secondary:disabled {
+.brainmeal-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+.brainmeal-submit-button {
+    padding: 14px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(to right, var(--button-color), var(--button-hover-color));
+    color: white;
+    border: none;
+    box-shadow: var(--button-shadow);
+}
+
+.brainmeal-submit-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+}
+
+.brainmeal-submit-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+}
+
+.brainmeal-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--button-shadow);
+}
+
+/* Optional: Add a loading indicator */
+.brainmeal-submit-button.loading {
+    position: relative;
+}
+
+.brainmeal-submit-button.loading::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 992px) {
+    .brainmeal-header {
+        padding: 15px 25px;
+    }
+
+    .brainmeal-form-section {
+        padding: 25px;
+    }
+
+    .brainmeal-form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .brainmeal-diet-options {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .brainmeal-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .brainmeal-diet-options {
+        grid-template-columns: 1fr;
+    }
+
+    .brainmeal-checkbox-group {
+        grid-template-columns: 1fr;
+    }
+
+    .brainmeal-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .brainmeal-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .brainmeal-section-title {
+        font-size: 1.5rem;
+    }
+
+    .brainmeal-description {
+        font-size: 1rem;
+    }
+
+    .brainmeal-form-section {
+        padding: 20px;
+    }
+
+    .brainmeal-diet-option {
+        padding: 20px;
+    }
 }

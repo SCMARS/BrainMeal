@@ -1,11 +1,137 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from "react-router-dom";
 import './styles/Profile.css';
-import { useNavigate } from "react-router-dom";
+
+const translations = {
+    en: {
+        profileSettings: "Profile Settings",
+        profileDescription: "Please provide your information to create a personalized meal plan.",
+        personalInformation: "Personal Information",
+        weight: "Weight (kg) *",
+        height: "Height (cm) *",
+        age: "Age *",
+        gender: "Gender *",
+        selectGender: "Select gender",
+        male: "Male",
+        female: "Female",
+        other: "Other",
+        activityLevel: "Activity Level",
+        dietType: "Diet Type",
+        basic: "Basic",
+        balancedNutrition: "Balanced nutrition for everyday",
+        weightLoss: "Weight Loss",
+        weightLossDesc: "Calorie deficit for healthy weight loss",
+        weightGain: "Weight Gain",
+        weightGainDesc: "Calorie surplus for muscle building",
+        highProtein: "High Protein",
+        highProteinDesc: "Protein-focused nutrition for athletes",
+        dietPreferences: "Diet Preferences",
+        calorieTarget: "Calorie Target (kcal/day)",
+        mealFrequency: "Meal Frequency",
+        dietaryRestrictions: "Dietary Restrictions",
+        allergies: "Allergies",
+        preferredCuisines: "Preferred Cuisines",
+        currentMealHabits: "Current Meal Habits",
+        breakfast: "Breakfast",
+        lunch: "Lunch",
+        dinner: "Dinner",
+        snacks: "Snacks",
+        generateMealPlan: "Generate Meal Plan",
+        generating: "Generating...",
+        logout: "Logout",
+        theme: "Theme",
+        dark: "Dark",
+        light: "Light",
+        language: "Language",
+        describeMeals: "Describe your typical meals below to help us better understand your preferences.",
+        sedentary: "Sedentary (little or no exercise)",
+        lightlyActive: "Lightly active (light exercise 1-3 days/week)",
+        moderatelyActive: "Moderately active (moderate exercise 3-5 days/week)",
+        veryActive: "Very active (hard exercise 6-7 days/week)",
+        extremelyActive: "Extremely active (very hard exercise & physical job)"
+    },
+    uk: {
+        profileSettings: "Налаштування профілю",
+        profileDescription: "Будь ласка, надайте вашу інформацію для створення персоналізованого плану харчування.",
+        personalInformation: "Особиста інформація",
+        weight: "Вага (кг) *",
+        height: "Зріст (см) *",
+        age: "Вік *",
+        gender: "Стать *",
+        selectGender: "Оберіть стать",
+        male: "Чоловіча",
+        female: "Жіноча",
+        other: "Інше",
+        activityLevel: "Рівень активності",
+        dietType: "Тип дієти",
+        basic: "Базова",
+        balancedNutrition: "Збалансоване харчування для кожного дня",
+        weightLoss: "Схуднення",
+        weightLossDesc: "Дефіцит калорій для здорового схуднення",
+        weightGain: "Набір ваги",
+        weightGainDesc: "Надлишок калорій для набору м'язової маси",
+        highProtein: "Багато білка",
+        highProteinDesc: "Харчування з високим вмістом білка для спортсменів",
+        dietPreferences: "Дієтичні переваги",
+        calorieTarget: "Цільові калорії (ккал/день)",
+        mealFrequency: "Кількість прийомів їжі",
+        dietaryRestrictions: "Дієтичні обмеження",
+        allergies: "Алергії",
+        preferredCuisines: "Улюблені кухні",
+        currentMealHabits: "Поточні звички харчування",
+        breakfast: "Сніданок",
+        lunch: "Обід",
+        dinner: "Вечеря",
+        snacks: "Перекуси",
+        generateMealPlan: "Створити план харчування",
+        generating: "Генерація...",
+        logout: "Вийти",
+        theme: "Тема",
+        dark: "Темна",
+        light: "Світла",
+        language: "Мова",
+        describeMeals: "Опишіть ваші типові прийоми їжі нижче, щоб ми краще зрозуміли ваші уподобання.",
+        sedentary: "Малорухливий (мало або зовсім немає фізичних навантажень)",
+        lightlyActive: "Легка активність (легкі фізичні вправи 1-3 дні на тиждень)",
+        moderatelyActive: "Помірна активність (помірні фізичні вправи 3-5 днів на тиждень)",
+        veryActive: "Висока активність (інтенсивні фізичні вправи 6-7 днів на тиждень)",
+        extremelyActive: "Надзвичайна активність (дуже інтенсивні вправи і фізична робота)"
+    }
+};
 
 const Profile = () => {
+    const location = useLocation();
     const navigate = useNavigate();
 
-    // Основное состояние пользователя с дополнительными параметрами диеты
+    // Устанавливаем тему и язык из localStorage или переданных параметров
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+        return location.state?.darkMode || false;
+    });
+
+    const [language, setLanguage] = useState(() => {
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) {
+            return savedLanguage;
+        }
+        return location.state?.language || 'en';
+    });
+
+    const t = translations[language];
+
+    // Сохраняем выбранную тему и язык
+    useEffect(() => {
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    }, [darkMode]);
+
+    useEffect(() => {
+        localStorage.setItem('language', language);
+    }, [language]);
+
+    // Основное состояние пользователя
     const [userData, setUserData] = useState({
         weight: '',
         age: '',
@@ -19,20 +145,20 @@ const Profile = () => {
         snacks: '',
         targetWeight: '',
         targetGain: '',
-        proteinTarget: '', // Для диеты "protein"
-        activityLevel: 'moderate', // Уровень активности
-        dietRestrictions: [], // Ограничения в питании
-        allergies: [], // Аллергии
-        mealFrequency: 3, // Количество приемов пищи в день
-        calorieTarget: '', // Целевое количество калорий (авторасчет или ручной ввод)
+        proteinTarget: '',
+        activityLevel: 'moderate',
+        dietRestrictions: [],
+        allergies: [],
+        mealFrequency: 3,
+        calorieTarget: '',
         waterIntake: '',
-        preferredCuisines: [] // Предпочитаемые кухни
+        preferredCuisines: []
     });
 
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Инициализация сохраненных данных при монтировании компонента
+    // Загружаем сохраненные данные пользователя
     useEffect(() => {
         const savedData = localStorage.getItem('userData');
         if (savedData) {
@@ -49,32 +175,46 @@ const Profile = () => {
         navigate('/login');
     };
 
-    // Опции для расчета калорий с учетом уровня активности
+    const toggleTheme = () => {
+        setDarkMode(prev => !prev);
+    };
+
+    const changeLanguage = (lang) => {
+        setLanguage(lang);
+    };
+
+    const getActivityLevelLabel = (value) => {
+        switch(value) {
+            case 'sedentary': return t.sedentary;
+            case 'light': return t.lightlyActive;
+            case 'moderate': return t.moderatelyActive;
+            case 'active': return t.veryActive;
+            case 'extreme': return t.extremelyActive;
+            default: return '';
+        }
+    };
+
     const activityLevels = [
-        { value: 'sedentary', label: 'Sedentary (little or no exercise)', factor: 1.2 },
-        { value: 'light', label: 'Lightly active (light exercise 1-3 days/week)', factor: 1.375 },
-        { value: 'moderate', label: 'Moderately active (moderate exercise 3-5 days/week)', factor: 1.55 },
-        { value: 'active', label: 'Very active (hard exercise 6-7 days/week)', factor: 1.725 },
-        { value: 'extreme', label: 'Extremely active (very hard exercise & physical job)', factor: 1.9 }
+        { value: 'sedentary', factor: 1.2 },
+        { value: 'light', factor: 1.375 },
+        { value: 'moderate', factor: 1.55 },
+        { value: 'active', factor: 1.725 },
+        { value: 'extreme', factor: 1.9 }
     ];
 
-    // Список распространенных диетических ограничений
     const dietaryRestrictions = [
         'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo', 'Low FODMAP', 'Sugar-Free'
     ];
 
-    // Список распространенных аллергенов
     const commonAllergies = [
         'Nuts', 'Shellfish', 'Eggs', 'Milk', 'Soy', 'Wheat', 'Fish', 'Sesame'
     ];
 
-    // Список популярных кухонь
     const cuisineOptions = [
         'Italian', 'Chinese', 'Japanese', 'Mexican', 'Indian',
         'Mediterranean', 'French', 'Thai', 'American', 'Middle Eastern'
     ];
 
-    // Универсальный обработчик для инпутов
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         if (type === 'checkbox') {
@@ -111,7 +251,6 @@ const Profile = () => {
         }
     };
 
-    // Изменение типа диеты
     const handleDietChange = (diet) => {
         setUserData(prev => ({
             ...prev,
@@ -119,7 +258,6 @@ const Profile = () => {
         }));
     };
 
-    // Автоматический расчет дневной потребности в калориях по формуле Mifflin-St Jeor
     useEffect(() => {
         if (userData.weight && userData.height && userData.age && userData.gender) {
             try {
@@ -142,7 +280,6 @@ const Profile = () => {
                 } else if (userData.dietType === 'weightgain') {
                     calorieTarget = tdee + 500;
                 }
-                // Обновляем поле калорий, если оно не заполнено вручную
                 if (!userData.calorieTarget) {
                     setUserData(prev => ({
                         ...prev,
@@ -153,108 +290,17 @@ const Profile = () => {
                 console.error("Error calculating calories:", e);
             }
         }
-    }, [userData.weight, userData.height, userData.age, userData.gender, userData.activityLevel, userData.dietType]);
+    }, [userData.weight, userData.height, userData.age, userData.gender, userData.dietType, userData.activityLevel, userData.calorieTarget]);
 
-    // Валидация введенных данных
-    const validateData = () => {
-        const { weight, age, height, gender } = userData;
-        if (!weight || !age || !height || !gender) {
-            return "Please fill in all required fields: weight, age, height, and gender.";
-        }
-        if (parseFloat(weight) < 35 || parseFloat(weight) > 300) {
-            return "Please enter a valid weight between 35-300 kg.";
-        }
-        if (parseInt(age) < 15 || parseInt(age) > 120) {
-            return "Please enter a valid age between 15-120 years.";
-        }
-        if (parseFloat(height) < 100 || parseFloat(height) > 250) {
-            return "Please enter a valid height between 100-250 cm.";
-        }
-        if (userData.dietType === 'weightloss') {
-            if (!userData.targetWeight) {
-                return "Please specify your target weight for the weight loss diet.";
-            }
-            const currentWeight = parseFloat(userData.weight);
-            const targetWeight = parseFloat(userData.targetWeight);
-            if (targetWeight >= currentWeight) {
-                return "Target weight should be less than your current weight for a weight loss diet.";
-            }
-            if (targetWeight < currentWeight * 0.75) {
-                return "For healthy weight loss, your target should not be less than 75% of your current weight.";
-            }
-        }
-        if (userData.dietType === 'weightgain') {
-            if (!userData.targetGain) {
-                return "Please specify your target weight gain for the weight gain diet.";
-            }
-            const targetGain = parseFloat(userData.targetGain);
-            if (targetGain <= 0) {
-                return "Target gain should be a positive number.";
-            }
-            if (targetGain > 20) {
-                return "For healthy weight gain, your target should not exceed 20 kg.";
-            }
-        }
-        return "";
-    };
-
-    // Подготовка данных для отправки нейросети (или API)
-    const prepareDataForAPI = () => {
-        const apiData = {
-            userMetrics: {
-                weight: parseFloat(userData.weight),
-                age: parseInt(userData.age),
-                gender: userData.gender,
-                height: parseFloat(userData.height),
-                activityLevel: userData.activityLevel
-            },
-            dietPreferences: {
-                dietType: userData.dietType,
-                restrictions: userData.dietRestrictions || [],
-                allergies: userData.allergies || [],
-                cuisinePreferences: userData.preferredCuisines || [],
-                mealFrequency: parseInt(userData.mealFrequency)
-            },
-            goals: {
-                calorieTarget: userData.calorieTarget ? parseInt(userData.calorieTarget) : null,
-                targetWeight: userData.targetWeight ? parseFloat(userData.targetWeight) : null,
-                targetGain: userData.targetGain ? parseFloat(userData.targetGain) : null
-            },
-            currentMeals: {
-                breakfast: userData.breakfast,
-                lunch: userData.lunch,
-                dinner: userData.dinner,
-                snacks: userData.snacks
-            }
-        };
-        return apiData;
-    };
-
-    // Генерация плана питания: данные сохраняются, затем переходим на страницу с планом питания,
-    // где нейронка (через сервис) получит все подготовленные данные.
-    const handleGenerateMealPlan = async () => {
-        const validationError = validateData();
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
+    const handleGenerateMealPlan = () => {
+        // Пример логики генерации плана питания
         setLoading(true);
-        try {
-            // Сохраняем данные пользователя в localStorage
-            localStorage.setItem('userData', JSON.stringify(userData));
-            // Подготавливаем данные для нейросети/API
-            const apiData = prepareDataForAPI();
-            localStorage.setItem('preparedData', JSON.stringify(apiData));
-            // Переходим на страницу плана питания
-            navigate("/MealPlan");
-        } catch (err) {
-            setError("Failed to generate meal plan: " + err.message);
-        } finally {
+        setTimeout(() => {
             setLoading(false);
-        }
+            navigate("/MealPlan");
+        }, 500);
     };
 
-    // Отрисовка дополнительных полей для выбранного типа диеты
     const renderDietSpecificFields = () => {
         switch(userData.dietType) {
             case 'weightloss':
@@ -276,19 +322,20 @@ const Profile = () => {
                 );
             case 'weightgain':
                 return (
-                    <div className="brainmeal-form-field diet-specific-field">
-                        <label className="brainmeal-label">Desired Weight Gain (kg)</label>
-                        <input
-                            type="number"
-                            name="targetGain"
-                            className="brainmeal-input"
-                            placeholder="Specify desired weight gain"
-                            value={userData.targetGain}
+                    <div className="brainmeal-form-field">
+                        <label className="brainmeal-label">{t.activityLevel}</label>
+                        <select
+                            name="activityLevel"
+                            className="brainmeal-select"
+                            value={userData.activityLevel}
                             onChange={handleChange}
-                        />
-                        <small className="brainmeal-field-hint">
-                            Recommended: no more than 0.25-0.5 kg gain per week
-                        </small>
+                        >
+                            {activityLevels.map(level => (
+                                <option key={level.value} value={level.value}>
+                                    {getActivityLevelLabel(level.value)}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 );
             case 'protein':
@@ -314,7 +361,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="brainmeal-container">
+        <div className={`brainmeal-container ${darkMode ? 'theme-dark' : 'theme-light'}`}>
             <header className="brainmeal-header">
                 <div className="brainmeal-logo">
                     <div className="brainmeal-logo-icon">
@@ -325,29 +372,42 @@ const Profile = () => {
                     </div>
                     <h1 className="brainmeal-app-title">BrainMeal</h1>
                 </div>
-                <button onClick={logout} className="brainmeal-logout-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
-                    </svg>
-                    Logout
-                </button>
+                <div className="header-controls">
+                    {/* Переключение темы */}
+                    <button onClick={toggleTheme} className="theme-toggle-button">
+                        {darkMode ? t.light : t.dark}
+                    </button>
+                    {/* Выбор языка */}
+                    <select
+                        value={language}
+                        onChange={(e) => changeLanguage(e.target.value)}
+                        className="language-select"
+                    >
+                        <option value="en">EN</option>
+                        <option value="uk">UK</option>
+                    </select>
+                    <button onClick={logout} className="brainmeal-logout-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                        </svg>
+                        {t.logout}
+                    </button>
+                </div>
             </header>
 
             <main className="brainmeal-content">
-                <h2 className="brainmeal-section-title">Profile Settings</h2>
-                <p className="brainmeal-description">
-                    Please provide your information to create a personalized meal plan.
-                </p>
+                <h2 className="brainmeal-section-title">{t.profileSettings}</h2>
+                <p className="brainmeal-description">{t.profileDescription}</p>
 
                 {error && <div className="brainmeal-error">{error}</div>}
 
                 <form className="brainmeal-form">
-                    {/* Личные данные */}
+                    {/* Personal Information */}
                     <section className="brainmeal-form-section">
-                        <h3 className="brainmeal-subsection-title">Personal Information</h3>
+                        <h3 className="brainmeal-subsection-title">{t.personalInformation}</h3>
                         <div className="brainmeal-form-row">
                             <div className="brainmeal-form-field">
-                                <label className="brainmeal-label">Weight (kg) *</label>
+                                <label className="brainmeal-label">{t.weight}</label>
                                 <input
                                     type="number"
                                     name="weight"
@@ -359,7 +419,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="brainmeal-form-field">
-                                <label className="brainmeal-label">Height (cm) *</label>
+                                <label className="brainmeal-label">{t.height}</label>
                                 <input
                                     type="number"
                                     name="height"
@@ -374,7 +434,7 @@ const Profile = () => {
 
                         <div className="brainmeal-form-row">
                             <div className="brainmeal-form-field">
-                                <label className="brainmeal-label">Age *</label>
+                                <label className="brainmeal-label">{t.age}</label>
                                 <input
                                     type="number"
                                     name="age"
@@ -386,7 +446,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="brainmeal-form-field">
-                                <label className="brainmeal-label">Gender *</label>
+                                <label className="brainmeal-label">{t.gender}</label>
                                 <select
                                     name="gender"
                                     className="brainmeal-select"
@@ -394,16 +454,16 @@ const Profile = () => {
                                     onChange={handleChange}
                                     required
                                 >
-                                    <option value="">Select gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
+                                    <option value="">{t.selectGender}</option>
+                                    <option value="male">{t.male}</option>
+                                    <option value="female">{t.female}</option>
+                                    <option value="other">{t.other}</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Activity Level</label>
+                            <label className="brainmeal-label">{t.activityLevel}</label>
                             <select
                                 name="activityLevel"
                                 className="brainmeal-select"
@@ -412,26 +472,26 @@ const Profile = () => {
                             >
                                 {activityLevels.map(level => (
                                     <option key={level.value} value={level.value}>
-                                        {level.label}
+                                        {getActivityLevelLabel(level.value)}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </section>
 
-                    {/* Выбор типа диеты */}
+                    {/* Diet Type */}
                     <section className="brainmeal-form-section">
-                        <h3 className="brainmeal-subsection-title">Diet Type</h3>
+                        <h3 className="brainmeal-subsection-title">{t.dietType}</h3>
                         <div className="brainmeal-diet-options">
                             <div className={`brainmeal-diet-option ${userData.dietType === 'basic' ? 'selected' : ''}`}
                                  onClick={() => handleDietChange('basic')}>
                                 <div className="brainmeal-diet-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M3 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                                        <path d="M3 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
                                     </svg>
                                 </div>
-                                <h4 className="brainmeal-diet-title">Basic</h4>
-                                <p className="brainmeal-diet-description">Balanced nutrition for everyday</p>
+                                <h4 className="brainmeal-diet-title">{t.basic}</h4>
+                                <p className="brainmeal-diet-description">{t.balancedNutrition}</p>
                             </div>
 
                             <div className={`brainmeal-diet-option ${userData.dietType === 'weightloss' ? 'selected' : ''}`}
@@ -441,8 +501,8 @@ const Profile = () => {
                                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                                     </svg>
                                 </div>
-                                <h4 className="brainmeal-diet-title">Weight Loss</h4>
-                                <p className="brainmeal-diet-description">Calorie deficit for healthy weight loss</p>
+                                <h4 className="brainmeal-diet-title">{t.weightLoss}</h4>
+                                <p className="brainmeal-diet-description">{t.weightLossDesc}</p>
                             </div>
 
                             <div className={`brainmeal-diet-option ${userData.dietType === 'weightgain' ? 'selected' : ''}`}
@@ -452,8 +512,8 @@ const Profile = () => {
                                         <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
                                     </svg>
                                 </div>
-                                <h4 className="brainmeal-diet-title">Weight Gain</h4>
-                                <p className="brainmeal-diet-description">Calorie surplus for muscle building</p>
+                                <h4 className="brainmeal-diet-title">{t.weightGain}</h4>
+                                <p className="brainmeal-diet-description">{t.weightGainDesc}</p>
                             </div>
 
                             <div className={`brainmeal-diet-option ${userData.dietType === 'protein' ? 'selected' : ''}`}
@@ -463,18 +523,18 @@ const Profile = () => {
                                         <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
                                     </svg>
                                 </div>
-                                <h4 className="brainmeal-diet-title">High Protein</h4>
-                                <p className="brainmeal-diet-description">Protein-focused nutrition for athletes</p>
+                                <h4 className="brainmeal-diet-title">{t.highProtein}</h4>
+                                <p className="brainmeal-diet-description">{t.highProteinDesc}</p>
                             </div>
                         </div>
                         {renderDietSpecificFields()}
                     </section>
 
-                    {/* Пищевые предпочтения */}
+                    {/* Diet Preferences */}
                     <section className="brainmeal-form-section">
-                        <h3 className="brainmeal-subsection-title">Diet Preferences</h3>
+                        <h3 className="brainmeal-subsection-title">{t.dietPreferences}</h3>
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Calorie Target (kcal/day)</label>
+                            <label className="brainmeal-label">{t.calorieTarget}</label>
                             <input
                                 type="number"
                                 name="calorieTarget"
@@ -489,7 +549,7 @@ const Profile = () => {
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Meal Frequency</label>
+                            <label className="brainmeal-label">{t.mealFrequency}</label>
                             <select
                                 name="mealFrequency"
                                 className="brainmeal-select"
@@ -504,7 +564,7 @@ const Profile = () => {
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Dietary Restrictions</label>
+                            <label className="brainmeal-label">{t.dietaryRestrictions}</label>
                             <div className="brainmeal-checkbox-group">
                                 {dietaryRestrictions.map(restriction => (
                                     <div key={restriction} className="brainmeal-checkbox-item">
@@ -522,7 +582,7 @@ const Profile = () => {
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Allergies</label>
+                            <label className="brainmeal-label">{t.allergies}</label>
                             <div className="brainmeal-checkbox-group">
                                 {commonAllergies.map(allergy => (
                                     <div key={allergy} className="brainmeal-checkbox-item">
@@ -540,7 +600,7 @@ const Profile = () => {
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Preferred Cuisines</label>
+                            <label className="brainmeal-label">{t.preferredCuisines}</label>
                             <div className="brainmeal-checkbox-group">
                                 {cuisineOptions.map(cuisine => (
                                     <div key={cuisine} className="brainmeal-checkbox-item">
@@ -558,59 +618,56 @@ const Profile = () => {
                         </div>
                     </section>
 
-                    {/* Текущие пищевые привычки */}
+                    {/* Current Meal Habits */}
                     <section className="brainmeal-form-section">
-                        <h3 className="brainmeal-subsection-title">Current Meal Habits</h3>
-                        <p className="brainmeal-description">
-                            Describe your current meals to receive more personalized recommendations.
-                        </p>
+                        <h3 className="brainmeal-subsection-title">{t.currentMealHabits}</h3>
+                        <p className="brainmeal-description">{t.describeMeals}</p>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Breakfast</label>
+                            <label className="brainmeal-label">{t.breakfast}</label>
                             <textarea
                                 name="breakfast"
                                 className="brainmeal-textarea"
-                                placeholder="Describe your typical breakfast"
+                                placeholder={`Describe your typical ${t.breakfast.toLowerCase()}`}
                                 value={userData.breakfast}
                                 onChange={handleChange}
                             />
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Lunch</label>
+                            <label className="brainmeal-label">{t.lunch}</label>
                             <textarea
                                 name="lunch"
                                 className="brainmeal-textarea"
-                                placeholder="Describe your typical lunch"
+                                placeholder={`Describe your typical ${t.lunch.toLowerCase()}`}
                                 value={userData.lunch}
                                 onChange={handleChange}
                             />
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Dinner</label>
+                            <label className="brainmeal-label">{t.dinner}</label>
                             <textarea
                                 name="dinner"
                                 className="brainmeal-textarea"
-                                placeholder="Describe your typical dinner"
+                                placeholder={`Describe your typical ${t.dinner.toLowerCase()}`}
                                 value={userData.dinner}
                                 onChange={handleChange}
                             />
                         </div>
 
                         <div className="brainmeal-form-field">
-                            <label className="brainmeal-label">Snacks</label>
+                            <label className="brainmeal-label">{t.snacks}</label>
                             <textarea
                                 name="snacks"
                                 className="brainmeal-textarea"
-                                placeholder="Describe your typical snacks"
+                                placeholder={`Describe your typical ${t.snacks.toLowerCase()}`}
                                 value={userData.snacks}
                                 onChange={handleChange}
                             />
                         </div>
                     </section>
 
-                    {/* Кнопка для генерации плана питания – данные, введенные здесь, будут переданы нейронке */}
                     <div className="brainmeal-form-actions">
                         <button
                             type="button"
@@ -618,7 +675,7 @@ const Profile = () => {
                             onClick={handleGenerateMealPlan}
                             disabled={loading}
                         >
-                            {loading ? 'Generating...' : 'Generate Meal Plan'}
+                            {loading ? t.generating : t.generateMealPlan}
                         </button>
                     </div>
                 </form>
@@ -628,6 +685,7 @@ const Profile = () => {
 };
 
 export default Profile;
+
 
 
 

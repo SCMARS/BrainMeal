@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import "./styles/Mealplan.css";
-import { useNavigate } from "react-router-dom";
-import { generateMealPlan } from './servises/llmService.jsx';
+import { useLocation, useNavigate } from "react-router-dom";
+import { generateMealPlan } from './services/llmService.jsx';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 function MealPlanningApp() {
@@ -15,12 +15,181 @@ function MealPlanningApp() {
     const [nutritionStats, setNutritionStats] = useState(null);
     const [selectedDay, setSelectedDay] = useState('monday');
 
-    // Состояния для редактирования приема пищи
     const [isEditing, setIsEditing] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
     const [editingDay, setEditingDay] = useState(null);
     const [editMealName, setEditMealName] = useState('');
     const [editCalories, setEditCalories] = useState('');
+
+    const translations = {
+        en: {
+            mainTitle: "Meal Planning",
+            subtitle: "Daily and Weekly Plans",
+            weeklyPlan: "Weekly Plan",
+            dailyPlan: "Daily Plan",
+            generateWeeklyPlan: "Generate Weekly Plan",
+            generateDailyPlan: "Generate Daily Plan",
+            breakfast: "Breakfast",
+            lunch: "Lunch",
+            dinner: "Dinner",
+            snack: "Snack",
+            calories: "Calories",
+            totalCalories: "Total Calories",
+            profile: "Your Profile",
+            weight: "Weight",
+            height: "Height",
+            age: "Age",
+            dietType: "Diet Type",
+            mealPreferences: "Meal Preferences",
+            editMeal: "Edit Meal",
+            save: "Save",
+            cancel: "Cancel",
+            back: "← Back",
+            errorLoadingProfile: "Error loading profile. Return to the profile page.",
+            userDataNotFound: "User data not found. Please fill out the profile.",
+            noDataForDay: "No data for this day",
+            notSpecified: "Not specified",
+            total: "Total",
+            totalCaloriesIntake: "Total Calories: ",
+            nutritionInfo: "Nutritional Information",
+            generateMealPlan: "Generate Meal Plan",
+            mealPlanForWeek: "Meal Plan for the Week",
+            mealPlanForDay: "Meal Plan for the Day",
+            calorieDistribution: "Calorie Distribution",
+            recommendations: "Recommendations",
+            dietRecommendations: "Dietary Recommendations",
+            hydrationTip: "Drink enough water throughout the day",
+            mealTimingTip: "Space your meals every 3-4 hours",
+            balancedDietTip: "Include a variety of foods in your diet",
+            proteinDietTip: "Consume more protein-rich foods (eggs, chicken breast, cottage cheese)",
+            muscleGainTip: "Increase water intake to 2-3 liters per day",
+            complexCarbsTip: "Include more whole grains for energy",
+            weightLossTip: "Avoid sugar and simple carbohydrates",
+            eatSlowlyTip: "Eat slowly, chewing thoroughly",
+            moreVegetablesTip: "Eat more vegetables and protein foods",
+            gentleDietTip: "Avoid spicy and fatty foods",
+            preferBoiledTip: "Prefer boiled and stewed food",
+            warmWaterTip: "Drink more warm water between meals",
+            calorieStats: "Caloric Intake by Meals",
+            caloriesIntake: "Caloric Intake",
+            selectDay: "Select Day",
+            edit: "Edit",
+            delete: "Delete",
+            loading: "Loading...",
+            weeklyMealPlan: "Weekly Meal Plan",
+            dailyMealPlan: "Daily Meal Plan",
+            noMealData: "No data available",
+            enterMealName: "Enter meal name",
+            enterCalories: "Enter calories",
+            monday: "Monday",
+            tuesday: "Tuesday",
+            wednesday: "Wednesday",
+            thursday: "Thursday",
+            friday: "Friday",
+            saturday: "Saturday",
+            sunday: "Sunday",
+            mealEditing: "Editing Meal",
+            day: "Day",
+            meal: "Meal",
+            mealName: "Meal Name",
+            caloriesCount: "Calories",
+            totalMacros: "Total Macronutrients",
+            proteins: "Proteins",
+            fats: "Fats",
+            carbs: "Carbohydrates"
+        },
+        uk: {
+            mainTitle: "План харчування",
+            subtitle: "Щоденні та тижневі плани",
+            weeklyPlan: "Тижневий план",
+            dailyPlan: "Щоденний план",
+            generateWeeklyPlan: "Згенерувати тижневий план",
+            generateDailyPlan: "Згенерувати щоденний план",
+            breakfast: "Сніданок",
+            lunch: "Обід",
+            dinner: "Вечеря",
+            snack: "Перекус",
+            calories: "Калорії",
+            totalCalories: "Всього калорій",
+            profile: "Ваш профіль",
+            weight: "Вага",
+            height: "Зріст",
+            age: "Вік",
+            dietType: "Тип дієти",
+            mealPreferences: "Харчові уподобання",
+            editMeal: "Редагувати прийом їжі",
+            save: "Зберегти",
+            cancel: "Скасувати",
+            back: "← Назад",
+            errorLoadingProfile: "Помилка завантаження профілю. Поверніться на сторінку профілю.",
+            userDataNotFound: "Дані користувача не знайдені. Будь ласка, заповніть профіль.",
+            noDataForDay: "Немає даних для цього дня",
+            notSpecified: "Не вказано",
+            total: "Всього",
+            totalCaloriesIntake: "Всього калорій: ",
+            nutritionInfo: "Інформація про поживні речовини",
+            generateMealPlan: "Згенерувати план харчування",
+            mealPlanForWeek: "План харчування на тиждень",
+            mealPlanForDay: "План харчування на день",
+            calorieDistribution: "Розподіл калорій",
+            recommendations: "Рекомендації",
+            dietRecommendations: "Рекомендації щодо харчування",
+            hydrationTip: "Пийте достатньо води протягом дня",
+            mealTimingTip: "Розділяйте прийоми їжі кожні 3-4 години",
+            balancedDietTip: "Включайте в раціон різноманітні продукти",
+            proteinDietTip: "Споживайте більше білкової їжі (яйця, куряча грудка, сир)",
+            muscleGainTip: "Збільшіть споживання води до 2-3 літрів на день",
+            complexCarbsTip: "Додавайте більше цільнозернових продуктів для енергії",
+            weightLossTip: "Уникайте цукру і простих вуглеводів",
+            eatSlowlyTip: "Їжте повільно, ретельно пережовуючи їжу",
+            moreVegetablesTip: "Споживайте більше овочів та білкової їжі",
+            gentleDietTip: "Уникайте гострих і жирних страв",
+            preferBoiledTip: "Надавайте перевагу вареній та тушкованій їжі",
+            warmWaterTip: "Пийте більше теплої води між прийомами їжі",
+            calorieStats: "Калорійність по прийомах їжі",
+            caloriesIntake: "Споживання калорій",
+            selectDay: "Виберіть день",
+            edit: "Редагувати",
+            delete: "Видалити",
+            loading: "Завантаження...",
+            weeklyMealPlan: "Тижневий план харчування",
+            dailyMealPlan: "Щоденний план харчування",
+            noMealData: "Немає даних",
+            enterMealName: "Введіть назву страви",
+            enterCalories: "Введіть кількість калорій",
+            monday: "Понеділок",
+            tuesday: "Вівторок",
+            wednesday: "Середа",
+            thursday: "Четвер",
+            friday: "П’ятниця",
+            saturday: "Субота",
+            sunday: "Неділя",
+            mealEditing: "Редагування прийому їжі",
+            day: "День",
+            meal: "Прийом їжі",
+            mealName: "Назва страви",
+            caloriesCount: "Калорії",
+            totalMacros: "Загальна кількість макроелементів",
+            proteins: "Білки",
+            fats: "Жири",
+            carbs: "Вуглеводи"
+        }
+    };
+
+
+    const location = useLocation();
+    const themeFromNav = location.state?.darkMode !== undefined ?
+        (location.state.darkMode ? 'dark' : 'light') : null;
+    const savedTheme = themeFromNav || localStorage.getItem('theme') || 'dark';
+    const [theme, setTheme] = useState(savedTheme);
+
+    // Получаем язык из state или localStorage, по умолчанию английский
+    const langFromNav = location.state?.language || null;
+    const savedLanguage = langFromNav || localStorage.getItem('language') || 'en';
+    const [language, setLanguage] = useState(savedLanguage);
+
+    // Выбираем переводы в зависимости от языка
+    const t = translations[language];
 
     // Загрузка данных пользователя при монтировании компонента
     useEffect(() => {
@@ -37,7 +206,6 @@ function MealPlanningApp() {
         }
     }, []);
 
-    // Обновление статистики при изменении плана или выбранного дня
     useEffect(() => {
         if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
             calculateNutritionStats(weeklyPlan[selectedDay]);
@@ -50,23 +218,22 @@ function MealPlanningApp() {
         navigate("/profile");
     };
 
-    // Функция расчёта статистики питания (калории и макроэлементы)
     const calculateNutritionStats = (plan) => {
         let totalCalories = 0;
         if (plan.breakfast_calories !== undefined) {
             totalCalories =
-                (plan.breakfast_calories || 0) +
-                (plan.lunch_calories || 0) +
-                (plan.dinner_calories || 0);
+                (parseInt(plan.breakfast_calories) || 0) +
+                (parseInt(plan.lunch_calories) || 0) +
+                (parseInt(plan.dinner_calories) || 0);
         } else if (plan.breakfast?.calories !== undefined) {
             totalCalories =
-                (plan.breakfast?.calories || 0) +
-                (plan.lunch?.calories || 0) +
-                (plan.dinner?.calories || 0) +
-                (plan.snack?.calories || 0);
+                (parseInt(plan.breakfast?.calories) || 0) +
+                (parseInt(plan.lunch?.calories) || 0) +
+                (parseInt(plan.dinner?.calories) || 0) +
+                (parseInt(plan.snack?.calories) || 0);
         }
 
-        // Распределение макроэлементов по типу диеты
+        // Распределение макроэлементов в зависимости от типа диеты
         let proteinPercentage = 0.25;
         let fatPercentage = 0.3;
         let carbsPercentage = 0.45;
@@ -123,6 +290,7 @@ function MealPlanningApp() {
             });
             setWeeklyPlan(generatedPlan);
             setSelectedDay('monday');
+            setDailyPlan(null); // Очистка дневного плана при генерации недельного
         } catch (err) {
             setError("Не удалось сгенерировать недельный план. Попробуйте позже.");
             console.error(err);
@@ -145,7 +313,7 @@ function MealPlanningApp() {
                 isWeekly: false
             });
             setDailyPlan(generatedPlan);
-            setWeeklyPlan(null);
+            setWeeklyPlan(null); // Очистка недельного плана при генерации дневного
         } catch (err) {
             setError("Не удалось сгенерировать дневной план. Попробуйте позже.");
             console.error(err);
@@ -164,8 +332,8 @@ function MealPlanningApp() {
         setIsEditing(true);
         setEditingDay(day);
         setEditingMeal(meal);
-        setEditMealName(weeklyPlan[day][meal]);
-        setEditCalories(weeklyPlan[day][`${meal}_calories`]);
+        setEditMealName(weeklyPlan[day][meal] || '');
+        setEditCalories(weeklyPlan[day][`${meal}_calories`] || 0);
     };
 
     // Редактирование приема пищи в дневном плане
@@ -173,14 +341,17 @@ function MealPlanningApp() {
         setIsEditing(true);
         setEditingDay(null);
         setEditingMeal(meal);
-        setEditMealName(dailyPlan[meal].meal);
-        setEditCalories(dailyPlan[meal].calories);
+        setEditMealName(dailyPlan[meal]?.meal || '');
+        setEditCalories(dailyPlan[meal]?.calories || 0);
     };
 
-    // Сохранение изменений при редактировании приема пищи
+    // Сохранение изменений после редактирования приема пищи
     const saveEditedMeal = () => {
         if (editingDay) { // Недельный план
             const updatedWeeklyPlan = { ...weeklyPlan };
+            if (!updatedWeeklyPlan[editingDay]) {
+                updatedWeeklyPlan[editingDay] = {};
+            }
             updatedWeeklyPlan[editingDay] = { ...updatedWeeklyPlan[editingDay] };
             updatedWeeklyPlan[editingDay][editingMeal] = editMealName;
             updatedWeeklyPlan[editingDay][`${editingMeal}_calories`] = parseInt(editCalories) || 0;
@@ -188,9 +359,14 @@ function MealPlanningApp() {
             calculateNutritionStats(updatedWeeklyPlan[editingDay]);
         } else { // Дневной план
             const updatedDailyPlan = { ...dailyPlan };
-            updatedDailyPlan[editingMeal] = { ...updatedDailyPlan[editingMeal] };
-            updatedDailyPlan[editingMeal].meal = editMealName;
-            updatedDailyPlan[editingMeal].calories = parseInt(editCalories) || 0;
+            if (!updatedDailyPlan[editingMeal]) {
+                updatedDailyPlan[editingMeal] = {};
+            }
+            updatedDailyPlan[editingMeal] = {
+                ...updatedDailyPlan[editingMeal],
+                meal: editMealName,
+                calories: parseInt(editCalories) || 0
+            };
             setDailyPlan(updatedDailyPlan);
             calculateNutritionStats(updatedDailyPlan);
         }
@@ -205,7 +381,7 @@ function MealPlanningApp() {
         setEditingDay(null);
     };
 
-    // Модальное окно редактирования приема пищи
+    // Модальное окно для редактирования приема пищи
     const renderEditModal = () => {
         if (!isEditing) return null;
 
@@ -295,7 +471,7 @@ function MealPlanningApp() {
                         {weeklyPlan[engDay] ? (
                             <>
                                 <div className="meal-item">
-                                    <p className="meal-text"><strong>Завтрак:</strong> {weeklyPlan[engDay].breakfast}</p>
+                                    <p className="meal-text"><strong>Завтрак:</strong> {weeklyPlan[engDay].breakfast || 'Не указано'}</p>
                                     <p className="meal-text small-text">{weeklyPlan[engDay].breakfast_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
@@ -308,7 +484,7 @@ function MealPlanningApp() {
                                     </button>
                                 </div>
                                 <div className="meal-item">
-                                    <p className="meal-text"><strong>Обед:</strong> {weeklyPlan[engDay].lunch}</p>
+                                    <p className="meal-text"><strong>Обед:</strong> {weeklyPlan[engDay].lunch || 'Не указано'}</p>
                                     <p className="meal-text small-text">{weeklyPlan[engDay].lunch_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
@@ -321,7 +497,7 @@ function MealPlanningApp() {
                                     </button>
                                 </div>
                                 <div className="meal-item">
-                                    <p className="meal-text"><strong>Ужин:</strong> {weeklyPlan[engDay].dinner}</p>
+                                    <p className="meal-text"><strong>Ужин:</strong> {weeklyPlan[engDay].dinner || 'Не указано'}</p>
                                     <p className="meal-text small-text">{weeklyPlan[engDay].dinner_calories || 0} ккал</p>
                                     <button
                                         className="edit-meal-button"
@@ -568,7 +744,7 @@ function MealPlanningApp() {
     };
 
     return (
-        <div className="meal-planning-container">
+        <div className={`meal-planning-container ${theme}`}>
             <div className="header">
                 <button className="back-button" onClick={backHandler}>← Назад</button>
                 <div className="title-container">
@@ -637,6 +813,7 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
+
 
 
 
