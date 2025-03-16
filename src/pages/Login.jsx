@@ -46,6 +46,9 @@ const Login = () => {
     const handleProfile = () => {
         navigate("/profile");
     };
+    const handelregister = () => {
+        navigate("/register");
+    }
 
     useEffect(() => {
         document.body.className = theme;
@@ -74,7 +77,7 @@ const Login = () => {
                     {t.loginButton}
                 </button>
                 <div className="auth-links">
-                    <a href="#">{t.forgotPassword}</a> | <a href="#">{t.register}</a>
+                    <a href="#">{t.forgotPassword}</a> | <a href="#"onClick={handelregister}> {t.register}</a>
                 </div>
             </div>
 
