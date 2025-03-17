@@ -1,8 +1,44 @@
-# React + Vite
+# BrainMeal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BrainMeal is a web application that uses artificial intelligence to create personalized meal plans based on user parameters.
 
-Currently, two official plugins are available:
+## 🚀 Technologies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend:** React + Vite
+- **Backend:** Pure Node.js
+- **Database:** MongoDB
+- **AI:** Python (TensorFlow.js planned)
+
+## 🔧 Installation & Setup
+
+### 1. Clone the repository
+```sh
+git clone https://github.com/your-repo/BrainMeal.git
+cd BrainMeal
+```
+
+### 2. Install dependencies
+#### Frontend
+```sh
+cd frontend
+npm install
+npm run dev
+```
+#### Backend
+```sh
+cd backend
+npm install
+node index.js
+```
+
+## 📌 Features
+- Personalized meal planning
+- Calculation of calories and macronutrients
+- Selection of specific meals
+- Support for different goals (weight loss, muscle gain, veganism, etc.)
+
+## 📜 License
+This project is licensed under the MIT License.
+
+---
+Developed by: [Hleb Ukhovskyi] (https://github.com/SCMARS)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { generateMealPlan } from './services/llmService.jsx';
@@ -813,6 +813,8 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
+
+
 
 
 

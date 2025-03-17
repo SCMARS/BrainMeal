@@ -1,3 +1,64 @@
+:root {
+    /* Light theme (default) */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #334155;
+    --text-secondary: #64748b;
+    --text-title: #1e293b;
+    --border-color: #e2e8f0;
+    --accent-color: #ff7e1d;
+    --accent-hover: #e45e00;
+    --accent-light: #fff1e6;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --shadow-hover: rgba(0, 0, 0, 0.12);
+    --chart-bg: #f8fafc;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #2d3748;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-title: #f8fafc;
+    --border-color: #334155;
+    --accent-color: #ff7e1d;
+    --accent-hover: #ff9f50;
+    --accent-light: #422100;
+    --shadow-color: rgba(0, 0, 0, 0.25);
+    --shadow-hover: rgba(0, 0, 0, 0.4);
+    --chart-bg: #1e293b;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 110;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: rotate(30deg);
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Apply theme to elements */
 html, body {
     height: 100%;
     margin: 0;
@@ -5,8 +66,9 @@ html, body {
     overflow: auto;
     scroll-behavior: smooth;
     font-family: 'Roboto', sans-serif;
-    background-color: #f8fafc;
-    color: #334155;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
@@ -15,17 +77,18 @@ body {
     padding-top: 0;
 }
 
-/* Основной контейнер план питания */
+/* Main container */
 .meal-planning-container {
     max-width: 2500px;
     margin: 0 auto;
-    padding: 2300px 30px 50px 30px;
+    padding: 120px 30px 50px 30px;
     position: relative;
     overflow: visible;
-    background-color: #f8fafc;
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s ease;
 }
 
-/* Фиксированная шапка - обновленный дизайн */
+/* Header */
 .header {
     display: flex;
     justify-content: space-between;
@@ -37,10 +100,16 @@ body {
     width: 100%;
     z-index: 100;
     padding: 15px 30px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: var(--bg-secondary);
+    box-shadow: 0 4px 12px var(--shadow-color);
     min-height: 70px;
     transition: all 0.3s ease;
+}
+
+.header.scrolled {
+    padding: 10px 30px;
+    min-height: 60px;
+    box-shadow: 0 6px 18px var(--shadow-color);
 }
 
 .title-container {
@@ -50,22 +119,24 @@ body {
 .main-title {
     font-size: 2.2rem;
     margin: 0;
-    color: #1e293b;
+    color: var(--text-title);
     font-weight: 600;
     letter-spacing: -0.5px;
+    transition: color 0.3s ease;
 }
 
 .subtitle {
     margin: 5px 0 0;
     font-size: 1.1rem;
-    color: #64748b;
+    color: var(--text-secondary);
     font-weight: 400;
+    transition: color 0.3s ease;
 }
 
 .back-button {
     background-color: transparent;
-    border: 2px solid #3b82f6;
-    color: #3b82f6;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
     padding: 10px 18px;
     border-radius: 8px;
     cursor: pointer;
@@ -75,10 +146,10 @@ body {
 }
 
 .back-button:hover {
-    background-color: #3b82f6;
+    background-color: var(--accent-color);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
+    box-shadow: 0 4px 8px rgba(255, 126, 29, 0.25);
 }
 
 .back-button:active {
@@ -89,16 +160,17 @@ body {
     width: 100px;
 }
 
-/* Сообщение об ошибке */
+/* Error message */
 .error-message {
-    background-color: #fee2e2;
-    color: #b91c1c;
+    background-color: var(--accent-light);
+    color: var(--accent-hover);
     padding: 18px;
     margin-bottom: 25px;
     border-radius: 10px;
-    border: 1px solid #fecaca;
+    border: 1px solid var(--accent-color);
     display: flex;
     align-items: center;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .error-message:before {
@@ -107,43 +179,45 @@ body {
     font-size: 1.2rem;
 }
 
-/* Профиль пользователя */
+/* User profile */
 .user-profile-summary {
-    background-color: #ffffff;
+    background-color: var(--bg-secondary);
     border-radius: 16px;
     padding: 25px 30px;
     margin-bottom: 35px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     position: relative;
     z-index: 1;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .user-profile-summary:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 30px var(--shadow-hover);
 }
 
 .summary-title {
-    color: #1e293b;
+    color: var(--text-title);
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.3rem;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 .summary-details {
-    color: #64748b;
+    color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.6;
+    transition: color 0.3s ease;
 }
 
 .summary-details p {
     margin: 8px 0;
 }
 
-/* Новый двухколоночный макет */
+/* Two-column layout */
 .content-layout {
     display: flex;
     gap: 30px;
@@ -158,7 +232,7 @@ body {
     overflow: visible;
 }
 
-/* Расширенная панель статистики */
+/* Stats panel */
 .nutrition-panel {
     flex: 2;
     min-width: 320px;
@@ -166,36 +240,38 @@ body {
     position: relative;
 }
 
-/* Карточки планов */
+/* Plan cards */
 .plan-card {
-    background-color: #ffffff;
+    background-color: var(--bg-secondary);
     border-radius: 16px;
     padding: 30px;
     margin-bottom: 35px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px var(--shadow-color);
     position: relative;
     z-index: 1;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e2e8f0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    border: 1px solid var(--border-color);
+    animation: fadeInUp 0.5s ease-out;
 }
 
 .plan-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 35px var(--shadow-hover);
 }
 
 .plan-title {
-    color: #1e293b;
+    color: var(--text-title);
     margin-top: 0;
-    border-bottom: 2px solid #f1f5f9;
+    border-bottom: 2px solid var(--border-color);
     padding-bottom: 15px;
     font-size: 1.6rem;
     font-weight: 700;
     letter-spacing: -0.5px;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .generate-button {
-    background-color: #10b981;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     padding: 14px 22px;
@@ -206,13 +282,15 @@ body {
     margin-bottom: 25px;
     width: 100%;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 12px rgba(255, 126, 29, 0.2);
+    position: relative;
+    overflow: hidden;
 }
 
 .generate-button:hover {
-    background-color: #059669;
+    background-color: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 8px 16px rgba(255, 126, 29, 0.25);
 }
 
 .generate-button:active {
@@ -220,11 +298,44 @@ body {
 }
 
 .generate-button.loading {
-    background-color: #94a3b8;
+    background-color: var(--text-secondary);
     cursor: not-allowed;
     box-shadow: none;
 }
 
+/* Button animation */
+.generate-button::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.generate-button:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}
 
 .week-grid {
     display: grid;
@@ -235,7 +346,7 @@ body {
     margin-top: 40px;
 }
 
-/* Карточки дневного плана */
+/* Day cards */
 .daily-meals {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(1000px, 1fr));
@@ -243,126 +354,146 @@ body {
 }
 
 .day-card {
-    background-color: #ffffff;
+    background-color: var(--bg-secondary);
     border-radius: 12px;
     padding: 25px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease, background-color 0.3s ease;
     cursor: pointer;
     position: relative;
     z-index: 1;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 5px 15px var(--shadow-color);
     min-height: 280px;
     display: flex;
     flex-direction: column;
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
 }
+
+/* Staggered animation for day cards */
+.day-card:nth-child(1) { animation-delay: 0.1s; }
+.day-card:nth-child(2) { animation-delay: 0.2s; }
+.day-card:nth-child(3) { animation-delay: 0.3s; }
+.day-card:nth-child(4) { animation-delay: 0.4s; }
+.day-card:nth-child(5) { animation-delay: 0.5s; }
+.day-card:nth-child(6) { animation-delay: 0.6s; }
+.day-card:nth-child(7) { animation-delay: 0.7s; }
 
 .day-card:hover {
     transform: translateY(-7px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 24px var(--shadow-hover);
 }
 
 .selected-day {
-    border: 2px solid #3b82f6;
-    background-color: #eff6ff;
-    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+    border: 2px solid var(--accent-color);
+    background-color: var(--accent-light);
+    box-shadow: 0 12px 24px rgba(255, 126, 29, 0.15);
 }
 
 .day-title {
-    color: #1e293b;
+    color: var(--text-title);
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.2rem;
     font-weight: 600;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .meal-text {
     margin: 12px 0;
     font-size: 1.05rem;
     line-height: 1.6;
-    color: #475569;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .small-text {
     font-size: 0.9rem;
-    color: #64748b;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 .total-calories-text {
     margin-top: 18px;
     font-weight: 600;
-    color: #1e293b;
-    border-top: 1px dashed #e2e8f0;
+    color: var(--text-title);
+    border-top: 1px dashed var(--border-color);
     padding-top: 12px;
     margin-top: auto;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Карточки дневного плана для приема пищи */
+/* Meal cards */
 .meal-card {
-    background-color: #ffffff;
+    background-color: var(--bg-secondary);
     border-radius: 12px;
     padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    animation: fadeInUp 0.5s ease-out;
 }
 
 .meal-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 24px var(--shadow-hover);
 }
 
 .meal-title {
-    color: #1e293b;
+    color: var(--text-title);
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 1.2rem;
     font-weight: 600;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .calories-text {
     margin: 10px 0 5px;
     font-size: 0.9rem;
-    color: #64748b;
+    color: var(--text-secondary);
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
-/* Стили для панели питательных веществ (увеличенная статистика) */
+/* Nutrition stats panels */
 .nutrition-stats,
 .calorie-stats {
-    background-color: white;
+    background-color: var(--bg-secondary);
     border-radius: 16px;
     padding: 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px var(--shadow-color);
     margin-bottom: 30px;
     font-size: 1.1rem;
-    border: 1px solid #e2e8f0;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .nutrition-stats:hover,
 .calorie-stats:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 35px var(--shadow-hover);
 }
 
 .total-calories h4 {
     margin: 0;
-    color: #64748b;
+    color: var(--text-secondary);
     font-size: 1.3rem;
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .calories-value {
     font-size: 2.8rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-title);
     margin: 10px 0;
     letter-spacing: -1px;
+    transition: color 0.3s ease;
 }
 
 .chart-container {
@@ -370,25 +501,27 @@ body {
     height: 280px;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    background-color: var(--chart-bg);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nutrition-placeholder {
-    background-color: #f8fafc;
+    background-color: var(--bg-tertiary);
     border-radius: 12px;
     padding: 25px;
-    border: 1px dashed #cbd5e1;
+    border: 1px dashed var(--border-color);
     text-align: center;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .nutrition-placeholder:hover {
-    background-color: #f1f5f9;
-    border-color: #94a3b8;
+    background-color: var(--bg-primary);
+    border-color: var(--text-secondary);
 }
 
 .nutrition-summary {
@@ -398,28 +531,30 @@ body {
 .total-calories {
     text-align: center;
     margin-bottom: 20px;
-    background-color: #f8fafc;
+    background-color: var(--bg-tertiary);
     padding: 20px;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, background-color 0.3s ease;
 }
 
 .total-calories:hover {
-    background-color: #f1f5f9;
+    background-color: var(--bg-primary);
     transform: translateY(-3px);
 }
 
 .diet-recommendations {
     margin-top: 25px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-color);
     padding-top: 20px;
+    transition: border-color 0.3s ease;
 }
 
 .diet-recommendations h4 {
     margin-top: 0;
-    color: #1e293b;
+    color: var(--text-title);
     font-size: 1.2rem;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 .diet-recommendations ul {
@@ -430,18 +565,19 @@ body {
 .diet-recommendations li {
     margin-bottom: 8px;
     font-size: 1rem;
-    color: #475569;
+    color: var(--text-primary);
     line-height: 1.6;
+    transition: color 0.3s ease;
 }
 
-/* Стили для статистики калорий */
+/* Meal calorie statistics */
 .meal-calorie-item {
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px dashed #e2e8f0;
-    transition: transform 0.2s ease;
+    border-bottom: 1px dashed var(--border-color);
+    transition: transform 0.2s ease, border-color 0.3s ease;
 }
 
 .meal-calorie-item:hover {
@@ -450,52 +586,55 @@ body {
 
 .meal-name {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-title);
+    transition: color 0.3s ease;
 }
 
 .meal-calories {
-    color: #475569;
+    color: var(--text-primary);
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .total-calories-card {
     grid-column: 1 / -1;
     padding: 15px;
-    background-color: #eff6ff;
+    background-color: var(--accent-light);
     border-radius: 10px;
     text-align: center;
     margin-top: 15px;
     font-weight: 600;
-    color: #1e40af;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-    transition: all 0.3s ease;
+    color: var(--accent-hover);
+    box-shadow: 0 4px 12px rgba(255, 126, 29, 0.1);
+    transition: all 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .total-calories-card:hover {
-    background-color: #dbeafe;
+    background-color: var(--accent-color);
+    color: white;
     transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 8px 16px rgba(255, 126, 29, 0.15);
 }
 
-/* Увеличиваем высоту верхнего отступа */
+/* Top spacer */
 .top-visible-spacer {
     height: 120px;
     width: 100%;
     display: block;
 }
 
-/* Стили для элементов приема пищи */
+/* Meal items */
 .meal-item {
     margin-bottom: 15px;
     position: relative;
     padding-bottom: 12px;
-    border-bottom: 1px solid #f1f5f9;
-    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease, border-color 0.3s ease;
 }
 
 .meal-item:hover {
     padding-left: 5px;
-    border-bottom-color: #cbd5e1;
+    border-bottom-color: var(--text-secondary);
 }
 
 .meal-item:last-child {
@@ -506,20 +645,20 @@ body {
 .edit-meal-button {
     font-size: 0.85rem;
     padding: 6px 12px;
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
     margin-top: 6px;
-    color: #475569;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
 .edit-meal-button:hover {
-    background-color: #e2e8f0;
+    background-color: var(--border-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 /* Modal styling for meal editing */
@@ -538,14 +677,15 @@ body {
 }
 
 .edit-modal {
-    background-color: white;
+    background-color: var(--bg-secondary);
     border-radius: 16px;
     padding: 30px;
     width: 90%;
     max-width: 550px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 25px 50px var(--shadow-hover);
     transform: translateY(0);
     animation: modalAppear 0.3s ease-out;
+    transition: background-color 0.3s ease;
 }
 
 @keyframes modalAppear {
@@ -559,25 +699,27 @@ body {
     }
 }
 
-/* Дополнительные стили для форм внутри модального окна */
+/* Form inputs in modal */
 .edit-modal input,
 .edit-modal textarea,
 .edit-modal select {
     width: 100%;
     padding: 12px 15px;
     margin-bottom: 15px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .edit-modal input:focus,
 .edit-modal textarea:focus,
 .edit-modal select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(255, 126, 29, 0.25);
 }
 
 .edit-modal button {
@@ -589,37 +731,39 @@ body {
 }
 
 .edit-modal .save-button {
-    background-color: #3b82f6;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     margin-right: 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .edit-modal .save-button:hover {
-    background-color: #2563eb;
+    background-color: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    box-shadow: 0 4px 12px rgba(255, 126, 29, 0.25);
 }
 
 .edit-modal .cancel-button {
-    background-color: #f1f5f9;
-    color: #475569;
-    border: 1px solid #cbd5e1;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, transform 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .edit-modal .cancel-button:hover {
-    background-color: #e2e8f0;
+    background-color: var(--border-color);
     transform: translateY(-2px);
 }
 
-/* Медиа-запросы для адаптивности */
+/* Media queries for responsiveness */
 @media (max-width: 1200px) {
     .week-grid {
-        grid-template-columns: repeat(4, 1fr); /* Показываем по 4 дня на средних экранах */
+        grid-template-columns: repeat(4, 1fr); /* 4 days per row on medium screens */
     }
 
     .day-card {
-        min-height: 300px; /* Увеличиваем высоту на средних экранах */
+        min-height: 300px; /* Increase height on medium screens */
     }
 }
 
@@ -635,18 +779,18 @@ body {
     }
 
     .week-grid {
-        grid-template-columns: repeat(3, 1fr); /* Показываем по 3 дня на планшетах */
+        grid-template-columns: repeat(3, 1fr); /* 3 days per row on tablets */
     }
 
     .day-card {
-        min-height: 320px; /* Увеличиваем высоту на планшетах */
+        min-height: 320px; /* Increase height on tablets */
     }
 
     .daily-meals {
         grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     }
 
-    /* Корректируем отступ контейнера для мобильных устройств */
+    /* Adjust container padding for mobile */
     .meal-planning-container {
         padding-top: 120px;
         padding-left: 20px;
@@ -680,12 +824,12 @@ body {
     }
 
     .week-grid {
-        grid-template-columns: repeat(2, 1fr); /* Показываем по 2 дня в ряд на маленьких экранах */
+        grid-template-columns: repeat(2, 1fr); /* 2 days per row on small screens */
         gap: 15px;
     }
 
     .day-card {
-        min-height: 340px; /* Увеличиваем высоту на мобильных устройствах */
+        min-height: 340px; /* Increase height on mobile */
         padding: 20px;
     }
 
@@ -716,10 +860,31 @@ body {
 
 @media (max-width: 480px) {
     .week-grid {
-        grid-template-columns: 1fr; /* Один день в ряд на очень маленьких экранах */
+        grid-template-columns: 1fr; /* 1 day per row on very small screens */
     }
 
     .day-card {
-        min-height: 280px; /* Немного уменьшаем высоту на очень маленьких экранах, так как карточка занимает всю ширину */
+        min-height: 280px; /* Slightly reduce height on very small screens since cards are full width */
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
