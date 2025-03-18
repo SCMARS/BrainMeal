@@ -7,18 +7,18 @@
     --text-secondary: #64748b;
     --text-title: #1e293b;
     --border-color: #e2e8f0;
-    --accent-color: #ff7e1d;
-    --accent-hover: #e45e00;
-    --accent-light: #fff1e6;
+    --accent-color: #3b82f6; /* Changed to blue */
+    --accent-hover: #2563eb;
+    --accent-light: #eff6ff;
     --shadow-color: rgba(0, 0, 0, 0.08);
     --shadow-hover: rgba(0, 0, 0, 0.12);
     --chart-bg: #f8fafc;
 
     /* Modern glass effect variables */
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.18);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    --glass-blur: 8px;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-shadow: 0 10px 30px 0 rgba(31, 38, 135, 0.1);
+    --glass-blur: 12px;
 
     /* Transition speeds */
     --transition-fast: 0.2s;
@@ -35,81 +35,33 @@
     --text-secondary: #94a3b8;
     --text-title: #f8fafc;
     --border-color: #334155;
-    --accent-color: #ff7e1d;
-    --accent-hover: #ff9f50;
-    --accent-light: #422100;
+    --accent-color: #3b82f6; /* Changed to blue */
+    --accent-hover: #60a5fa;
+    --accent-light: #1e3a8a;
     --shadow-color: rgba(0, 0, 0, 0.25);
     --shadow-hover: rgba(0, 0, 0, 0.4);
     --chart-bg: #1e293b;
 
     /* Dark mode glass effect variables */
-    --glass-bg: rgba(30, 41, 59, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    --glass-bg: rgba(30, 41, 59, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.35);
 }
 
-/* Improved Theme toggle button with enhanced animated icon */
-.theme-toggle {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 110;
-    transition: all var(--transition-medium) cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 4px 12px var(--shadow-color);
-    overflow: hidden;
-}
-
-.theme-toggle:hover {
-    transform: rotate(45deg) scale(1.15);
-    background: var(--accent-color);
-    color: white;
-    box-shadow: 0 6px 16px rgba(255, 126, 29, 0.4);
-}
-
-.theme-toggle:active {
-    transform: scale(0.92) rotate(45deg);
-}
-
-/* Enhanced theme toggle icon animation */
-.theme-toggle::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: var(--accent-color);
-    border-radius: 50%;
-    left: -100%;
-    transition: all var(--transition-medium) cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.theme-toggle:hover::before {
-    left: 0;
-}
-
-/* Apply modern theme to elements with smooth transitions */
+/* Base styles */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     overflow: auto;
     scroll-behavior: smooth;
-    font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color var(--transition-medium) ease,
     color var(--transition-medium) ease;
     scroll-padding-top: 100px;
+    line-height: 1.6;
 }
 
 body {
@@ -118,10 +70,10 @@ body {
     padding-top: 0;
 }
 
-/* Improved scrollbar styling with orange accent */
+/* Improved scrollbar styling */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -139,44 +91,31 @@ body {
     background: var(--accent-hover);
 }
 
-/* Main container */
-.meal-planning-container {
-    max-width: 2500px;
-    margin: 0 auto;
-    padding: 120px 30px 50px 30px;
-    position: relative;
-    overflow: visible;
-    background-color: var(--bg-primary);
-    transition: background-color var(--transition-medium) ease;
-}
-
-/* Enhanced floating header with glass effect and orange border */
+/* Enhanced fixed header */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 60px;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 100;
-    padding: 15px 30px;
+    padding: 16px 40px;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 4px 20px var(--shadow-color);
+    box-shadow: 0 5px 25px var(--shadow-color);
     min-height: 70px;
     transition: all var(--transition-medium) ease;
     border-bottom: 1px solid var(--glass-border);
 }
 
 .header.scrolled {
-    padding: 10px 30px;
+    padding: 12px 40px;
     min-height: 60px;
-    box-shadow: 0 6px 24px var(--shadow-color);
+    box-shadow: 0 8px 30px var(--shadow-color);
 }
-
 .title-container {
     text-align: center;
     animation: fadeInDown 0.7s ease-out;

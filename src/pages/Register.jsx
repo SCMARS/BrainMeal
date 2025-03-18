@@ -146,6 +146,10 @@ function Register() {
             setError(translations[language].errorTerms);
             return;
         }
+        if (formData.password < 6){
+            setError(translations[language].errorTerms);
+            return;
+        }
 
         setLoading(true);
         setError("");
