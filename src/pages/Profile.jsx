@@ -103,7 +103,6 @@ const Profile = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Устанавливаем тему и язык из localStorage или переданных параметров
     const [darkMode, setDarkMode] = useState(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
@@ -122,7 +121,7 @@ const Profile = () => {
 
     const t = translations[language];
 
-    // Сохраняем выбранную тему и язык
+
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);

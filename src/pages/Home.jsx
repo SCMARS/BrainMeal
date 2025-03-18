@@ -50,7 +50,6 @@ const WelcomeScreen = () => {
     const [language, setLanguage] = useState(savedLanguage || "en");
     const navigate = useNavigate();
 
-    // Выбираем переводы в зависимости от текущего языка
     const t = translations[language];
 
     useEffect(() => {
@@ -58,13 +57,12 @@ const WelcomeScreen = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    // Сохраняем настройки при их изменении
+
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
         localStorage.setItem('language', language);
     }, [darkMode, language]);
 
-    // Функция перехода на страницу логина с передачей настроек
     const handleStart = () => {
         // Сохраняем настройки в localStorage
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');

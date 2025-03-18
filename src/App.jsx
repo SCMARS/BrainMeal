@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register.jsx";
-
 import Profile from "./pages/Profile.jsx";
 import MealPlan from "./pages/MealPlan.jsx";
 

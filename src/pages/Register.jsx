@@ -2,17 +2,17 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./styles/Register.css";
+import { auth } from "./services/firebase.ts";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import axios from "axios";
 
 function Register() {
     const location = useLocation();
-
-    // Получаем тему аналогично Login.jsx
     const themeFromNav = location.state?.darkMode !== undefined ?
         (location.state.darkMode ? 'dark' : 'light') : null;
     const savedTheme = themeFromNav || localStorage.getItem('theme') || 'dark';
     const [theme, setTheme] = useState(savedTheme);
 
-    // Получаем язык аналогично Login.jsx
     const langFromNav = location.state?.language || null;
     const savedLanguage = langFromNav || localStorage.getItem('language') || 'en';
     const [language, setLanguage] = useState(savedLanguage);
@@ -26,10 +26,11 @@ function Register() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [warning, setWarning] = useState("");
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
     const navigate = useNavigate();
 
-    // Переводы для поддерживаемых языков
     const translations = {
         uk: {
             title: "Реєстрація",
@@ -42,10 +43,16 @@ function Register() {
             register: "Завершити реєстрацію",
             errorEmpty: "Будь ласка, заповніть всі поля",
             errorMismatch: "Паролі не співпадають",
+            errorTerms: "Ви повинні прийняти умови використання",
             placeholderUsername: "Введіть ім'я користувача",
             placeholderEmail: "Введіть email",
             placeholderPassword: "Введіть пароль",
-            placeholderConfirmPassword: "Підтвердіть пароль"
+            placeholderConfirmPassword: "Підтвердіть пароль",
+            errorEmailInUse: "Ця електронна адреса вже використовується",
+            errorWeakPassword: "Пароль надто слабкий",
+            errorInvalidEmail: "Неправильний формат електронної адреси",
+            errorGeneral: "Помилка реєстрації. Спробуйте пізніше.",
+            backendError: "Не вдалося підключитися до сервера, але реєстрація успішна. Деякі функції можуть бути обмежені."
         },
         en: {
             title: "Registration",
@@ -58,13 +65,18 @@ function Register() {
             register: "Complete Registration",
             errorEmpty: "Please fill in all fields",
             errorMismatch: "Passwords do not match",
+            errorTerms: "You must accept the terms of use",
             placeholderUsername: "Enter username",
             placeholderEmail: "Enter email",
             placeholderPassword: "Enter password",
-            placeholderConfirmPassword: "Confirm password"
+            placeholderConfirmPassword: "Confirm password",
+            errorEmailInUse: "This email is already in use",
+            errorWeakPassword: "Password is too weak",
+            errorInvalidEmail: "Invalid email format",
+            errorGeneral: "Registration error. Please try again later.",
+            backendError: "Could not connect to server, but registration successful. Some features may be limited."
         }
     };
-
 
     const toggleTheme = () => {
         const newTheme = theme === "dark" ? "light" : "dark";
@@ -76,7 +88,6 @@ function Register() {
         document.body.className = theme;
     }, [theme]);
 
-    // Проверка совпадения паролей
     const passwordsMatch = formData.password === formData.confirmPassword || formData.confirmPassword === "";
 
     const handleChange = (e) => {
@@ -86,16 +97,41 @@ function Register() {
             [id]: value
         });
 
-
         if (error) {
             setError("");
         }
     };
 
-    const handleSubmit = (e) => {
+    // Send user data to backend with fallback
+    const sendUserDataToBackend = async (uid, username) => {
+        try {
+            const response = await axios.post("http://localhost:5000/api/user", {
+                uid,
+                username
+            }, {
+                timeout: 5000 // 5 second timeout
+            });
+            console.log("Response from backend:", response.data);
+            return {
+                success: true,
+                backendAvailable: true,
+                data: response.data
+            };
+        } catch (error) {
+            console.error("Error sending data to backend:", error.message);
+            // Return a response indicating backend is unavailable
+            return {
+                success: false,
+                backendAvailable: false,
+                message: "Backend not available, continuing with limited functionality"
+            };
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Валидация
+        // Validation
         if (!formData.username || !formData.password || !formData.confirmPassword || !formData.email) {
             setError(translations[language].errorEmpty);
             return;
@@ -106,23 +142,76 @@ function Register() {
             return;
         }
 
+        if (!termsAccepted) {
+            setError(translations[language].errorTerms);
+            return;
+        }
+
         setLoading(true);
         setError("");
+        setWarning("");
 
-        // Эмуляция запроса на регистрацию
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            // 1. Create user with Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                formData.email,
+                formData.password
+            );
+
+            // 2. Update the user profile with username
+            await updateProfile(userCredential.user, {
+                displayName: formData.username
+            });
+
+            console.log("User registered:", userCredential.user);
+
+            // 3. Try to send user data to backend
+            const backendResponse = await sendUserDataToBackend(
+                userCredential.user.uid,
+                formData.username
+            );
+
+            // 4. Handle potential backend unavailability
+            if (!backendResponse.backendAvailable) {
+                setWarning(translations[language].backendError);
+
+                // Store user data in localStorage as fallback
+                localStorage.setItem('userData', JSON.stringify({
+                    uid: userCredential.user.uid,
+                    email: userCredential.user.email,
+                    displayName: formData.username,
+                    registeredAt: new Date().toISOString()
+                }));
+            }
+
+            // 5. Navigate to profile page (even if backend failed)
             navigate("/profile", {
                 state: {
                     language: language,
-                    darkMode: theme === 'dark' ? true : false
+                    darkMode: theme === 'dark',
+                    backendAvailable: backendResponse.backendAvailable || false,
+                    justRegistered: true
                 }
             });
+        } catch (error) {
+            console.error("Registration error:", error.code, error.message);
 
-        }, 1500);
+            // Better Firebase error handling
+            if (error.code === 'auth/email-already-in-use') {
+                setError(translations[language].errorEmailInUse);
+            } else if (error.code === 'auth/weak-password') {
+                setError(translations[language].errorWeakPassword);
+            } else if (error.code === 'auth/invalid-email') {
+                setError(translations[language].errorInvalidEmail);
+            } else {
+                setError(translations[language].errorGeneral);
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // Получение текущего перевода
     const t = translations[language] || translations.en;
 
     return (
@@ -150,6 +239,16 @@ function Register() {
                         animate={{ opacity: 1 }}
                     >
                         {error}
+                    </motion.div>
+                )}
+
+                {warning && !error && (
+                    <motion.div
+                        className="warning-message"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        {warning}
                     </motion.div>
                 )}
 
@@ -232,7 +331,12 @@ function Register() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.6 }}
                     >
-                        <input type="checkbox" id="terms" />
+                        <input
+                            type="checkbox"
+                            id="terms"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                        />
                         <label htmlFor="terms">{t.terms}</label>
                     </motion.div>
 

@@ -46,6 +46,24 @@
     margin: 0 auto;
 }
 
+.warning-message {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Update for dark mode */
+.dark .warning-message {
+    background-color: #3a3000;
+    color: #ffdb7d;
+    border: 1px solid #5c4c00;
+}
+
 /* Анимация вращения спиннера */
 @keyframes spin {
     to { transform: rotate(360deg); }
