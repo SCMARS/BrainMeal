@@ -481,7 +481,7 @@ body, html {
 
     .checkbox-group input[type="checkbox"] {
         width: 20px;
-    };
+    }
     .warning-message {
         background-color: #fff3cd;
         color: #856404;

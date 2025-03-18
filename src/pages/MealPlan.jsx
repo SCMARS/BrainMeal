@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { generateMealPlan } from './services/llmService.jsx';
@@ -35,50 +35,54 @@ function MealPlanningApp() {
             lunch: "Lunch",
             dinner: "Dinner",
             snack: "Snack",
-            sTip: "Eat more vegetables and protein foods",
             calories: "Calories",
             totalCalories: "Total Calories",
-            basic: "Basic",
-            gentle: "Gentle",
-            highProtein: "High Protein",
-            weightLoss: "Weight Loss",
-            muscleGain: "Muscle Gain",
-            errorLoadingProfile: "Error loading profile. Please go back to the profile page.",
-            userDataNotFound: "User data not found. Please fill in your profile.",
+            profile: "Your Profile",
+            weight: "Weight",
+            height: "Height",
+            age: "Age",
+            dietType: "Diet Type",
+            mealPreferences: "Meal Preferences",
+            editMeal: "Edit Meal",
+            save: "Save",
+            cancel: "Cancel",
+            back: "← Back",
+            errorLoadingProfile: "Error loading profile. Return to the profile page.",
+            userDataNotFound: "User data not found. Please fill out the profile.",
             noDataForDay: "No data for this day",
             notSpecified: "Not specified",
             total: "Total",
-            totalCaloriesIntake: "Total calories: ",
-            nutritionInfo: "Nutrition Information",
+            totalCaloriesIntake: "Total Calories: ",
+            nutritionInfo: "Nutritional Information",
             generateMealPlan: "Generate Meal Plan",
             mealPlanForWeek: "Meal Plan for the Week",
             mealPlanForDay: "Meal Plan for the Day",
             calorieDistribution: "Calorie Distribution",
             recommendations: "Recommendations",
-            dietRecommendations: "Diet Recommendations",
+            dietRecommendations: "Dietary Recommendations",
             hydrationTip: "Drink enough water throughout the day",
             mealTimingTip: "Space your meals every 3-4 hours",
             balancedDietTip: "Include a variety of foods in your diet",
-            proteinDietTip: "Consume more protein-rich foods (eggs, chicken breast, cheese)",
+            proteinDietTip: "Consume more protein-rich foods (eggs, chicken breast, cottage cheese)",
             muscleGainTip: "Increase water intake to 2-3 liters per day",
-            complexCarbsTip: "Add more whole grains for energy",
+            complexCarbsTip: "Include more whole grains for energy",
             weightLossTip: "Avoid sugar and simple carbohydrates",
-            eatSlowlyTip: "Eat slowly, chewing your food thoroughly",
-            moreVegetablesTip: "Eat more vegetables and protein-rich foods",
+            eatSlowlyTip: "Eat slowly, chewing thoroughly",
+            moreVegetablesTip: "Eat more vegetables and protein foods",
             gentleDietTip: "Avoid spicy and fatty foods",
-            preferBoiledTip: "Prefer boiled and stewed foods",
+            preferBoiledTip: "Prefer boiled and stewed food",
             warmWaterTip: "Drink more warm water between meals",
-            calorieStats: "Calorie Stats by Meal",
+            calorieStats: "Caloric Intake by Meals",
             caloriesIntake: "Caloric Intake",
-            selectDay: "Select a day",
+            selectDay: "Select Day",
             edit: "Edit",
             delete: "Delete",
             loading: "Loading...",
             weeklyMealPlan: "Weekly Meal Plan",
             dailyMealPlan: "Daily Meal Plan",
-            noMealData: "No data",
+            noMealData: "No data available",
             enterMealName: "Enter meal name",
-            enterCalories: "Enter number of calories",
+            enterCalories: "Enter calories",
             monday: "Monday",
             tuesday: "Tuesday",
             wednesday: "Wednesday",
@@ -91,19 +95,15 @@ function MealPlanningApp() {
             meal: "Meal",
             mealName: "Meal Name",
             caloriesCount: "Calories",
-            totalMacros: "Total Macros",
+            totalMacros: "Total Macronutrients",
             proteins: "Proteins",
             fats: "Fats",
-            carbs: "Carbs",
-            profile: "Your Profile",
-            weight: "Weight",
-            height: "Height",
-            age: "Age",
-            dietType: "Diet Type",
-            mealPreferences: "Meal Preferences",
-            save: "Save",
-            cancel: "Cancel",
-            back: "← Back",
+            carbs: "Carbohydrates",
+            basic: "Basic",
+            gentle: "Gentle",
+            highProtein: "High Protein",
+            weightLoss: "Weight Loss",
+            muscleGain: "Muscle Gain"
         },
         uk: {
             mainTitle: "План харчування",
@@ -205,7 +205,7 @@ function MealPlanningApp() {
         return location.state?.language || 'en';
     });
 
-    const t = useMemo(() => translations[language], [language]);
+    const t = translations[language];
     const theme = darkMode ? 'dark-theme' : 'light-theme';
 
     useEffect(() => {
@@ -216,6 +216,7 @@ function MealPlanningApp() {
         localStorage.setItem('language', language);
     }, [language]);
 
+    // Load user data on mount
     useEffect(() => {
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
@@ -230,19 +231,28 @@ function MealPlanningApp() {
         }
     }, [t]);
 
-
     useEffect(() => {
         if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
-            const stats = calculateNutritionStats(weeklyPlan[selectedDay]);
-            setNutritionStats(stats);
+            calculateNutritionStats(weeklyPlan[selectedDay]);
         } else if (dailyPlan) {
-            const stats = calculateNutritionStats(dailyPlan);
-            setNutritionStats(stats);
+            calculateNutritionStats(dailyPlan);
         }
     }, [weeklyPlan, dailyPlan, selectedDay]);
 
     const backHandler = () => {
         navigate("/profile");
+    };
+
+    // Translates diet type to user-friendly text
+    const translateDietType = (dietType) => {
+        switch(dietType) {
+            case 'basic': return t.basic;
+            case 'gentle': return t.gentle;
+            case 'protein': return t.highProtein;
+            case 'weight_loss': return t.weightLoss;
+            case 'muscle_gain': return t.muscleGain;
+            default: return t.notSpecified;
+        }
     };
 
     const calculateNutritionStats = (plan) => {
@@ -255,6 +265,7 @@ function MealPlanningApp() {
                 (parseInt(plan.lunch_calories) || 0) +
                 (parseInt(plan.dinner_calories) || 0);
         } else if (plan.breakfast?.calories !== undefined) {
+            // Daily plan format
             totalCalories =
                 (parseInt(plan.breakfast?.calories) || 0) +
                 (parseInt(plan.lunch?.calories) || 0) +
@@ -262,7 +273,7 @@ function MealPlanningApp() {
                 (parseInt(plan.snack?.calories) || 0);
         }
 
-
+        // Default macronutrient distribution
         let proteinPercentage = 0.25;
         let fatPercentage = 0.3;
         let carbsPercentage = 0.45;
@@ -291,19 +302,19 @@ function MealPlanningApp() {
             }
         }
 
+        // Calculate macros in grams
         const protein = Math.round(totalCalories * proteinPercentage / 4);
         const fat = Math.round(totalCalories * fatPercentage / 9);
         const carbs = Math.round(totalCalories * carbsPercentage / 4);
 
-        // Return the stats instead of setting state
-        return {
+        setNutritionStats({
             calories: Math.round(totalCalories),
             macros: [
                 { name: t.proteins, value: protein, grams: protein, color: '#8884d8' },
                 { name: t.fats, value: fat, grams: fat, color: '#82ca9d' },
                 { name: t.carbs, value: carbs, grams: carbs, color: '#ffc658' }
             ]
-        };
+        });
     };
 
     const handleGenerateWeeklyPlan = async () => {
@@ -722,7 +733,6 @@ function MealPlanningApp() {
             </div>
         );
     };
-
     return (
         <div className={`meal-planning-container ${theme}`}>
             <div className="header">
@@ -753,10 +763,10 @@ function MealPlanningApp() {
                     <div className="summary-details">
                         <p>{t.weight}: {userData.weight} кг | {t.height}: {userData.height} см | {t.age}: {userData.age}</p>
                         <p>
-                            {t.dietType}: {userData.dietType === 'basic' ? t.basic :
-                            userData.dietType === 'gentle' ? t.gentle :
-                                userData.dietType === 'protein' ? t.highProtein :
-                                    userData.dietType === 'weight_loss' ? t.weightLoss : t.notSpecified}
+                            {t.dietType}: {userData.dietType === 'basic' ? 'Базовая' :
+                            userData.dietType === 'gentle' ? 'Щадящая' :
+                                userData.dietType === 'protein' ? 'Высокобелковая' :
+                                    userData.dietType === 'weight_loss' ? 'Для похудения' : t.notSpecified}
                         </p>
                         {userData.mealPreferences && <p>{t.mealPreferences}: {userData.mealPreferences}</p>}
                     </div>
@@ -802,8 +812,6 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
-
-
 
 
 

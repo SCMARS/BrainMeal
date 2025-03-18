@@ -25,7 +25,9 @@
     --transition-medium: 0.3s;
     --transition-slow: 0.5s;
 }
-[data-theme="dark"]{
+
+/* Dark theme - more vibrant with better contrast */
+[data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-tertiary: #2d3748;
@@ -40,78 +42,12 @@
     --shadow-hover: rgba(0, 0, 0, 0.4);
     --chart-bg: #1e293b;
 
-    /* Adjusted dark mode glass effect variables for better contrast */
-    --glass-bg: rgba(15, 23, 42, 0.8); /* Darker background */
+    /* Dark mode glass effect variables */
+    --glass-bg: rgba(30, 41, 59, 0.8);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* Update the glass effects for dark theme */
-[data-theme="dark"] .plan-card,
-.theme-dark .plan-card {
-    background: var(--bg-secondary);
-    border-color: var(--border-color);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="dark"] .user-profile-summary,
-.theme-dark .user-profile-summary {
-    background: var(--bg-secondary);
-    border-color: var(--border-color);
-}
-
-[data-theme="dark"] .header,
-.theme-dark .header {
-    background: var(--glass-bg);
-    border-color: var(--border-color);
-}
-
-/* Add specific dark mode hover effects */
-[data-theme="dark"] .plan-card:hover,
-.theme-dark .plan-card:hover {
-    background: var(--bg-tertiary);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 126, 29, 0.15);
-}
-
-[data-theme="dark"] .user-profile-summary:hover,
-.theme-dark .user-profile-summary:hover {
-    background: var(--bg-tertiary);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 126, 29, 0.15);
-}
-
-/* Ensure text remains visible in dark mode */
-[data-theme="dark"] .summary-title,
-.theme-dark .summary-title {
-    background: linear-gradient(90deg, var(--text-title), var(--accent-color));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Update scrollbar for dark theme */
-[data-theme="dark"] ::-webkit-scrollbar-track,
-.theme-dark ::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
-}
-
-[data-theme="dark"] ::-webkit-scrollbar-thumb,
-.theme-dark ::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
-}
-
-/* Ensure error messages are visible in dark mode */
-[data-theme="dark"] .error-message,
-.theme-dark .error-message {
-    background-color: var(--accent-light);
-    border-color: var(--accent-color);
-}
-.error-message {
-    transition:
-            background-color var(--transition-medium) ease,
-            border-color var(--transition-medium) ease,
-            box-shadow var(--transition-medium) ease,
-            color var(--transition-medium) ease;
-}
 /* Improved Theme toggle button with enhanced animated icon */
 .theme-toggle {
     position: absolute;
@@ -214,68 +150,33 @@ body {
     transition: background-color var(--transition-medium) ease;
 }
 
-/* Enhanced static header with glass effect and orange border */
+/* Enhanced floating header with glass effect and orange border */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
     padding: 15px 30px;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 4px 20px var(--glass-shadow);
+    box-shadow: 0 4px 20px var(--shadow-color);
     min-height: 70px;
     transition: all var(--transition-medium) ease;
     border-bottom: 1px solid var(--glass-border);
-    position: static;
-    top: 0;
-    width: 100%;
 }
 
-.header .logo {
-    font-family: 'Roboto', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--accent-color);
-    transition: all var(--transition-medium) ease;
+.header.scrolled {
+    padding: 10px 30px;
+    min-height: 60px;
+    box-shadow: 0 6px 24px var(--shadow-color);
 }
 
-.header .logo:hover {
-    color: var(--accent-hover);
-}
-
-.header nav {
-    display: flex;
-    gap: 20px;
-}
-
-.header nav a {
-    font-family: 'Roboto', sans-serif;
-    font-size: 18px;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: color var(--transition-medium) ease;
-}
-
-.header nav a:hover {
-    color: var(--accent-color);
-}
-
-/* Improved header animation */
-.header {
-    animation: slideDown var(--transition-medium) ease;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
 .title-container {
     text-align: center;
     animation: fadeInDown 0.7s ease-out;
@@ -1950,6 +1851,7 @@ button:active {
     opacity: 0;
     animation: fadeIn 0.3s forwards;
 }
+
 .modal-content {
     background-color: white;
     padding: 25px;
@@ -2016,52 +1918,4 @@ button:active {
 .dark-theme .form-group input:focus {
     border-color: #6e8efb;
     box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
-}
-
-@media (max-width: 1200px) {
-    .week-grid {
-        grid-template-columns: repeat(4, 1fr); /* 4 days per row on medium screens */
-    }
-
-    .day-card {
-        min-height: 300px; /* Increase height on medium screens */
-    }
-}
-
-@media (max-width: 900px) {
-    .content-layout {
-        flex-direction: column;
-        overflow-y: visible;
-    }
-}
-
-@media (max-width: 480px) {
-    .week-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .day-card {
-        min-height: 280px;
-    }
-}
-
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
 }
