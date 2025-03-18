@@ -56,7 +56,7 @@ const Login = () => {
         localStorage.setItem('language', language);
     }, [theme, language]);
 
-    // Переключение темы
+
     const toggleTheme = () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
     };

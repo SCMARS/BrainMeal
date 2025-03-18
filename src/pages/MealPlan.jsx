@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { generateMealPlan } from './services/llmService.jsx';
@@ -6,6 +6,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 function MealPlanningApp() {
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [userData, setUserData] = useState(null);
     const [weeklyPlan, setWeeklyPlan] = useState(null);
     const [dailyPlan, setDailyPlan] = useState(null);
@@ -14,13 +16,13 @@ function MealPlanningApp() {
     const [error, setError] = useState(null);
     const [nutritionStats, setNutritionStats] = useState(null);
     const [selectedDay, setSelectedDay] = useState('monday');
-
     const [isEditing, setIsEditing] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
     const [editingDay, setEditingDay] = useState(null);
     const [editMealName, setEditMealName] = useState('');
     const [editCalories, setEditCalories] = useState('');
 
+    // Translations
     const translations = {
         en: {
             mainTitle: "Meal Planning",
@@ -96,7 +98,12 @@ function MealPlanningApp() {
             totalMacros: "Total Macronutrients",
             proteins: "Proteins",
             fats: "Fats",
-            carbs: "Carbohydrates"
+            carbs: "Carbohydrates",
+            basic: "Basic",
+            gentle: "Gentle",
+            highProtein: "High Protein",
+            weightLoss: "Weight Loss",
+            muscleGain: "Muscle Gain"
         },
         uk: {
             mainTitle: "План харчування",
@@ -161,7 +168,7 @@ function MealPlanningApp() {
             tuesday: "Вівторок",
             wednesday: "Середа",
             thursday: "Четвер",
-            friday: "П’ятниця",
+            friday: "П'ятниця",
             saturday: "Субота",
             sunday: "Неділя",
             mealEditing: "Редагування прийому їжі",
@@ -172,26 +179,44 @@ function MealPlanningApp() {
             totalMacros: "Загальна кількість макроелементів",
             proteins: "Білки",
             fats: "Жири",
-            carbs: "Вуглеводи"
+            carbs: "Вуглеводи",
+            basic: "Базова",
+            gentle: "Щадяща",
+            highProtein: "Високобілкова",
+            weightLoss: "Для схуднення",
+            muscleGain: "Для набору м'язової маси"
         }
     };
 
+    // Theme and language state
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+        return location.state?.darkMode || false;
+    });
 
-    const location = useLocation();
-    const themeFromNav = location.state?.darkMode !== undefined ?
-        (location.state.darkMode ? 'dark' : 'light') : null;
-    const savedTheme = themeFromNav || localStorage.getItem('theme') || 'dark';
-    const [theme, setTheme] = useState(savedTheme);
+    const [language, setLanguage] = useState(() => {
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) {
+            return savedLanguage;
+        }
+        return location.state?.language || 'en';
+    });
 
-    // Получаем язык из state или localStorage, по умолчанию английский
-    const langFromNav = location.state?.language || null;
-    const savedLanguage = langFromNav || localStorage.getItem('language') || 'en';
-    const [language, setLanguage] = useState(savedLanguage);
-
-    // Выбираем переводы в зависимости от языка
     const t = translations[language];
+    const theme = darkMode ? 'dark-theme' : 'light-theme';
 
-    // Загрузка данных пользователя при монтировании компонента
+    useEffect(() => {
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    }, [darkMode]);
+
+    useEffect(() => {
+        localStorage.setItem('language', language);
+    }, [language]);
+
+    // Load user data on mount
     useEffect(() => {
         const storedUserData = localStorage.getItem('userData');
         if (storedUserData) {
@@ -199,12 +224,12 @@ function MealPlanningApp() {
                 setUserData(JSON.parse(storedUserData));
             } catch (err) {
                 console.error("Error parsing user data:", err);
-                setError("Ошибка загрузки профиля. Вернитесь на страницу профиля.");
+                setError(t.errorLoadingProfile);
             }
         } else {
-            setError("Данные пользователя не найдены. Пожалуйста, заполните профиль.");
+            setError(t.userDataNotFound);
         }
-    }, []);
+    }, [t]);
 
     useEffect(() => {
         if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
@@ -218,14 +243,29 @@ function MealPlanningApp() {
         navigate("/profile");
     };
 
+    // Translates diet type to user-friendly text
+    const translateDietType = (dietType) => {
+        switch(dietType) {
+            case 'basic': return t.basic;
+            case 'gentle': return t.gentle;
+            case 'protein': return t.highProtein;
+            case 'weight_loss': return t.weightLoss;
+            case 'muscle_gain': return t.muscleGain;
+            default: return t.notSpecified;
+        }
+    };
+
     const calculateNutritionStats = (plan) => {
         let totalCalories = 0;
+
         if (plan.breakfast_calories !== undefined) {
+            // Weekly plan format
             totalCalories =
                 (parseInt(plan.breakfast_calories) || 0) +
                 (parseInt(plan.lunch_calories) || 0) +
                 (parseInt(plan.dinner_calories) || 0);
         } else if (plan.breakfast?.calories !== undefined) {
+            // Daily plan format
             totalCalories =
                 (parseInt(plan.breakfast?.calories) || 0) +
                 (parseInt(plan.lunch?.calories) || 0) +
@@ -233,11 +273,12 @@ function MealPlanningApp() {
                 (parseInt(plan.snack?.calories) || 0);
         }
 
-        // Распределение макроэлементов в зависимости от типа диеты
+        // Default macronutrient distribution
         let proteinPercentage = 0.25;
         let fatPercentage = 0.3;
         let carbsPercentage = 0.45;
 
+        // Adjust based on diet type
         if (userData && userData.dietType) {
             switch(userData.dietType) {
                 case "protein":
@@ -261,6 +302,7 @@ function MealPlanningApp() {
             }
         }
 
+        // Calculate macros in grams
         const protein = Math.round(totalCalories * proteinPercentage / 4);
         const fat = Math.round(totalCalories * fatPercentage / 9);
         const carbs = Math.round(totalCalories * carbsPercentage / 4);
@@ -268,17 +310,16 @@ function MealPlanningApp() {
         setNutritionStats({
             calories: Math.round(totalCalories),
             macros: [
-                { name: 'Белки', value: protein, grams: protein, color: '#8884d8' },
-                { name: 'Жиры', value: fat, grams: fat, color: '#82ca9d' },
-                { name: 'Углеводы', value: carbs, grams: carbs, color: '#ffc658' }
+                { name: t.proteins, value: protein, grams: protein, color: '#8884d8' },
+                { name: t.fats, value: fat, grams: fat, color: '#82ca9d' },
+                { name: t.carbs, value: carbs, grams: carbs, color: '#ffc658' }
             ]
         });
     };
 
-    // Генерация недельного плана питания
     const handleGenerateWeeklyPlan = async () => {
         if (!userData) {
-            setError("Данные пользователя отсутствуют. Заполните профиль.");
+            setError(t.userDataNotFound);
             return;
         }
         setIsLoadingWeekly(true);
@@ -290,19 +331,18 @@ function MealPlanningApp() {
             });
             setWeeklyPlan(generatedPlan);
             setSelectedDay('monday');
-            setDailyPlan(null); // Очистка дневного плана при генерации недельного
+            setDailyPlan(null);
         } catch (err) {
-            setError("Не удалось сгенерировать недельный план. Попробуйте позже.");
             console.error(err);
+            setError(t.weeklyPlanGenerationError || "Failed to generate weekly plan. Please try again later.");
         } finally {
             setIsLoadingWeekly(false);
         }
     };
 
-    // Генерация дневного плана питания
     const handleGenerateDailyPlan = async () => {
         if (!userData) {
-            setError("Данные пользователя отсутствуют. Заполните профиль.");
+            setError(t.userDataNotFound);
             return;
         }
         setIsLoadingDaily(true);
@@ -313,21 +353,19 @@ function MealPlanningApp() {
                 isWeekly: false
             });
             setDailyPlan(generatedPlan);
-            setWeeklyPlan(null); // Очистка недельного плана при генерации дневного
+            setWeeklyPlan(null);
         } catch (err) {
-            setError("Не удалось сгенерировать дневной план. Попробуйте позже.");
             console.error(err);
+            setError(t.dailyPlanGenerationError || "Failed to generate daily plan. Please try again later.");
         } finally {
             setIsLoadingDaily(false);
         }
     };
 
-    // Выбор дня для недельного плана
     const handleDayClick = (day) => {
         setSelectedDay(day);
     };
 
-    // Редактирование приема пищи в недельном плане
     const startEditingWeeklyMeal = (day, meal) => {
         setIsEditing(true);
         setEditingDay(day);
@@ -336,7 +374,6 @@ function MealPlanningApp() {
         setEditCalories(weeklyPlan[day][`${meal}_calories`] || 0);
     };
 
-    // Редактирование приема пищи в дневном плане
     const startEditingDailyMeal = (meal) => {
         setIsEditing(true);
         setEditingDay(null);
@@ -345,9 +382,9 @@ function MealPlanningApp() {
         setEditCalories(dailyPlan[meal]?.calories || 0);
     };
 
-    // Сохранение изменений после редактирования приема пищи
     const saveEditedMeal = () => {
-        if (editingDay) { // Недельный план
+        if (editingDay) {
+            // Editing weekly plan
             const updatedWeeklyPlan = { ...weeklyPlan };
             if (!updatedWeeklyPlan[editingDay]) {
                 updatedWeeklyPlan[editingDay] = {};
@@ -357,7 +394,8 @@ function MealPlanningApp() {
             updatedWeeklyPlan[editingDay][`${editingMeal}_calories`] = parseInt(editCalories) || 0;
             setWeeklyPlan(updatedWeeklyPlan);
             calculateNutritionStats(updatedWeeklyPlan[editingDay]);
-        } else { // Дневной план
+        } else {
+            // Editing daily plan
             const updatedDailyPlan = { ...dailyPlan };
             if (!updatedDailyPlan[editingMeal]) {
                 updatedDailyPlan[editingMeal] = {};
@@ -381,256 +419,93 @@ function MealPlanningApp() {
         setEditingDay(null);
     };
 
-    // Модальное окно для редактирования приема пищи
+    // Edit modal
     const renderEditModal = () => {
         if (!isEditing) return null;
-
-        const mealDisplayNames = {
-            'breakfast': 'Завтрак',
-            'lunch': 'Обед',
-            'dinner': 'Ужин',
-            'snack': 'Перекус'
-        };
-
-        const dayDisplayNames = {
-            'monday': 'Понедельник',
-            'tuesday': 'Вторник',
-            'wednesday': 'Среда',
-            'thursday': 'Четверг',
-            'friday': 'Пятница',
-            'saturday': 'Суббота',
-            'sunday': 'Воскресенье'
-        };
-
         return (
-            <div className="edit-modal-overlay">
-                <div className="edit-modal">
-                    <h3>Редактирование приема пищи</h3>
-                    {editingDay && <p>День: {dayDisplayNames[editingDay]}</p>}
-                    <p>Прием пищи: {mealDisplayNames[editingMeal]}</p>
-                    <div className="edit-field">
-                        <label>Блюдо:</label>
-                        <textarea
+            <div className="modal">
+                <div className="modal-content">
+                    <h3>{t.mealEditing}</h3>
+                    {editingDay && <p>{t.day}: {t[editingDay]}</p>}
+                    <p>{t.meal}: {t[editingMeal]}</p>
+                    <div className="form-group">
+                        <label htmlFor="meal-name">{t.mealName}:</label>
+                        <input
+                            id="meal-name"
+                            type="text"
                             value={editMealName}
                             onChange={(e) => setEditMealName(e.target.value)}
-                            rows={3}
+                            placeholder={t.enterMealName}
                         />
                     </div>
-                    <div className="edit-field">
-                        <label>Калории:</label>
+                    <div className="form-group">
+                        <label htmlFor="calories">{t.caloriesCount}:</label>
                         <input
+                            id="calories"
                             type="number"
                             value={editCalories}
                             onChange={(e) => setEditCalories(e.target.value)}
-                            min="0"
+                            placeholder={t.enterCalories}
                         />
                     </div>
-                    <div className="edit-buttons">
-                        <button onClick={saveEditedMeal} className="save-button">Сохранить</button>
-                        <button onClick={cancelEditing} className="cancel-button">Отмена</button>
+                    <div className="button-group">
+                        <button className="save-button" onClick={saveEditedMeal}>{t.save}</button>
+                        <button className="cancel-button" onClick={cancelEditing}>{t.cancel}</button>
                     </div>
                 </div>
             </div>
         );
     };
 
-    // Отображение недельного плана
-    const renderWeeklyPlan = () => {
-        if (!weeklyPlan) {
-            return (
-                <div className="week-grid">
-                    {['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'].map((day) => (
-                        <div key={day} className="day-card">
-                            <h3 className="day-title">{day}</h3>
-                            <p className="meal-text">Сгенерируйте план, чтобы увидеть меню</p>
-                        </div>
-                    ))}
-                </div>
-            );
-        }
-
-        const days = {
-            'monday': 'Понедельник',
-            'tuesday': 'Вторник',
-            'wednesday': 'Среда',
-            'thursday': 'Четверг',
-            'friday': 'Пятница',
-            'saturday': 'Суббота',
-            'sunday': 'Воскресенье'
-        };
-
-        return (
-            <div className="week-grid">
-                {Object.entries(days).map(([engDay, rusDay]) => (
-                    <div
-                        key={engDay}
-                        className={`day-card ${selectedDay === engDay ? 'selected-day' : ''}`}
-                        onClick={() => handleDayClick(engDay)}
-                    >
-                        <h3 className="day-title">{rusDay}</h3>
-                        {weeklyPlan[engDay] ? (
-                            <>
-                                <div className="meal-item">
-                                    <p className="meal-text"><strong>Завтрак:</strong> {weeklyPlan[engDay].breakfast || 'Не указано'}</p>
-                                    <p className="meal-text small-text">{weeklyPlan[engDay].breakfast_calories || 0} ккал</p>
-                                    <button
-                                        className="edit-meal-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            startEditingWeeklyMeal(engDay, 'breakfast');
-                                        }}
-                                    >
-                                        Изменить
-                                    </button>
-                                </div>
-                                <div className="meal-item">
-                                    <p className="meal-text"><strong>Обед:</strong> {weeklyPlan[engDay].lunch || 'Не указано'}</p>
-                                    <p className="meal-text small-text">{weeklyPlan[engDay].lunch_calories || 0} ккал</p>
-                                    <button
-                                        className="edit-meal-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            startEditingWeeklyMeal(engDay, 'lunch');
-                                        }}
-                                    >
-                                        Изменить
-                                    </button>
-                                </div>
-                                <div className="meal-item">
-                                    <p className="meal-text"><strong>Ужин:</strong> {weeklyPlan[engDay].dinner || 'Не указано'}</p>
-                                    <p className="meal-text small-text">{weeklyPlan[engDay].dinner_calories || 0} ккал</p>
-                                    <button
-                                        className="edit-meal-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            startEditingWeeklyMeal(engDay, 'dinner');
-                                        }}
-                                    >
-                                        Изменить
-                                    </button>
-                                </div>
-                                <p className="total-calories-text">
-                                    Всего: {(weeklyPlan[engDay].breakfast_calories || 0) +
-                                    (weeklyPlan[engDay].lunch_calories || 0) +
-                                    (weeklyPlan[engDay].dinner_calories || 0)} ккал
-                                </p>
-                            </>
-                        ) : (
-                            <p className="meal-text">Нет данных для этого дня</p>
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
-    // Отображение дневного плана
-    const renderDailyPlan = () => {
-        if (!dailyPlan) {
-            return (
-                <div className="daily-meals">
-                    <div className="meal-card">
-                        <h3 className="meal-title">Завтрак</h3>
-                        <p className="meal-text">Сгенерируйте план, чтобы увидеть меню</p>
-                    </div>
-                    <div className="meal-card">
-                        <h3 className="meal-title">Обед</h3>
-                        <p className="meal-text">Сгенерируйте план, чтобы увидеть меню</p>
-                    </div>
-                    <div className="meal-card">
-                        <h3 className="meal-title">Ужин</h3>
-                        <p className="meal-text">Сгенерируйте план, чтобы увидеть меню</p>
-                    </div>
-                </div>
-            );
-        }
-
-        const totalCalories = (dailyPlan.breakfast?.calories || 0) +
-            (dailyPlan.lunch?.calories || 0) +
-            (dailyPlan.dinner?.calories || 0) +
-            (dailyPlan.snack?.calories || 0);
-
-        return (
-            <div className="daily-meals">
-                <div className="meal-card">
-                    <h3 className="meal-title">Завтрак</h3>
-                    <p className="meal-text">{dailyPlan.breakfast?.meal || "Не указано"}</p>
-                    <p className="calories-text">{dailyPlan.breakfast?.calories || 0} ккал</p>
-                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('breakfast')}>Изменить</button>
-                </div>
-                <div className="meal-card">
-                    <h3 className="meal-title">Обед</h3>
-                    <p className="meal-text">{dailyPlan.lunch?.meal || "Не указано"}</p>
-                    <p className="calories-text">{dailyPlan.lunch?.calories || 0} ккал</p>
-                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('lunch')}>Изменить</button>
-                </div>
-                <div className="meal-card">
-                    <h3 className="meal-title">Ужин</h3>
-                    <p className="meal-text">{dailyPlan.dinner?.meal || "Не указано"}</p>
-                    <p className="calories-text">{dailyPlan.dinner?.calories || 0} ккал</p>
-                    <button className="edit-meal-button" onClick={() => startEditingDailyMeal('dinner')}>Изменить</button>
-                </div>
-                {dailyPlan.snack && (
-                    <div className="meal-card">
-                        <h3 className="meal-title">Перекус</h3>
-                        <p className="meal-text">{dailyPlan.snack.meal}</p>
-                        <p className="calories-text">{dailyPlan.snack.calories} ккал</p>
-                        <button className="edit-meal-button" onClick={() => startEditingDailyMeal('snack')}>Изменить</button>
-                    </div>
-                )}
-                <div className="total-calories-card">
-                    <p className="total-calories-text">Всего калорий: {totalCalories} ккал</p>
-                </div>
-            </div>
-        );
-    };
-
-    // Отображение статистики калорий по приёмам пищи
     const renderCalorieStats = () => {
         let mealCalories = [];
-        if (dailyPlan && dailyPlan.breakfast?.calories !== undefined) {
+        let total = 0;
+
+        if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
+            const dayPlan = weeklyPlan[selectedDay];
             mealCalories = [
-                { name: "Завтрак", calories: dailyPlan.breakfast.calories },
-                { name: "Обед", calories: dailyPlan.lunch.calories },
-                { name: "Ужин", calories: dailyPlan.dinner.calories }
+                { name: t.breakfast, calories: Number(dayPlan.breakfast_calories) || 0 },
+                { name: t.lunch, calories: Number(dayPlan.lunch_calories) || 0 },
+                { name: t.dinner, calories: Number(dayPlan.dinner_calories) || 0 },
             ];
-            if (dailyPlan.snack) {
-                mealCalories.push({ name: "Перекус", calories: dailyPlan.snack.calories });
-            }
-        } else if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
+            total = mealCalories.reduce((acc, meal) => acc + meal.calories, 0);
+        } else if (dailyPlan) {
             mealCalories = [
-                { name: "Завтрак", calories: weeklyPlan[selectedDay].breakfast_calories },
-                { name: "Обед", calories: weeklyPlan[selectedDay].lunch_calories },
-                { name: "Ужин", calories: weeklyPlan[selectedDay].dinner_calories }
+                { name: t.breakfast, calories: Number(dailyPlan.breakfast?.calories) || 0 },
+                { name: t.lunch, calories: Number(dailyPlan.lunch?.calories) || 0 },
+                { name: t.dinner, calories: Number(dailyPlan.dinner?.calories) || 0 },
+                { name: t.snack, calories: Number(dailyPlan.snack?.calories) || 0 },
             ];
+            total = mealCalories.reduce((acc, meal) => acc + meal.calories, 0);
         }
-        const total = mealCalories.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+
+        if (mealCalories.length === 0) return null;
+
         return (
             <div className="calorie-stats">
-                <h3>Калорийность по приемам пищи</h3>
+                <h3>{t.calorieStats}</h3>
                 {mealCalories.map((meal) => {
                     const percentage = total ? Math.round((meal.calories / total) * 100) : 0;
                     return (
                         <div key={meal.name} className="meal-calorie-item">
                             <span className="meal-name">{meal.name}:</span>
-                            <span className="meal-calories">{meal.calories} ккал ({percentage}%)</span>
+                            <span className="meal-calories">{meal.calories} {t.calories} ({percentage}%)</span>
                         </div>
                     );
                 })}
                 <div className="total-calories">
-                    <strong>Всего: {total} ккал</strong>
+                    <strong>{t.totalCaloriesIntake} {total} {t.calories}</strong>
                 </div>
             </div>
         );
     };
 
-    // Отображение диаграммы и рекомендаций по макроэлементам
     const renderNutritionStats = () => {
         if (!nutritionStats) {
             return (
                 <div className="nutrition-placeholder">
-                    <h3>Информация о питательных веществах</h3>
-                    <p>Сгенерируйте план питания, чтобы увидеть данные.</p>
+                    <h3>{t.nutritionInfo}</h3>
+                    <p>{t.generateMealPlan}</p>
                 </div>
             );
         }
@@ -638,36 +513,36 @@ function MealPlanningApp() {
         const getDietRecommendations = () => {
             if (!userData || !userData.dietType) {
                 return [
-                    'Пейте достаточно воды в течение дня',
-                    'Разделите приемы пищи на 3-4 часа',
-                    'Включайте в рацион разнообразные продукты'
+                    t.hydrationTip,
+                    t.mealTimingTip,
+                    t.balancedDietTip
                 ];
             }
             switch (userData.dietType) {
                 case 'protein':
                 case 'muscle_gain':
                     return [
-                        'Потребляйте больше белковой пищи (яйца, куриная грудка, творог)',
-                        'Увеличьте потребление воды до 2-3 литров в день',
-                        'Включите больше цельнозерновых продуктов для энергии'
+                        t.proteinDietTip,
+                        t.muscleGainTip,
+                        t.complexCarbsTip
                     ];
                 case 'weight_loss':
                     return [
-                        'Старайтесь есть медленно, тщательно пережевывая пищу',
-                        'Избегайте сахара и простых углеводов',
-                        'Ешьте больше овощей и белковой пищи'
+                        t.eatSlowlyTip,
+                        t.weightLossTip,
+                        t.moreVegetablesTip
                     ];
                 case 'gentle':
                     return [
-                        'Избегайте острых и жирных блюд',
-                        'Предпочитайте вареную и тушеную пищу',
-                        'Пейте больше теплой воды между приемами пищи'
+                        t.gentleDietTip,
+                        t.preferBoiledTip,
+                        t.warmWaterTip
                     ];
                 default:
                     return [
-                        'Пейте достаточно воды в течение дня',
-                        'Разделите приемы пищи на 3-4 часа',
-                        'Включайте в рацион разнообразные продукты'
+                        t.hydrationTip,
+                        t.mealTimingTip,
+                        t.balancedDietTip
                     ];
             }
         };
@@ -676,11 +551,11 @@ function MealPlanningApp() {
 
         return (
             <div className="nutrition-stats">
-                <h3>Питательные вещества</h3>
+                <h3>{t.totalMacros}</h3>
                 <div className="nutrition-summary">
                     <div className="total-calories">
-                        <h4>Всего калорий</h4>
-                        <p className="calories-value">{nutritionStats.calories} ккал</p>
+                        <h4>{t.totalCalories}</h4>
+                        <p className="calories-value">{nutritionStats.calories} {t.calories}</p>
                     </div>
                     <div className="macros-list">
                         {nutritionStats.macros.map((macro) => (
@@ -715,24 +590,26 @@ function MealPlanningApp() {
                     </ResponsiveContainer>
                 </div>
                 <div className="calorie-distribution">
-                    <h4>Распределение калорий</h4>
+                    <h4>{t.calorieDistribution}</h4>
                     <div className="distribution-items">
                         {nutritionStats.macros.map((macro) => {
-                            const calories = (macro.name === 'Белки' || macro.name === 'Углеводы')
+                            const calories = (macro.name === t.proteins || macro.name === t.carbs)
                                 ? macro.grams * 4
                                 : macro.grams * 9;
-                            const percentage = Math.round((calories / nutritionStats.calories) * 100);
+                            const percentage = nutritionStats.calories > 0
+                                ? Math.round((calories / nutritionStats.calories) * 100)
+                                : 0;
                             return (
                                 <div key={`cal-${macro.name}`} className="distribution-item">
                                     <span className="macro-name">{macro.name}:</span>
-                                    <span className="macro-calories">{calories} ккал ({percentage}%)</span>
+                                    <span className="macro-calories">{calories} {t.calories} ({percentage}%)</span>
                                 </div>
                             );
                         })}
                     </div>
                 </div>
                 <div className="diet-recommendations">
-                    <h4>Рекомендации</h4>
+                    <h4>{t.recommendations}</h4>
                     <ul>
                         {recommendations.map((rec, index) => (
                             <li key={index}>{rec}</li>
@@ -743,13 +620,135 @@ function MealPlanningApp() {
         );
     };
 
+    const renderWeeklyPlan = () => {
+        if (isLoadingWeekly) {
+            return <div className="loading">{t.loading}</div>;
+        }
+        if (!weeklyPlan) {
+            return <div className="no-data">{t.noMealData}</div>;
+        }
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        return (
+            <div className="weekly-plan">
+                <div className="day-selector">
+                    {days.map(day => (
+                        <button
+                            key={day}
+                            className={`day-button ${selectedDay === day ? 'selected' : ''}`}
+                            onClick={() => handleDayClick(day)}
+                        >
+                            {t[day]}
+                        </button>
+                    ))}
+                </div>
+                {selectedDay && weeklyPlan[selectedDay] ? (
+                    <div className="day-meals">
+                        <div className="meal-item">
+                            <div className="meal-header">
+                                <h4>{t.breakfast}</h4>
+                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'breakfast')}>
+                                    {t.edit}
+                                </button>
+                            </div>
+                            <p>{weeklyPlan[selectedDay].breakfast || t.noMealData}</p>
+                            <p className="meal-calories">{weeklyPlan[selectedDay].breakfast_calories} {t.calories}</p>
+                        </div>
+                        <div className="meal-item">
+                            <div className="meal-header">
+                                <h4>{t.lunch}</h4>
+                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'lunch')}>
+                                    {t.edit}
+                                </button>
+                            </div>
+                            <p>{weeklyPlan[selectedDay].lunch || t.noMealData}</p>
+                            <p className="meal-calories">{weeklyPlan[selectedDay].lunch_calories} {t.calories}</p>
+                        </div>
+                        <div className="meal-item">
+                            <div className="meal-header">
+                                <h4>{t.dinner}</h4>
+                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'dinner')}>
+                                    {t.edit}
+                                </button>
+                            </div>
+                            <p>{weeklyPlan[selectedDay].dinner || t.noMealData}</p>
+                            <p className="meal-calories">{weeklyPlan[selectedDay].dinner_calories} {t.calories}</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="no-data">{t.noDataForDay}</div>
+                )}
+            </div>
+        );
+    };
+
+    const renderDailyPlan = () => {
+        if (isLoadingDaily) {
+            return <div className="loading">{t.loading}</div>;
+        }
+        if (!dailyPlan) {
+            return <div className="no-data">{t.noMealData}</div>;
+        }
+        return (
+            <div className="daily-plan">
+                <div className="meal-item">
+                    <div className="meal-header">
+                        <h4>{t.breakfast}</h4>
+                        <button className="edit-button" onClick={() => startEditingDailyMeal('breakfast')}>
+                            {t.edit}
+                        </button>
+                    </div>
+                    <p>{dailyPlan.breakfast?.meal || t.noMealData}</p>
+                    <p className="meal-calories">{dailyPlan.breakfast?.calories} {t.calories}</p>
+                </div>
+                <div className="meal-item">
+                    <div className="meal-header">
+                        <h4>{t.lunch}</h4>
+                        <button className="edit-button" onClick={() => startEditingDailyMeal('lunch')}>
+                            {t.edit}
+                        </button>
+                    </div>
+                    <p>{dailyPlan.lunch?.meal || t.noMealData}</p>
+                    <p className="meal-calories">{dailyPlan.lunch?.calories} {t.calories}</p>
+                </div>
+                <div className="meal-item">
+                    <div className="meal-header">
+                        <h4>{t.dinner}</h4>
+                        <button className="edit-button" onClick={() => startEditingDailyMeal('dinner')}>
+                            {t.edit}
+                        </button>
+                    </div>
+                    <p>{dailyPlan.dinner?.meal || t.noMealData}</p>
+                    <p className="meal-calories">{dailyPlan.dinner?.calories} {t.calories}</p>
+                </div>
+                <div className="meal-item">
+                    <div className="meal-header">
+                        <h4>{t.snack}</h4>
+                        <button className="edit-button" onClick={() => startEditingDailyMeal('snack')}>
+                            {t.edit}
+                        </button>
+                    </div>
+                    <p>{dailyPlan.snack?.meal || t.noMealData}</p>
+                    <p className="meal-calories">{dailyPlan.snack?.calories} {t.calories}</p>
+                </div>
+            </div>
+        );
+    };
     return (
         <div className={`meal-planning-container ${theme}`}>
             <div className="header">
-                <button className="back-button" onClick={backHandler}>← Назад</button>
+                <button className="back-button" onClick={backHandler}>← {t.back}</button>
                 <div className="title-container">
-                    <h1 className="main-title">План питания</h1>
-                    <p className="subtitle">На каждый день недели</p>
+                    <h1 className="main-title">{t.mainTitle}</h1>
+                    <p className="subtitle">{t.subtitle}</p>
+                </div>
+                <div className="controls">
+                    <button onClick={() => setDarkMode(!darkMode)}>
+                        {darkMode ? "Light Mode" : "Dark Mode"}
+                    </button>
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                        <option value="en">English</option>
+                        <option value="uk">Українська</option>
+                    </select>
                 </div>
                 <div className="spacer"></div>
             </div>
@@ -760,16 +759,16 @@ function MealPlanningApp() {
 
             {userData && (
                 <div className="user-profile-summary">
-                    <h3 className="summary-title">Ваш профиль</h3>
+                    <h3 className="summary-title">{t.profile}</h3>
                     <div className="summary-details">
-                        <p>Вес: {userData.weight} кг | Рост: {userData.height} см | Возраст: {userData.age} лет</p>
+                        <p>{t.weight}: {userData.weight} кг | {t.height}: {userData.height} см | {t.age}: {userData.age}</p>
                         <p>
-                            Тип диеты: {userData.dietType === 'basic' ? 'Базовая' :
+                            {t.dietType}: {userData.dietType === 'basic' ? 'Базовая' :
                             userData.dietType === 'gentle' ? 'Щадящая' :
                                 userData.dietType === 'protein' ? 'Высокобелковая' :
-                                    userData.dietType === 'weight_loss' ? 'Для похудения' : 'Не указан'}
+                                    userData.dietType === 'weight_loss' ? 'Для похудения' : t.notSpecified}
                         </p>
-                        {userData.mealPreferences && <p>Предпочтения: {userData.mealPreferences}</p>}
+                        {userData.mealPreferences && <p>{t.mealPreferences}: {userData.mealPreferences}</p>}
                     </div>
                 </div>
             )}
@@ -777,25 +776,25 @@ function MealPlanningApp() {
             <div className="content-layout">
                 <div className="meal-plans-container">
                     <div className="plan-card">
-                        <h2 className="plan-title">Недельный план</h2>
+                        <h2 className="plan-title">{t.weeklyPlan}</h2>
                         <button
                             className={`generate-button ${isLoadingWeekly ? 'loading' : ''}`}
                             onClick={handleGenerateWeeklyPlan}
                             disabled={isLoadingWeekly}
                         >
-                            {isLoadingWeekly ? 'Генерация...' : 'Сгенерировать недельный план'}
+                            {isLoadingWeekly ? t.loading : t.generateWeeklyPlan}
                         </button>
                         {renderWeeklyPlan()}
                     </div>
 
                     <div className="plan-card">
-                        <h2 className="plan-title">Дневной план</h2>
+                        <h2 className="plan-title">{t.dailyPlan}</h2>
                         <button
                             className={`generate-button ${isLoadingDaily ? 'loading' : ''}`}
                             onClick={handleGenerateDailyPlan}
                             disabled={isLoadingDaily}
                         >
-                            {isLoadingDaily ? 'Генерация...' : 'Сгенерировать дневной план'}
+                            {isLoadingDaily ? t.loading : t.generateDailyPlan}
                         </button>
                         {renderDailyPlan()}
                     </div>
@@ -813,6 +812,12 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
+
+
+
+
+
+
 
 
 

@@ -65,14 +65,13 @@ function Register() {
         }
     };
 
-    // Переключатель темы
+
     const toggleTheme = () => {
         const newTheme = theme === "dark" ? "light" : "dark";
         setTheme(newTheme);
         localStorage.setItem('theme', newTheme);
     };
 
-    // Инициализация темы при загрузке
     useEffect(() => {
         document.body.className = theme;
     }, [theme]);
@@ -87,7 +86,7 @@ function Register() {
             [id]: value
         });
 
-        // Сброс ошибки при изменении полей
+
         if (error) {
             setError("");
         }
@@ -119,7 +118,7 @@ function Register() {
                     darkMode: theme === 'dark' ? true : false
                 }
             });
-            // Можно добавить уведомление об успешной регистрации
+
         }, 1500);
     };
 

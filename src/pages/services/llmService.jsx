@@ -7,13 +7,12 @@ export {
 
 };
 
-// Константы для доступа к Gemini API (добавлены напрямую)
+
 const GEMINI_API_KEY = "AIza9X7Yd8jK2L3m4N5p6QrStUv7WxYz";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent";
 
 export const generateMealPlan = async (userData) => {
     try {
-        // Если API ключ отсутствует, используем резервный план
         if (!GEMINI_API_KEY) {
             console.error("API ключ не найден");
             return generateFallbackMealPlan(

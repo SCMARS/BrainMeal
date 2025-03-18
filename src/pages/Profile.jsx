@@ -293,7 +293,6 @@ const Profile = () => {
     }, [userData.weight, userData.height, userData.age, userData.gender, userData.dietType, userData.activityLevel, userData.calorieTarget]);
 
     const handleGenerateMealPlan = () => {
-        // Пример логики генерации плана питания
         setLoading(true);
         setTimeout(() => {
             setLoading(false);

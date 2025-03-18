@@ -1,112 +1,108 @@
 :root {
     --bg-gradient-start: #ffffff;
-    --bg-gradient-end: #f0f0f0;
-    --text-color: #000000;
+    --bg-gradient-end: #f8f0e9;
+    --text-color: #333333;
 
-    --header-bg: rgba(255, 255, 255, 0.8);
-    --header-border: rgba(255, 152, 0, 0.8);
-    --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --header-bg: rgba(255, 255, 255, 0.9);
+    --header-border: rgba(255, 125, 0, 0.4);
+    --header-shadow: 0 4px 20px rgba(255, 140, 0, 0.15);
 
-    --logo-icon-bg: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-    --logo-icon-color: #ff9800;
-    --logo-icon-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+    --logo-icon-bg: linear-gradient(135deg, #ffffff 0%, #fff5ec 100%);
+    --logo-icon-color: #ff7d00;
+    --logo-icon-shadow: 0 4px 12px rgba(255, 125, 0, 0.25);
+    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 125, 0, 0.35);
 
-    --app-title-gradient: linear-gradient(to right, #ff9800, #ffb74d);
+    --app-title-gradient: linear-gradient(to right, #ff7d00, #ffaa55);
 
-    --button-bg: linear-gradient(to right, #f9fafb, #f3f4f6);
-    --button-color: #ff9800;
-    --button-shadow: 0 2px 10px rgba(255, 152, 0, 0.3);
-    --button-hover-bg: linear-gradient(to right, #f3f4f6, #e5e7eb);
-    --button-hover-color: #ffb74d;
+    --button-bg: linear-gradient(to right, #f9fafb, #fff5ec);
+    --button-color: #ff7d00;
+    --button-shadow: 0 2px 10px rgba(255, 125, 0, 0.2);
+    --button-hover-bg: linear-gradient(to right, #fff5ec, #ffe8d4);
+    --button-hover-color: #ff9433;
 
-    --content-max-width: 100%; /* Changed from 1200px to 100% */
+    --content-max-width: 100%;
 
     --form-bg: #ffffff;
-    --form-border: rgba(226, 232, 240, 0.7);
-    --form-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    --form-border: rgba(255, 140, 0, 0.15);
+    --form-shadow: 0 8px 30px rgba(255, 140, 0, 0.1);
 
     --input-bg: #ffffff;
-    --input-border: #cbd5e1;
-    --input-text: #334155;
+    --input-border: #ffd0a1;
+    --input-text: #333333;
 
-    --checkbox-bg: #f8fafc;
-    --checkbox-hover-bg: #f1f5f9;
+    --checkbox-bg: #fff8f1;
+    --checkbox-hover-bg: #fff0e1;
 
     --diet-option-bg: #ffffff;
-    --diet-option-border: #e2e8f0;
-    --diet-option-hover-border: #cbd5e1;
+    --diet-option-border: #ffd0a1;
+    --diet-option-hover-border: #ffaa55;
 
-    --diet-option-selected-bg: linear-gradient(to bottom right, #eff6ff, #dbeafe);
-    --diet-option-selected-border: #ff9800;
+    --diet-option-selected-bg: linear-gradient(to bottom right, #fff8f1, #ffe8d4);
+    --diet-option-selected-border: #ff7d00;
 
-    --diet-icon-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    --diet-icon-color: #ff9800;
-    --diet-icon-shadow: 0 4px 10px rgba(255, 152, 0, 0.2);
+    --diet-icon-bg: linear-gradient(135deg, #fff8f1 0%, #fff0e1 100%);
+    --diet-icon-color: #ff7d00;
+    --diet-icon-shadow: 0 4px 10px rgba(255, 125, 0, 0.2);
 
-    --subsection-title-color: #ff9800;
+    --subsection-title-color: #ff7d00;
 
-    --error-bg: linear-gradient(to right, #fee2e2, #fecaca);
-    --error-text: #b91c1c;
-    --error-border: #ff9800;
+    --error-bg: linear-gradient(to right, #fff0ed, #ffe5e0);
+    --error-text: #d73a00;
+    --error-border: #ff7d00;
 }
 
-/* Переопределение переменных для тёмной темы */
 .theme-dark {
-    --bg-gradient-start: #000000;
-    --bg-gradient-end: #1a1a1a;
-    --text-color: #ffffff;
+    --bg-gradient-start: #1a1a1a;
+    --bg-gradient-end: #2a2017;
+    --text-color: #f1f1f1;
 
-    --header-bg: rgba(0, 0, 0, 0.8);
-    --header-border: rgba(255, 152, 0, 0.8);
-    --header-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --header-bg: rgba(26, 26, 26, 0.95);
+    --header-border: rgba(255, 125, 0, 0.5);
+    --header-shadow: 0 4px 20px rgba(255, 125, 0, 0.2);
 
-    --logo-icon-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-    --logo-icon-color: #ff9800;
-    --logo-icon-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
-    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+    --logo-icon-bg: linear-gradient(135deg, #2a2017 0%, #3a2815 100%);
+    --logo-icon-color: #ff9433;
+    --logo-icon-shadow: 0 4px 12px rgba(255, 125, 0, 0.4);
+    --logo-icon-hover-shadow: 0 8px 20px rgba(255, 125, 0, 0.6);
 
-    --app-title-gradient: linear-gradient(to right, #ff9800, #ffb74d);
+    --app-title-gradient: linear-gradient(to right, #ff7d00, #ffaa55);
 
-    --button-bg: linear-gradient(to right, #1a1a1a, #000000);
-    --button-color: #ff9800;
-    --button-shadow: 0 2px 10px rgba(255, 152, 0, 0.4);
-    --button-hover-bg: linear-gradient(to right, #000000, #1a1a1a);
-    --button-hover-color: #ffb74d;
+    --button-bg: linear-gradient(to right, #2a2017, #3a2815);
+    --button-color: #ff9433;
+    --button-shadow: 0 2px 10px rgba(255, 125, 0, 0.3);
+    --button-hover-bg: linear-gradient(to right, #3a2815, #4a3520);
+    --button-hover-color: #ffaa55;
 
-    --form-bg: #1a1a1a;
-    --form-border: rgba(255, 152, 0, 0.3);
-    --form-shadow: 0 8px 30px rgba(255, 152, 0, 0.1);
+    --form-bg: #262626;
+    --form-border: rgba(255, 125, 0, 0.3);
+    --form-shadow: 0 8px 30px rgba(255, 125, 0, 0.15);
 
     --input-bg: #333333;
-    --input-border: #ff9800;
-    --input-text: #ffffff;
+    --input-border: #ff9433;
+    --input-text: #f1f1f1;
 
     --checkbox-bg: #333333;
     --checkbox-hover-bg: #444444;
 
-    --diet-option-bg: #1a1a1a;
-    --diet-option-border: #ff9800;
-    --diet-option-hover-border: #ffb74d;
+    --diet-option-bg: #262626;
+    --diet-option-border: #ff9433;
+    --diet-option-hover-border: #ffaa55;
 
-    --diet-option-selected-bg: linear-gradient(to bottom right, #1a1a1a, #000000);
-    --diet-option-selected-border: #ff9800;
+    --diet-option-selected-bg: linear-gradient(to bottom right, #3a2815, #262626);
+    --diet-option-selected-border: #ff9433;
 
-    --diet-icon-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-    --diet-icon-color: #ff9800;
-    --diet-icon-shadow: 0 4px 10px rgba(255, 152, 0, 0.2);
+    --diet-icon-bg: linear-gradient(135deg, #2a2017 0%, #3a2815 100%);
+    --diet-icon-color: #ff9433;
+    --diet-icon-shadow: 0 4px 10px rgba(255, 125, 0, 0.3);
 
-    --subsection-title-color: #ff9800;
+    --subsection-title-color: #ff9433;
 
-    --error-bg: linear-gradient(to right, #7f1d1d, #991b1b);
-    --error-text: #fca5a5;
-    --error-border: #ff9800;
+    --error-bg: linear-gradient(to right, #3d1e11, #4d2311);
+    --error-text: #ffaa88;
+    --error-border: #ff7d00;
 }
 
-/* ----------------- */
-/* Основные стили */
-/* ----------------- */
-
+/* ------------- Base Styles ------------- */
 html, body {
     height: 100%;
     width: 100%;
@@ -117,24 +113,30 @@ html, body {
     color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
-    transition: background 0.3s ease;
+    transition: background 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Контейнер, растянутый на весь экран */
 .brainmeal-container {
     width: 100%;
     min-height: 100vh;
-    height: auto; /* Changed from 100% to auto to avoid fixed height issues */
+    height: auto;
     margin: 0;
     padding: 0 0 60px;
+
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
-    transition: all 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     box-sizing: border-box;
+    animation: fadeInPage 0.8s ease forwards;
 }
 
-/* Шапка */
+@keyframes fadeInPage {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ------------- Header ------------- */
 .brainmeal-header {
     display: flex;
     justify-content: space-between;
@@ -143,60 +145,30 @@ html, body {
     margin-bottom: 40px;
     border-bottom: 1px solid var(--header-border);
     background-color: var(--header-bg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--header-shadow);
-    position: sticky;
+    position: static;
     top: 0;
     z-index: 100;
     width: 100%;
     box-sizing: border-box;
-    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: transform var(--header-transition-speed) cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Added styles for the content area to ensure background coverage */
-.brainmeal-content {
-    flex: 1;
-    width: 100%;
-    max-width: var(--content-max-width);
-    margin: 0 auto;
-    padding: 0 40px;
-    box-sizing: border-box;
-    background: transparent; /* Ensure content area has transparent background */
-}
-
-/* Fix for any potential white background elements */
-.brainmeal-form {
-    background-color: var(--form-bg); /* This should pick up the dark theme value */
-    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.brainmeal-form-section {
-    background-color: transparent; /* Make form sections transparent to show parent background */
-    transition: background-color 0.3s ease;
-}
-
-/* Ensure form action buttons have proper background */
-.brainmeal-form-actions {
-    background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
-    transition: background 0.3s ease;
-}
-
-/* Any other content areas that might need fixing */
-.diet-specific-field {
-    background: linear-gradient(to bottom right, var(--form-bg), var(--bg-gradient-end));
-    transition: background 0.3s ease;
-}
-
-/* Add this class to force full height */
-#root, #app, .app-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .brainmeal-logo {
     display: flex;
     align-items: center;
     gap: 12px;
+    animation: fadeIn 0.8s ease forwards;
 }
 
 .brainmeal-logo-icon {
@@ -210,17 +182,46 @@ html, body {
     justify-content: center;
     padding: 8px;
     box-shadow: var(--logo-icon-shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.3s ease;
+    animation: pulse 3s infinite ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.brainmeal-logo-icon:after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 0.6s ease-out, opacity 0.6s ease-out;
 }
 
 .brainmeal-logo-icon:hover {
-    transform: translateY(-2px) scale(1.05);
+    transform: translateY(-4px) scale(1.1);
     box-shadow: var(--logo-icon-hover-shadow);
+}
+
+.brainmeal-logo-icon:hover:after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 125, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 125, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 125, 0, 0); }
 }
 
 .brainmeal-logo-icon svg {
     width: 26px;
     height: 26px;
+    filter: drop-shadow(0 2px 4px rgba(255, 125, 0, 0.3));
 }
 
 .brainmeal-app-title {
@@ -229,15 +230,34 @@ html, body {
     background: var(--app-title-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
     margin: 0;
     letter-spacing: -0.5px;
+    position: relative;
+    animation: shimmer 3s infinite;
+    background-size: 200% auto;
 }
 
-/* Стили для элементов управления в шапке */
+@keyframes shimmer {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
+}
+
+/* ------------- Controls ------------- */
 .header-controls {
     display: flex;
     align-items: center;
     gap: 15px;
+    animation: fadeIn 0.8s 0.2s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .theme-toggle-button {
@@ -245,47 +265,85 @@ html, body {
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid var(--button-color);
     background: var(--button-bg);
     color: var(--button-color);
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: var(--button-shadow);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.theme-toggle-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: var(--button-hover-bg);
+    transition: width 0.4s ease;
+    z-index: -1;
 }
 
 .theme-toggle-button:hover {
-    background: var(--button-hover-bg);
     color: var(--button-hover-color);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 125, 0, 0.3);
+}
+
+.theme-toggle-button:hover:before {
+    width: 100%;
 }
 
 .language-select {
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid var(--button-color);
     background: var(--button-bg);
     color: var(--button-color);
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: var(--button-shadow);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%23ff9800' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%23ff7d00' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 30px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.language-select:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: var(--button-hover-bg);
+    transition: width 0.4s ease;
+    z-index: -1;
 }
 
 .language-select:hover {
-    background-color: var(--button-hover-bg);
     color: var(--button-hover-color);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 125, 0, 0.3);
+}
+
+.language-select:hover:before {
+    width: 100%;
 }
 
 .brainmeal-logout-button {
@@ -300,49 +358,86 @@ html, body {
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: var(--button-shadow);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.brainmeal-logout-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: var(--button-hover-bg);
+    transition: width 0.4s ease;
+    z-index: -1;
 }
 
 .brainmeal-logout-button:hover {
-    background: var(--button-hover-bg);
     color: var(--button-hover-color);
-    transform: translateY(-2px);
-    box-shadow: var(--button-shadow);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 125, 0, 0.3);
+}
+
+.brainmeal-logout-button:hover:before {
+    width: 100%;
+}
+
+.brainmeal-logout-button:active {
+    transform: translateY(-1px);
 }
 
 .brainmeal-logout-button svg {
     width: 18px;
     height: 18px;
+    transition: transform 0.3s ease;
 }
 
-/* Область основного контента */
+.brainmeal-logout-button:hover svg {
+    transform: translateX(3px);
+}
+
+/* ------------- Content Area ------------- */
 .brainmeal-content {
     flex: 1;
-    width: 100%; /* Full width */
+    width: 100%;
     max-width: var(--content-max-width);
     margin: 0 auto;
-    padding: 0 40px; /* Increased side padding */
-    box-sizing: border-box; /* Includes padding in width calculation */
+    padding: 0 40px;
+    box-sizing: border-box;
+    animation: fadeIn 0.8s 0.3s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .brainmeal-section-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
     background: var(--app-title-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
     margin-top: 0;
     margin-bottom: 16px;
     letter-spacing: -0.5px;
+    animation: shimmer 3s infinite;
+    background-size: 200% auto;
 }
 
 .brainmeal-description {
     color: var(--text-color);
     font-size: 1.1rem;
     margin-bottom: 40px;
-    max-width: 100%; /* Changed from 800px to 100% */
-    opacity: 0.8;
+    max-width: 100%;
+    opacity: 0.9;
+    animation: fadeIn 0.8s 0.4s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .brainmeal-error {
@@ -355,16 +450,26 @@ html, body {
     display: flex;
     align-items: center;
     border-left: 5px solid var(--error-border);
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 125, 0, 0.3);
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+    40%, 60% { transform: translate3d(3px, 0, 0); }
 }
 
 .brainmeal-error:before {
     content: "⚠️";
     margin-right: 16px;
     font-size: 1.2rem;
+    animation: pulse 2s infinite;
 }
 
-/* Стили для формы */
+/* ------------- Form Styles ------------- */
 .brainmeal-form {
     background-color: var(--form-bg);
     border-radius: 16px;
@@ -372,20 +477,53 @@ html, body {
     box-shadow: var(--form-shadow);
     overflow: hidden;
     margin-bottom: 50px;
-    width: 100%; /* Added to ensure full width */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: slideUp 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+    animation-fill-mode: forwards;
+    position: relative;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.brainmeal-form:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--app-title-gradient);
+    background-size: 200% auto;
+    animation: shimmer 3s infinite;
 }
 
 .brainmeal-form:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(255, 152, 0, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(255, 125, 0, 0.25);
 }
 
 .brainmeal-form-section {
     padding: 35px;
     border-bottom: 1px solid var(--form-border);
-    transition: background-color 0.3s ease;
+    transition: background-color 0.4s ease;
+    animation: fadeIn 0.8s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(0.1s * var(--section-index, 1));
 }
+
+.brainmeal-form-section:nth-child(1) { --section-index: 1; }
+.brainmeal-form-section:nth-child(2) { --section-index: 2; }
+.brainmeal-form-section:nth-child(3) { --section-index: 3; }
+.brainmeal-form-section:nth-child(4) { --section-index: 4; }
+.brainmeal-form-section:nth-child(5) { --section-index: 5; }
 
 .brainmeal-form-section:last-child {
     border-bottom: none;
@@ -410,6 +548,12 @@ html, body {
     width: 5px;
     background: linear-gradient(to bottom, var(--button-color), var(--button-hover-color));
     border-radius: 3px;
+    animation: pulseGradient 2s infinite alternate;
+}
+
+@keyframes pulseGradient {
+    0% { opacity: 0.7; height: 70%; }
+    100% { opacity: 1; height: 90%; }
 }
 
 .brainmeal-form-row {
@@ -417,19 +561,62 @@ html, body {
     gap: 25px;
     margin-bottom: 25px;
     flex-wrap: wrap;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(0.1s * var(--row-index, 1));
 }
+
+.brainmeal-form-row:nth-child(1) { --row-index: 1; }
+.brainmeal-form-row:nth-child(2) { --row-index: 2; }
+.brainmeal-form-row:nth-child(3) { --row-index: 3; }
+
 .brainmeal-form-field {
     flex: 1;
     margin-bottom: 25px;
+    transition: transform 0.3s ease;
 }
 
-/* Стили для элементов ввода */
+.brainmeal-form-field:hover {
+    transform: translateY(-2px);
+}
+
+/* ------------- Input Elements ------------- */
 .brainmeal-label {
     display: block;
     margin-bottom: 10px;
     font-weight: 600;
     color: var(--button-color);
     font-size: 1rem;
+    transition: color 0.3s ease;
+    position: relative;
+    padding-left: 12px;
+}
+
+.brainmeal-label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 3px;
+    background: var(--button-color);
+    border-radius: 3px;
+}
+
+.brainmeal-form-field:hover .brainmeal-label {
+    color: var(--button-hover-color);
+}
+
+.brainmeal-form-field:hover .brainmeal-label:before {
+    background: var(--button-hover-color);
+    animation: pulseWidth 1.5s infinite alternate;
+}
+
+@keyframes pulseWidth {
+    0% { width: 3px; }
+    100% { width: 6px; }
 }
 
 .brainmeal-input,
@@ -442,14 +629,15 @@ html, body {
     font-size: 1rem;
     color: var(--input-text);
     background-color: var(--input-bg);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 2px 8px rgba(255, 125, 0, 0.15);
 }
 
 .brainmeal-input:hover,
 .brainmeal-select:hover,
 .brainmeal-textarea:hover {
     border-color: var(--button-hover-color);
+    box-shadow: 0 5px 15px rgba(255, 125, 0, 0.2);
 }
 
 .brainmeal-input:focus,
@@ -457,7 +645,8 @@ html, body {
 .brainmeal-textarea:focus {
     outline: none;
     border-color: var(--button-color);
-    box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 0 0 4px rgba(255, 125, 0, 0.2);
+    transform: translateY(-2px);
 }
 
 .brainmeal-textarea {
@@ -471,9 +660,15 @@ html, body {
     color: var(--button-hover-color);
     font-size: 0.9rem;
     font-style: italic;
+    transition: opacity 0.3s ease;
+    opacity: 0.7;
 }
 
-/* Стили для чекбоксов */
+.brainmeal-form-field:hover .brainmeal-field-hint {
+    opacity: 1;
+}
+
+/* ------------- Checkbox Styles ------------- */
 .brainmeal-checkbox-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -486,13 +681,27 @@ html, body {
     align-items: center;
     padding: 10px 15px;
     background-color: var(--checkbox-bg);
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    border: 1px solid transparent;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(0.05s * var(--item-index, 1));
 }
+
+.brainmeal-checkbox-item:nth-child(1) { --item-index: 1; }
+.brainmeal-checkbox-item:nth-child(2) { --item-index: 2; }
+.brainmeal-checkbox-item:nth-child(3) { --item-index: 3; }
+.brainmeal-checkbox-item:nth-child(4) { --item-index: 4; }
+.brainmeal-checkbox-item:nth-child(5) { --item-index: 5; }
+.brainmeal-checkbox-item:nth-child(6) { --item-index: 6; }
 
 .brainmeal-checkbox-item:hover {
     background-color: var(--checkbox-hover-bg);
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
+    border-color: var(--diet-option-hover-border);
+    box-shadow: 0 8px 15px rgba(255, 125, 0, 0.1);
 }
 
 .brainmeal-checkbox-item input[type="checkbox"] {
@@ -501,6 +710,11 @@ html, body {
     margin-right: 12px;
     accent-color: var(--button-color);
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.brainmeal-checkbox-item:hover input[type="checkbox"] {
+    transform: scale(1.1);
 }
 
 .brainmeal-checkbox-item label {
@@ -508,9 +722,14 @@ html, body {
     color: var(--button-color);
     cursor: pointer;
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
-/* Опции выбора диеты */
+.brainmeal-checkbox-item:hover label {
+    color: var(--button-hover-color);
+}
+
+/* ------------- Diet Options ------------- */
 .brainmeal-diet-options {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -523,217 +742,174 @@ html, body {
     border-radius: 14px;
     padding: 25px;
     cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    background-color: var(--diet-option-bg);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(0.1s * var(--diet-index, 1));
+}
+
+.brainmeal-diet-option:nth-child(1) { --diet-index: 1; }
+.brainmeal-diet-option:nth-child(2) { --diet-index: 2; }
+.brainmeal-diet-option:nth-child(3) { --diet-index: 3; }
+.brainmeal-diet-option:nth-child(4) { --diet-index: 4; }
+
+.brainmeal-diet-option:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--app-title-gradient);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brainmeal-diet-option {
+    border: 1px solid var(--diet-option-border);
+    border-radius: 14px;
+    padding: 25px;
+    cursor: pointer;
     transition: all 0.4s ease;
     background-color: var(--diet-option-bg);
     position: relative;
     overflow: hidden;
 }
-
 .brainmeal-diet-option:hover {
-    border-color: var(--diet-option-hover-border);
     transform: translateY(-5px);
-    box-shadow: 0 15px 25px rgba(255, 152, 0, 0.3);
+    border-color: var(--diet-option-hover-border);
+    box-shadow: 0 12px 25px rgba(255, 125, 0, 0.15);
+}
+
+.brainmeal-diet-option:hover:after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .brainmeal-diet-option.selected {
-    border-color: var(--diet-option-selected-border);
     background: var(--diet-option-selected-bg);
-    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+    border-color: var(--diet-option-selected-border);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(255, 125, 0, 0.2);
 }
 
-.brainmeal-diet-option.selected::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 35px 35px 0;
-    border-color: transparent var(--diet-option-selected-border) transparent transparent;
+.brainmeal-diet-option.selected:after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .brainmeal-diet-icon {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
+    color: var(--diet-icon-color);
+    background: var(--diet-icon-bg);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--diet-icon-bg);
-    border-radius: 50%;
-    margin-bottom: 16px;
-    color: var(--diet-icon-color);
-    transition: all 0.3s ease;
+    margin-bottom: 15px;
     box-shadow: var(--diet-icon-shadow);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.brainmeal-diet-option:hover .brainmeal-diet-icon {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .brainmeal-diet-option.selected .brainmeal-diet-icon {
-    background: linear-gradient(135deg, var(--form-bg) 0%, var(--bg-gradient-end) 100%);
-    color: var(--button-hover-color);
-    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-.brainmeal-diet-icon svg {
-    width: 24px;
-    height: 24px;
-}
-
-.brainmeal-diet-title {
+.brainmeal-diet-name {
     font-size: 1.2rem;
     font-weight: 700;
+    margin-bottom: 10px;
     color: var(--button-color);
-    margin: 0 0 10px 0;
+    transition: color 0.3s ease;
+}
+
+.brainmeal-diet-option:hover .brainmeal-diet-name {
+    color: var(--button-hover-color);
 }
 
 .brainmeal-diet-description {
     font-size: 0.95rem;
     color: var(--text-color);
-    margin: 0;
-    line-height: 1.6;
-    opacity: 0.8;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
 }
 
-.diet-specific-field {
-    background: linear-gradient(to bottom right, var(--form-bg), var(--bg-gradient-end));
-    border-radius: 12px;
-    padding: 25px;
-    border: 1px solid var(--form-border);
-    margin-top: 0;
-    margin-bottom: 35px;
-    animation: fadeIn 0.4s ease-out;
-    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+.brainmeal-diet-option:hover .brainmeal-diet-description {
+    opacity: 1;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-15px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ------------- Submit Button ------------- */
+.brainmeal-submit-section {
+    padding: 35px;
+    text-align: center;
 }
 
-/* Кнопки действий в форме */
-.brainmeal-form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 20px;
-    padding: 25px 35px;
-    background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
-    border-top: 1px solid var(--form-border);
-}
-
-.brainmeal-button {
-    padding: 14px 30px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.brainmeal-button.primary {
-    background: linear-gradient(to right, var(--button-color), var(--button-hover-color));
-    color: white;
-    border: none;
-    box-shadow: var(--button-shadow);
-}
-
-.brainmeal-button.primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
-}
-
-.brainmeal-button.secondary {
-    background: var(--button-bg);
-    color: var(--button-color);
-    border: 1px solid var(--button-color);
-    box-shadow: var(--button-shadow);
-}
-
-.brainmeal-button.secondary:hover {
-    background: var(--button-hover-bg);
-    color: var(--button-hover-color);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
-}
-
-.brainmeal-button.primary:active,
-.brainmeal-button.secondary:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-}
-
-.brainmeal-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
 .brainmeal-submit-button {
-    padding: 14px 30px;
-    border-radius: 12px;
+    padding: 16px 40px;
+    font-size: 1.1rem;
     font-weight: 700;
-    font-size: 1rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--app-title-gradient);
+    color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 8px 20px rgba(255, 125, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: linear-gradient(to right, var(--button-color), var(--button-hover-color));
-    color: white;
-    border: none;
-    box-shadow: var(--button-shadow);
+}
+
+.brainmeal-submit-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.7s ease;
 }
 
 .brainmeal-submit-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(255, 125, 0, 0.4);
+}
+
+.brainmeal-submit-button:hover:before {
+    left: 100%;
 }
 
 .brainmeal-submit-button:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+    transform: translateY(-2px);
 }
 
-.brainmeal-submit-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: var(--button-shadow);
-}
-
-/* Optional: Add a loading indicator */
-.brainmeal-submit-button.loading {
-    position: relative;
-}
-
-.brainmeal-submit-button.loading::after {
-    content: "";
-    display: inline-block;
+.brainmeal-submit-button svg {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s ease-in-out infinite;
-    margin-left: 10px;
+    transition: transform 0.3s ease;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.brainmeal-submit-button:hover svg {
+    transform: translateX(5px);
 }
 
-/* Медиа-запросы для адаптивности */
-@media (max-width: 992px) {
-    .brainmeal-header {
-        padding: 15px 25px;
-    }
-
-    .brainmeal-form-section {
-        padding: 25px;
-    }
-
+/* ------------- Responsive Design ------------- */
+@media (max-width: 1200px) {
     .brainmeal-form-row {
         flex-direction: column;
         gap: 15px;
@@ -747,13 +923,23 @@ html, body {
 @media (max-width: 768px) {
     .brainmeal-header {
         flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
+        padding: 20px;
+        gap: 20px;
+        text-align: center;
     }
 
     .header-controls {
         width: 100%;
-        justify-content: space-between;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .brainmeal-content {
+        padding: 0 20px;
+    }
+
+    .brainmeal-form-section {
+        padding: 25px;
     }
 
     .brainmeal-diet-options {
@@ -763,31 +949,476 @@ html, body {
     .brainmeal-checkbox-group {
         grid-template-columns: 1fr;
     }
-
-    .brainmeal-form-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .brainmeal-button {
-        width: 100%;
-    }
 }
 
 @media (max-width: 480px) {
     .brainmeal-section-title {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
 
     .brainmeal-description {
         font-size: 1rem;
     }
 
+    .brainmeal-subsection-title {
+        font-size: 1.1rem;
+    }
+
     .brainmeal-form-section {
         padding: 20px;
     }
 
-    .brainmeal-diet-option {
-        padding: 20px;
+    .brainmeal-submit-button {
+        width: 100%;
+        padding: 14px;
     }
+}
+
+/* ------------- Animations ------------- */
+.brainmeal-animated {
+    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ------------- Accessibility ------------- */
+:focus {
+    outline: 2px solid var(--button-color);
+    outline-offset: 2px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* ------------- Loading States ------------- */
+.brainmeal-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* ------------- Success Message ------------- */
+.brainmeal-success-message {
+    background: linear-gradient(to right, #ecfff4, #dbffec);
+    color: #00aa55;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 30px 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    border-left: 5px solid #00aa55;
+    box-shadow: 0 4px 12px rgba(0, 170, 85, 0.2);
+    animation: slideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform: translateX(-20px);
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.brainmeal-success-message:before {
+    content: "✓";
+    margin-right: 16px;
+    font-size: 1.4rem;
+    background: #00aa55;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ------------- Tooltip ------------- */
+.brainmeal-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.brainmeal-tooltip .brainmeal-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--input-bg);
+    color: var(--button-color);
+    text-align: center;
+    border-radius: 8px;
+    border: 1px solid var(--diet-option-border);
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateY(10px);
+    box-shadow: var(--form-shadow);
+    font-size: 0.9rem;
+}
+
+.brainmeal-tooltip .brainmeal-tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--diet-option-border) transparent transparent transparent;
+}
+
+.brainmeal-tooltip:hover .brainmeal-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ------------- Progress Bar ------------- */
+.brainmeal-progress-container {
+    width: 100%;
+    height: 10px;
+    background-color: var(--checkbox-bg);
+    border-radius: 10px;
+    margin: 30px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.brainmeal-progress-bar {
+    height: 100%;
+    background: var(--app-title-gradient);
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.brainmeal-progress-bar:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.1) 25%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.1) 75%
+    );
+    animation: progress-shine 1.5s linear infinite;
+}
+
+@keyframes progress-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.brainmeal-progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.brainmeal-step {
+    font-size: 0.9rem;
+    color: var(--button-color);
+    position: relative;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.brainmeal-step.active {
+    opacity: 1;
+    font-weight: 600;
+}
+
+/* ------------- Modal ------------- */
+.brainmeal-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.brainmeal-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.brainmeal-modal {
+    background-color: var(--form-bg);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    border: 1px solid var(--form-border);
+}
+
+.brainmeal-modal-overlay.active .brainmeal-modal {
+    transform: translateY(0);
+}
+
+.brainmeal-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--button-color);
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.brainmeal-modal-close:hover {
+    color: var(--button-hover-color);
+    transform: rotate(90deg);
+}
+
+.brainmeal-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--subsection-title-color);
+}
+
+.brainmeal-modal-content {
+    margin-bottom: 25px;
+}
+
+.brainmeal-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+/* ------------- Cards ------------- */
+.brainmeal-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    margin: 40px 0;
+}
+
+.brainmeal-card {
+    background-color: var(--form-bg);
+    border-radius: 16px;
+    box-shadow: var(--form-shadow);
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    border: 1px solid var(--form-border);
+    animation: fadeIn 0.8s ease forwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-delay: calc(0.1s * var(--card-index, 1));
+}
+
+.brainmeal-card:nth-child(1) { --card-index: 1; }
+.brainmeal-card:nth-child(2) { --card-index: 2; }
+.brainmeal-card:nth-child(3) { --card-index: 3; }
+.brainmeal-card:nth-child(4) { --card-index: 4; }
+
+.brainmeal-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(255, 125, 0, 0.2);
+}
+
+.brainmeal-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--form-border);
+}
+
+.brainmeal-card-content {
+    padding: 25px;
+}
+
+.brainmeal-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--button-color);
+}
+
+.brainmeal-card-description {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.brainmeal-card-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--button-bg);
+    color: var(--button-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: var(--button-shadow);
+}
+
+.brainmeal-card-button:hover {
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 125, 0, 0.3);
+}
+
+/* ------------- Footer ------------- */
+.brainmeal-footer {
+    text-align: center;
+    padding: 30px;
+    margin-top: 50px;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-top: 1px solid var(--header-border);
+}
+
+.brainmeal-footer a {
+    color: var(--button-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.brainmeal-footer a:hover {
+    color: var(--button-hover-color);
+    text-decoration: underline;
+}
+
+/* ------------- Notifications ------------- */
+.brainmeal-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    background-color: var(--form-bg);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    border-left: 5px solid var(--button-color);
+    max-width: 350px;
+}
+
+.brainmeal-notification.active {
+    transform: translateX(0);
+}
+
+.brainmeal-notification-icon {
+    color: var(--button-color);
+    font-size: 1.2rem;
+}
+
+.brainmeal-notification-content {
+    flex: 1;
+}
+
+.brainmeal-notification-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--button-color);
+}
+
+.brainmeal-notification-message {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.brainmeal-notification-close {
+    background: none;
+    border: none;
+    color: var(--button-color);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 5px;
+    transition: transform 0.3s ease;
+}
+
+.brainmeal-notification-close:hover {
+    transform: rotate(90deg);
+}
+
+/* ------------- Utility Classes ------------- */
+.brainmeal-text-center {
+    text-align: center;
+}
+
+.brainmeal-mt-0 { margin-top: 0; }
+.brainmeal-mt-1 { margin-top: 10px; }
+.brainmeal-mt-2 { margin-top: 20px; }
+.brainmeal-mt-3 { margin-top: 30px; }
+
+.brainmeal-mb-0 { margin-bottom: 0; }
+.brainmeal-mb-1 { margin-bottom: 10px; }
+.brainmeal-mb-2 { margin-bottom: 20px; }
+.brainmeal-mb-3 { margin-bottom: 30px; }
+
+.brainmeal-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.brainmeal-slide-up {
+    animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.brainmeal-hidden {
+    display: none !important;
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./styles/WelcomeScreen.css";
 
-// Объект с переводами для разных языков
 const translations = {
     en: {
         title: "Welcome to BrainMeal",
@@ -43,7 +42,7 @@ const LinkButton = ({ to, children, className }) => {
 const WelcomeScreen = () => {
     const [loading, setLoading] = useState(true);
 
-    // Получаем сохраненные настройки из localStorage или устанавливаем по умолчанию
+
     const savedTheme = localStorage.getItem('theme');
     const savedLanguage = localStorage.getItem('language');
 
@@ -71,7 +70,7 @@ const WelcomeScreen = () => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
         localStorage.setItem('language', language);
 
-        // Переходим на страницу логина с передачей настроек через state
+
         navigate('/login', {
             state: {
                 darkMode,
@@ -80,7 +79,7 @@ const WelcomeScreen = () => {
         });
     };
 
-    // Переключение темы (темный/светлый фон)
+
     const toggleTheme = () => {
         setDarkMode(prevMode => !prevMode);
     };
