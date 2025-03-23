@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
     Box,
     Typography,
@@ -9,10 +10,13 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
+    useTheme
 } from '@mui/material';
 import {
     LineChart,
     Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -21,77 +25,121 @@ import {
     ResponsiveContainer,
     PieChart,
     Pie,
-    Cell,
+    Cell
 } from 'recharts';
+import { useMealPlan } from '../context/MealPlanContext';
 import { useLanguage } from '../context/LanguageContext';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-export default function Analytics() {
+const Analytics = () => {
+    const theme = useTheme();
     const { t } = useLanguage();
+    const { meals, getMealsByWeek, getNutritionSummary } = useMealPlan();
     const [timeRange, setTimeRange] = useState('week');
+    const [chartData, setChartData] = useState([]);
+    const [nutritionData, setNutritionData] = useState([]);
 
-    // Пример данных для графиков
-    const calorieData = [
-        { name: 'Mon', calories: 2100 },
-        { name: 'Tue', calories: 1950 },
-        { name: 'Wed', calories: 2200 },
-        { name: 'Thu', calories: 2050 },
-        { name: 'Fri', calories: 2300 },
-        { name: 'Sat', calories: 1800 },
-        { name: 'Sun', calories: 2000 },
-    ];
+    useEffect(() => {
+        const startDate = new Date();
+        if (timeRange === 'week') {
+            startDate.setDate(startDate.getDate() - 7);
+        } else if (timeRange === 'month') {
+            startDate.setMonth(startDate.getMonth() - 1);
+        }
 
-    const macroData = [
-        { name: t('protein'), value: 30 },
-        { name: t('carbs'), value: 40 },
-        { name: t('fats'), value: 30 },
-    ];
+        const weeklyMeals = getMealsByWeek(startDate);
+        const nutritionData = weeklyMeals.map(meal => ({
+            date: new Date(meal.date).toLocaleDateString(),
+            calories: meal.calories,
+            protein: meal.protein,
+            carbs: meal.carbs,
+            fat: meal.fat
+        }));
 
-    const handleTimeRangeChange = (event) => {
-        setTimeRange(event.target.value);
-    };
+        setChartData(nutritionData);
+
+        // Calculate average nutrition data
+        const avgNutrition = nutritionData.reduce((acc, curr) => ({
+            calories: acc.calories + curr.calories,
+            protein: acc.protein + curr.protein,
+            carbs: acc.carbs + curr.carbs,
+            fat: acc.fat + curr.fat
+        }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+        const count = nutritionData.length || 1;
+        setNutritionData([
+            { name: t('Calories'), value: Math.round(avgNutrition.calories / count) },
+            { name: t('Protein'), value: Math.round(avgNutrition.protein / count) },
+            { name: t('Carbs'), value: Math.round(avgNutrition.carbs / count) },
+            { name: t('Fat'), value: Math.round(avgNutrition.fat / count) }
+        ]);
+    }, [timeRange, meals, getMealsByWeek, t]);
+
+    const COLORS = ['#FF7849', '#FF9F7E', '#FFB39E', '#FFD1C2'];
 
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-                <Typography variant="h4" component="h1">
-                    {t('analytics')}
+        <Box sx={{ p: 3 }}>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Typography variant="h4" gutterBottom>
+                    {t('Analytics')}
                 </Typography>
-                <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel>{t('timeRange')}</InputLabel>
-                    <Select
-                        value={timeRange}
-                        label={t('timeRange')}
-                        onChange={handleTimeRangeChange}
-                    >
-                        <MenuItem value="week">{t('week')}</MenuItem>
-                        <MenuItem value="month">{t('month')}</MenuItem>
-                        <MenuItem value="year">{t('year')}</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
+            </motion.div>
 
             <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('calorieIntake')}
-                            </Typography>
-                            <Box sx={{ height: 300 }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                                <Typography variant="h6">
+                                    {t('Nutrition Overview')}
+                                </Typography>
+                                <FormControl sx={{ minWidth: 120 }}>
+                                    <InputLabel>{t('Time Range')}</InputLabel>
+                                    <Select
+                                        value={timeRange}
+                                        label={t('Time Range')}
+                                        onChange={(e) => setTimeRange(e.target.value)}
+                                    >
+                                        <MenuItem value="week">{t('Last Week')}</MenuItem>
+                                        <MenuItem value="month">{t('Last Month')}</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+
+                            <Box height={400}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={calorieData}>
+                                    <LineChart data={chartData}>
                                         <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="name" />
+                                        <XAxis dataKey="date" />
                                         <YAxis />
                                         <Tooltip />
                                         <Legend />
                                         <Line
                                             type="monotone"
                                             dataKey="calories"
-                                            stroke="#8884d8"
-                                            name={t('calories')}
+                                            stroke="#FF7849"
+                                            name={t('Calories')}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="protein"
+                                            stroke="#FF9F7E"
+                                            name={t('Protein')}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="carbs"
+                                            stroke="#FFB39E"
+                                            name={t('Carbs')}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="fat"
+                                            stroke="#FFD1C2"
+                                            name={t('Fat')}
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
@@ -100,88 +148,73 @@ export default function Analytics() {
                     </Card>
                 </Grid>
 
-                <Grid item xs={12} md={4}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('macroDistribution')}
-                            </Typography>
-                            <Box sx={{ height: 300 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={macroData}
-                                            cx="50%"
-                                            cy="50%"
-                                            labelLine={false}
-                                            outerRadius={80}
-                                            fill="#8884d8"
-                                            dataKey="value"
-                                            label={({ name, percent }) =>
-                                                `${name} ${(percent * 100).toFixed(0)}%`
-                                            }
-                                        >
-                                            {macroData.map((entry, index) => (
-                                                <Cell
-                                                    key={`cell-${index}`}
-                                                    fill={COLORS[index % COLORS.length]}
-                                                />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </Box>
-                        </CardContent>
-                    </Card>
+                <Grid item xs={12} md={6}>
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                        <Card>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    {t('Average Daily Nutrition')}
+                                </Typography>
+                                <Box height={300}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={nutritionData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Bar dataKey="value" fill="#FF7849" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('nutritionGoals')}
-                            </Typography>
-                            <Box sx={{ mt: 2 }}>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('dailyCalorieGoal')}: 2000 kcal
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                    >
+                        <Card>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    {t('Nutrition Distribution')}
                                 </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('proteinGoal')}: 150g
-                                </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('carbsGoal')}: 250g
-                                </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('fatsGoal')}: 70g
-                                </Typography>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('progress')}
-                            </Typography>
-                            <Box sx={{ mt: 2 }}>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('weeklyAverage')}: 2050 kcal
-                                </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('monthlyAverage')}: 2100 kcal
-                                </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    {t('goalAchievement')}: 85%
-                                </Typography>
-                            </Box>
-                        </CardContent>
-                    </Card>
+                                <Box height={300}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={nutritionData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                fill="#8884d8"
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {nutritionData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 </Grid>
             </Grid>
         </Box>
     );
-} 
+};
+
+export default Analytics; 
