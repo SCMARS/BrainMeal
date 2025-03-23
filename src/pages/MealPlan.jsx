@@ -3,10 +3,35 @@ import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { generateMealPlan } from './services/llmService.jsx';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+    Box,
+    Typography,
+    Grid,
+    Card,
+    CardContent,
+    Button,
+    TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    CircularProgress,
+    Tabs,
+    Tab,
+    Paper,
+} from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useLanguage } from '../context/LanguageContext';
 
 function MealPlanningApp() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useLanguage();
 
     const [userData, setUserData] = useState(null);
     const [weeklyPlan, setWeeklyPlan] = useState(null);
@@ -21,173 +46,16 @@ function MealPlanningApp() {
     const [editingDay, setEditingDay] = useState(null);
     const [editMealName, setEditMealName] = useState('');
     const [editCalories, setEditCalories] = useState('');
-
-    // Translations
-    const translations = {
-        en: {
-            mainTitle: "Meal Planning",
-            subtitle: "Daily and Weekly Plans",
-            weeklyPlan: "Weekly Plan",
-            dailyPlan: "Daily Plan",
-            generateWeeklyPlan: "Generate Weekly Plan",
-            generateDailyPlan: "Generate Daily Plan",
-            breakfast: "Breakfast",
-            lunch: "Lunch",
-            dinner: "Dinner",
-            snack: "Snack",
-            sTip: "Eat more vegetables and protein foods",
-            calories: "Calories",
-            totalCalories: "Total Calories",
-            carbs: "Carbohydrates",
-            basic: "Basic",
-            gentle: "Gentle",
-            highProtein: "High Protein",
-            weightLoss: "Weight Loss",
-            muscleGain: "Muscle Gain",
-            errorLoadingProfile: "Error loading profile. Please go back to the profile page.",
-            userDataNotFound: "User data not found. Please fill in your profile.",
-            noDataForDay: "No data for this day",
-            notSpecified: "Not specified",
-            total: "Total",
-            totalCaloriesIntake: "Total calories: ",
-            nutritionInfo: "Nutrition Information",
-            generateMealPlan: "Generate Meal Plan",
-            mealPlanForWeek: "Meal Plan for the Week",
-            mealPlanForDay: "Meal Plan for the Day",
-            calorieDistribution: "Calorie Distribution",
-            recommendations: "Recommendations",
-            dietRecommendations: "Diet Recommendations",
-            hydrationTip: "Drink enough water throughout the day",
-            mealTimingTip: "Space your meals every 3-4 hours",
-            balancedDietTip: "Include a variety of foods in your diet",
-            proteinDietTip: "Consume more protein-rich foods (eggs, chicken breast, cheese)",
-            muscleGainTip: "Increase water intake to 2-3 liters per day",
-            complexCarbsTip: "Add more whole grains for energy",
-            weightLossTip: "Avoid sugar and simple carbohydrates",
-            eatSlowlyTip: "Eat slowly, chewing your food thoroughly",
-            moreVegetablesTip: "Eat more vegetables and protein-rich foods",
-            gentleDietTip: "Avoid spicy and fatty foods",
-            preferBoiledTip: "Prefer boiled and stewed foods",
-            warmWaterTip: "Drink more warm water between meals",
-            calorieStats: "Calorie Stats by Meal",
-            caloriesIntake: "Caloric Intake",
-            selectDay: "Select a day",
-            edit: "Edit",
-            delete: "Delete",
-            loading: "Loading...",
-            weeklyMealPlan: "Weekly Meal Plan",
-            dailyMealPlan: "Daily Meal Plan",
-            noMealData: "No data",
-            enterMealName: "Enter meal name",
-            enterCalories: "Enter number of calories",
-            monday: "Monday",
-            tuesday: "Tuesday",
-            wednesday: "Wednesday",
-            thursday: "Thursday",
-            friday: "Friday",
-            saturday: "Saturday",
-            sunday: "Sunday",
-            mealEditing: "Editing Meal",
-            day: "Day",
-            meal: "Meal",
-            mealName: "Meal Name",
-            caloriesCount: "Calories",
-            totalMacros: "Total Macros",
-            proteins: "Proteins",
-            fats: "Fats",
-
-            profile: "Your Profile",
-            weight: "Weight",
-            height: "Height",
-            age: "Age",
-            dietType: "Diet Type",
-            mealPreferences: "Meal Preferences",
-            save: "Save",
-            cancel: "Cancel",
-            back: "← Back",
-        },
-        uk: {
-            mainTitle: "План харчування",
-            subtitle: "Щоденні та тижневі плани",
-            weeklyPlan: "Тижневий план",
-            dailyPlan: "Щоденний план",
-            generateWeeklyPlan: "Згенерувати тижневий план",
-            generateDailyPlan: "Згенерувати щоденний план",
-            breakfast: "Сніданок",
-            lunch: "Обід",
-            dinner: "Вечеря",
-            snack: "Перекус",
-            calories: "Калорії",
-            totalCalories: "Всього калорій",
-            profile: "Ваш профіль",
-            weight: "Вага",
-            height: "Зріст",
-            age: "Вік",
-            dietType: "Тип дієти",
-            mealPreferences: "Харчові уподобання",
-            editMeal: "Редагувати прийом їжі",
-            save: "Зберегти",
-            cancel: "Скасувати",
-            back: "← Назад",
-            errorLoadingProfile: "Помилка завантаження профілю. Поверніться на сторінку профілю.",
-            userDataNotFound: "Дані користувача не знайдені. Будь ласка, заповніть профіль.",
-            noDataForDay: "Немає даних для цього дня",
-            notSpecified: "Не вказано",
-            total: "Всього",
-            totalCaloriesIntake: "Всього калорій: ",
-            nutritionInfo: "Інформація про поживні речовини",
-            generateMealPlan: "Згенерувати план харчування",
-            mealPlanForWeek: "План харчування на тиждень",
-            mealPlanForDay: "План харчування на день",
-            calorieDistribution: "Розподіл калорій",
-            recommendations: "Рекомендації",
-            dietRecommendations: "Рекомендації щодо харчування",
-            hydrationTip: "Пийте достатньо води протягом дня",
-            mealTimingTip: "Розділяйте прийоми їжі кожні 3-4 години",
-            balancedDietTip: "Включайте в раціон різноманітні продукти",
-            proteinDietTip: "Споживайте більше білкової їжі (яйця, куряча грудка, сир)",
-            muscleGainTip: "Збільшіть споживання води до 2-3 літрів на день",
-            complexCarbsTip: "Додавайте більше цільнозернових продуктів для енергії",
-            weightLossTip: "Уникайте цукру і простих вуглеводів",
-            eatSlowlyTip: "Їжте повільно, ретельно пережовуючи їжу",
-            moreVegetablesTip: "Споживайте більше овочів та білкової їжі",
-            gentleDietTip: "Уникайте гострих і жирних страв",
-            preferBoiledTip: "Надавайте перевагу вареній та тушкованій їжі",
-            warmWaterTip: "Пийте більше теплої води між прийомами їжі",
-            calorieStats: "Калорійність по прийомах їжі",
-            caloriesIntake: "Споживання калорій",
-            selectDay: "Виберіть день",
-            edit: "Редагувати",
-            delete: "Видалити",
-            loading: "Завантаження...",
-            weeklyMealPlan: "Тижневий план харчування",
-            dailyMealPlan: "Щоденний план харчування",
-            noMealData: "Немає даних",
-            enterMealName: "Введіть назву страви",
-            enterCalories: "Введіть кількість калорій",
-            monday: "Понеділок",
-            tuesday: "Вівторок",
-            wednesday: "Середа",
-            thursday: "Четвер",
-            friday: "П'ятниця",
-            saturday: "Субота",
-            sunday: "Неділя",
-            mealEditing: "Редагування прийому їжі",
-            day: "День",
-            meal: "Прийом їжі",
-            mealName: "Назва страви",
-            caloriesCount: "Калорії",
-            totalMacros: "Загальна кількість макроелементів",
-            proteins: "Білки",
-            fats: "Жири",
-            carbs: "Вуглеводи",
-            basic: "Базова",
-            gentle: "Щадяща",
-            highProtein: "Високобілкова",
-            weightLoss: "Для схуднення",
-            muscleGain: "Для набору м'язової маси"
-        }
-    };
+    const [open, setOpen] = useState(false);
+    const [meals, setMeals] = useState([]);
+    const [newMeal, setNewMeal] = useState({
+        name: '',
+        calories: '',
+        protein: '',
+        carbs: '',
+        fats: '',
+        time: '',
+    });
 
     // Theme and language state
     const [darkMode, setDarkMode] = useState(() => {
@@ -206,7 +74,6 @@ function MealPlanningApp() {
         return location.state?.language || 'en';
     });
 
-    const t = useMemo(() => translations[language], [language]);
     const theme = darkMode ? 'dark-theme' : 'light-theme';
 
     useEffect(() => {
@@ -733,6 +600,36 @@ function MealPlanningApp() {
         );
     };
 
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
+    const handleAddMeal = () => {
+        if (newMeal.name) {
+            setMeals([...meals, { ...newMeal, id: Date.now() }]);
+            setNewMeal({
+                name: '',
+                calories: '',
+                protein: '',
+                carbs: '',
+                fats: '',
+                time: '',
+            });
+            handleClose();
+        }
+    };
+
+    const handleDeleteMeal = (id) => {
+        setMeals(meals.filter((meal) => meal.id !== id));
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setNewMeal((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
     return (
         <div className={`meal-planning-container ${theme}`}>
             <div className="header">
@@ -807,6 +704,125 @@ function MealPlanningApp() {
             </div>
 
             {renderEditModal()}
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+                <Typography variant="h4" component="h1">
+                    {t('mealPlan')}
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpen}
+                >
+                    {t('addMeal')}
+                </Button>
+            </Box>
+
+            <Grid container spacing={3}>
+                {['Breakfast', 'Lunch', 'Dinner', 'Snacks'].map((mealType) => (
+                    <Grid item xs={12} md={6} key={mealType}>
+                        <Card>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    {mealType}
+                                </Typography>
+                                <List>
+                                    {meals
+                                        .filter((meal) => meal.type === mealType)
+                                        .map((meal) => (
+                                            <ListItem key={meal.id}>
+                                                <ListItemText
+                                                    primary={meal.name}
+                                                    secondary={`${meal.calories} kcal | ${meal.protein}g protein | ${meal.carbs}g carbs | ${meal.fats}g fats`}
+                                                />
+                                                <ListItemSecondaryAction>
+                                                    <IconButton
+                                                        edge="end"
+                                                        aria-label="delete"
+                                                        onClick={() => handleDeleteMeal(meal.id)}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </ListItemSecondaryAction>
+                                            </ListItem>
+                                        ))}
+                                </List>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>{t('addMeal')}</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2 }}>
+                        <TextField
+                            fullWidth
+                            label={t('mealName')}
+                            name="name"
+                            value={newMeal.name}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label={t('calories')}
+                            name="calories"
+                            type="number"
+                            value={newMeal.calories}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label={t('protein')}
+                            name="protein"
+                            type="number"
+                            value={newMeal.protein}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label={t('carbs')}
+                            name="carbs"
+                            type="number"
+                            value={newMeal.carbs}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label={t('fats')}
+                            name="fats"
+                            type="number"
+                            value={newMeal.fats}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label={t('time')}
+                            name="time"
+                            type="time"
+                            value={newMeal.time}
+                            onChange={handleChange}
+                            margin="normal"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>{t('cancel')}</Button>
+                    <Button onClick={handleAddMeal} variant="contained" color="primary">
+                        {t('save')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

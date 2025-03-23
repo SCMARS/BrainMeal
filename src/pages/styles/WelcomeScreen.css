@@ -305,7 +305,7 @@ input:checked + .slider:before {
     padding: 20px;
     position: relative;
     z-index: 1;
-    height: calc(100vh - 70px); /* Subtract header height */
+    height: calc(100vh - 70px);
     height: calc(100vh - 70px - var(--safe-area-inset-top) + var(--safe-area-inset-bottom));
     padding-bottom: calc(20px + var(--safe-area-inset-bottom));
 }
@@ -490,7 +490,7 @@ input:checked + .slider:before {
     .welcome-content {
         padding: 15px;
         height: auto;
-        min-height: calc(100vh - 150px); /* Adjust for expanded header */
+        min-height: calc(100vh - 150px);
         min-height: calc(100vh - 150px - var(--safe-area-inset-top) + var(--safe-area-inset-bottom));
         padding-bottom: calc(15px + var(--safe-area-inset-bottom));
     }
@@ -669,4 +669,5 @@ input:checked + .slider:before {
     .welcome-title {
         font-size: 1.8rem;
     }
+}
 
