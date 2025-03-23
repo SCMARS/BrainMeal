@@ -35,9 +35,6 @@ import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/ico
 import { useLanguage } from '../context/LanguageContext';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 function MealPlanningApp() {
     const navigate = useNavigate();
@@ -150,7 +147,8 @@ function MealPlanningApp() {
         navigate("/profile");
     };
 
-    const handleDateChange = (newDate) => {
+    const handleDateChange = (event) => {
+        const newDate = new Date(event.target.value);
         setSelectedDate(newDate);
     };
 
@@ -286,10 +284,9 @@ function MealPlanningApp() {
                             data={data}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
+                            labelLine={false}
                             outerRadius={80}
                             fill="#8884d8"
-                            paddingAngle={5}
                             dataKey="value"
                         >
                             {data.map((entry, index) => (
@@ -297,10 +294,67 @@ function MealPlanningApp() {
                             ))}
                         </Pie>
                         <Tooltip />
-                        <Legend />
                     </PieChart>
                 </ResponsiveContainer>
             </Box>
+        );
+    };
+
+    const renderWeeklyPlan = () => {
+        if (!weeklyPlan) return null;
+
+        return (
+            <div className="weekly-plan">
+                {weeklyPlan.map((day, index) => (
+                    <Card key={index} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {new Date(day.date).toLocaleDateString(language, { weekday: 'long' })}
+                            </Typography>
+                            <List>
+                                {day.meals.map((meal, mealIndex) => (
+                                    <ListItem key={mealIndex}>
+                                        <ListItemText
+                                            primary={meal.name}
+                                            secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        );
+    };
+
+    const renderDailyPlan = () => {
+        if (!dailyPlan) return null;
+
+        return (
+            <div className="daily-plan">
+                {mealTypes.map((type) => (
+                    <Card key={type} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                            </Typography>
+                            <List>
+                                {dailyPlan
+                                    .filter(meal => meal.type === type)
+                                    .map((meal, index) => (
+                                        <ListItem key={index}>
+                                            <ListItemText
+                                                primary={meal.name}
+                                                secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                            />
+                                        </ListItem>
+                                    ))}
+                            </List>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         );
     };
 
@@ -327,6 +381,47 @@ function MealPlanningApp() {
                         <Bar dataKey="fat" fill="#FFD1C2" name={t('Fat')} />
                     </BarChart>
                 </ResponsiveContainer>
+            </Box>
+        );
+    };
+
+    const renderNutritionStats = () => {
+        // ... existing code ...
+    };
+
+    const renderCalorieStats = () => {
+        const dailyMeals = getMealsByDate(selectedDate);
+        const totalCalories = dailyMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+        const targetCalories = userData?.targetCalories || 2000;
+        const remainingCalories = targetCalories - totalCalories;
+
+        return (
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    {t('calorieStats')}
+                </Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('targetCalories')}</Typography>
+                            <Typography variant="h6">{targetCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('consumedCalories')}</Typography>
+                            <Typography variant="h6">{totalCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('remainingCalories')}</Typography>
+                            <Typography variant="h6" color={remainingCalories < 0 ? 'error' : 'inherit'}>
+                                {remainingCalories}
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
             </Box>
         );
     };
@@ -431,139 +526,165 @@ function MealPlanningApp() {
                 </Button>
             </Box>
 
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
-                    <Card>
-                        <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                <Typography variant="h6">
-                                    {t('Daily Meals')}
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddIcon />}
-                                    onClick={() => handleOpenDialog()}
-                                >
-                                    {t('Add Meal')}
-                                </Button>
-                            </Box>
+            <Box sx={{ p: 3 }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                        <Typography variant="h4">
+                            {t('Meal Plan')}
+                        </Typography>
+                        <TextField
+                            type="date"
+                            value={selectedDate.toISOString().split('T')[0]}
+                            onChange={handleDateChange}
+                            sx={{ width: 220 }}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                    </Box>
+                </motion.div>
 
-                            <AnimatePresence>
-                                {mealTypes.map((type) => {
-                                    const typeMeals = dailyMeals.filter(meal => meal.type === type);
-                                    return (
-                                        <motion.div
-                                            key={type}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
-                                                <CardContent>
-                                                    <Typography variant="h6" gutterBottom>
-                                                        {t(type.charAt(0).toUpperCase() + type.slice(1))}
-                                                    </Typography>
-                                                    {typeMeals.length === 0 ? (
-                                                        <Typography color="text.secondary">
-                                                            {t('No meals added')}
-                                                        </Typography>
-                                                    ) : (
-                                                        typeMeals.map((meal) => (
-                                                            <Box
-                                                                key={meal.id}
-                                                                sx={{
-                                                                    p: 2,
-                                                                    mb: 1,
-                                                                    bgcolor: 'background.paper',
-                                                                    borderRadius: 1,
-                                                                    display: 'flex',
-                                                                    justifyContent: 'space-between',
-                                                                    alignItems: 'center'
-                                                                }}
-                                                            >
-                                                                <Box>
-                                                                    <Typography variant="subtitle1">
-                                                                        {meal.name}
-                                                                    </Typography>
-                                                                    <Stack direction="row" spacing={1} mt={1}>
-                                                                        <Chip
-                                                                            label={`${meal.calories} ${t('kcal')}`}
-                                                                            size="small"
-                                                                            color="primary"
-                                                                        />
-                                                                        <Chip
-                                                                            label={`${meal.protein}g ${t('protein')}`}
-                                                                            size="small"
-                                                                        />
-                                                                        <Chip
-                                                                            label={`${meal.carbs}g ${t('carbs')}`}
-                                                                            size="small"
-                                                                        />
-                                                                        <Chip
-                                                                            label={`${meal.fat}g ${t('fat')}`}
-                                                                            size="small"
-                                                                        />
-                                                                    </Stack>
-                                                                </Box>
-                                                                <Box>
-                                                                    <IconButton
-                                                                        onClick={() => handleOpenDialog(meal)}
-                                                                        size="small"
-                                                                    >
-                                                                        <EditIcon />
-                                                                    </IconButton>
-                                                                    <IconButton
-                                                                        onClick={() => handleDelete(meal.id)}
-                                                                        size="small"
-                                                                        color="error"
-                                                                    >
-                                                                        <DeleteIcon />
-                                                                    </IconButton>
-                                                                </Box>
-                                                            </Box>
-                                                        ))
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        </motion.div>
-                                    );
-                                })}
-                            </AnimatePresence>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                    <Stack spacing={3}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={8}>
                         <Card>
                             <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    {t('Daily Summary')}
-                                </Typography>
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography variant="h4" color="primary">
-                                        {nutritionSummary.calories}
-                                        <Typography component="span" variant="h6" color="text.secondary">
-                                            {' '}{t('kcal')}
-                                        </Typography>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                    <Typography variant="h6">
+                                        {t('Daily Meals')}
                                     </Typography>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleOpenDialog()}
+                                    >
+                                        {t('Add Meal')}
+                                    </Button>
                                 </Box>
-                                {renderNutritionChart()}
-                            </CardContent>
-                        </Card>
 
-                        <Card>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    {t('Weekly Progress')}
-                                </Typography>
-                                {renderWeeklyStats()}
+                                <AnimatePresence>
+                                    {mealTypes.map((type) => {
+                                        const typeMeals = dailyMeals.filter(meal => meal.type === type);
+                                        return (
+                                            <motion.div
+                                                key={type}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -20 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
+                                                    <CardContent>
+                                                        <Typography variant="h6" gutterBottom>
+                                                            {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                                                        </Typography>
+                                                        {typeMeals.length === 0 ? (
+                                                            <Typography color="text.secondary">
+                                                                {t('No meals added')}
+                                                            </Typography>
+                                                        ) : (
+                                                            typeMeals.map((meal) => (
+                                                                <Box
+                                                                    key={meal.id}
+                                                                    sx={{
+                                                                        p: 2,
+                                                                        mb: 1,
+                                                                        bgcolor: 'background.paper',
+                                                                        borderRadius: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center'
+                                                                    }}
+                                                                >
+                                                                    <Box>
+                                                                        <Typography variant="subtitle1">
+                                                                            {meal.name}
+                                                                        </Typography>
+                                                                        <Stack direction="row" spacing={1} mt={1}>
+                                                                            <Chip
+                                                                                label={`${meal.calories} ${t('kcal')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.protein}g ${t('protein')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.carbs}g ${t('carbs')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.fat}g ${t('fat')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                        </Stack>
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <IconButton
+                                                                            onClick={() => handleOpenDialog(meal)}
+                                                                            size="small"
+                                                                        >
+                                                                            <EditIcon />
+                                                                        </IconButton>
+                                                                        <IconButton
+                                                                            onClick={() => handleDelete(meal.id)}
+                                                                            size="small"
+                                                                            color="error"
+                                                                        >
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
+                                                                    </Box>
+                                                                </Box>
+                                                            ))
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
                             </CardContent>
                         </Card>
-                    </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        <Stack spacing={3}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Daily Summary')}
+                                    </Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="h4" color="primary">
+                                            {nutritionSummary.calories}
+                                            <Typography component="span" variant="h6" color="text.secondary">
+                                                {' '}{t('kcal')}
+                                            </Typography>
+                                        </Typography>
+                                    </Box>
+                                    {renderNutritionChart()}
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Weekly Progress')}
+                                    </Typography>
+                                    {renderWeeklyStats()}
+                                </CardContent>
+                            </Card>
+                        </Stack>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </Box>
 
             <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>

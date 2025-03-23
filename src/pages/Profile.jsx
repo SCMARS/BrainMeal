@@ -295,7 +295,7 @@ const Profile = () => {
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
-            navigate("/MealPlan");
+            navigate("/meal-plan");
         }, 500);
     };
 

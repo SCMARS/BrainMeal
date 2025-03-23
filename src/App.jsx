@@ -5,6 +5,14 @@ import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { MealPlanProvider } from './context/MealPlanContext';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+
+// Components
+import ErrorBoundary from './components/common/ErrorBoundary';
+import Notification from './components/common/Notification';
+import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Pages
 import WelcomeScreen from "./pages/WelcomeScreen";
@@ -23,38 +31,39 @@ import Calendar from "./pages/Calendar";
 import ShoppingList from "./pages/ShoppingList";
 import CalorieCalculator from "./pages/CalorieCalculator";
 
-// Layout Components
-import Layout from "./components/layout/Layout";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-
 function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
                 <LanguageProvider>
-                    <NotificationProvider>
-                        <MealPlanProvider>
-                            <Router>
-                                <Routes>
-                                    <Route path="/" element={<WelcomeScreen />} />
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/register" element={<Register />} />
-                                    <Route path="/home" element={<Layout><Home /></Layout>} />
-                                    <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
-                                    <Route path="/MealPlan" element={<Layout><ProtectedRoute><MealPlan /></ProtectedRoute></Layout>} />
-                                    <Route path="/Recipes" element={<Layout><ProtectedRoute><Recipes /></ProtectedRoute></Layout>} />
-                                    <Route path="/Analytics" element={<Layout><ProtectedRoute><Analytics /></ProtectedRoute></Layout>} />
-                                    <Route path="/Social" element={<Layout><ProtectedRoute><Social /></ProtectedRoute></Layout>} />
-                                    <Route path="/Education" element={<Layout><ProtectedRoute><Education /></ProtectedRoute></Layout>} />
-                                    <Route path="/Settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
-                                    <Route path="/Achievements" element={<Layout><ProtectedRoute><Achievements /></ProtectedRoute></Layout>} />
-                                    <Route path="/Calendar" element={<Layout><ProtectedRoute><Calendar /></ProtectedRoute></Layout>} />
-                                    <Route path="/ShoppingList" element={<Layout><ProtectedRoute><ShoppingList /></ProtectedRoute></Layout>} />
-                                    <Route path="/CalorieCalculator" element={<Layout><ProtectedRoute><CalorieCalculator /></ProtectedRoute></Layout>} />
-                                </Routes>
-                            </Router>
-                        </MealPlanProvider>
-                    </NotificationProvider>
+                    <ErrorBoundary>
+                        <NotificationProvider>
+                            <MealPlanProvider>
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                    <Router>
+                                        <Notification />
+                                        <Routes>
+                                            <Route path="/" element={<WelcomeScreen />} />
+                                            <Route path="/login" element={<Login />} />
+                                            <Route path="/register" element={<Register />} />
+                                            <Route path="/home" element={<Layout><Home /></Layout>} />
+                                            <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
+                                            <Route path="/meal-plan" element={<Layout><ProtectedRoute><MealPlan /></ProtectedRoute></Layout>} />
+                                            <Route path="/recipes" element={<Layout><ProtectedRoute><Recipes /></ProtectedRoute></Layout>} />
+                                            <Route path="/analytics" element={<Layout><ProtectedRoute><Analytics /></ProtectedRoute></Layout>} />
+                                            <Route path="/social" element={<Layout><ProtectedRoute><Social /></ProtectedRoute></Layout>} />
+                                            <Route path="/education" element={<Layout><ProtectedRoute><Education /></ProtectedRoute></Layout>} />
+                                            <Route path="/settings" element={<Layout><ProtectedRoute><Settings /></ProtectedRoute></Layout>} />
+                                            <Route path="/achievements" element={<Layout><ProtectedRoute><Achievements /></ProtectedRoute></Layout>} />
+                                            <Route path="/calendar" element={<Layout><ProtectedRoute><Calendar /></ProtectedRoute></Layout>} />
+                                            <Route path="/shopping-list" element={<Layout><ProtectedRoute><ShoppingList /></ProtectedRoute></Layout>} />
+                                            <Route path="/calorie-calculator" element={<Layout><ProtectedRoute><CalorieCalculator /></ProtectedRoute></Layout>} />
+                                        </Routes>
+                                    </Router>
+                                </LocalizationProvider>
+                            </MealPlanProvider>
+                        </NotificationProvider>
+                    </ErrorBoundary>
                 </LanguageProvider>
             </AuthProvider>
         </ThemeProvider>

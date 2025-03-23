@@ -59,6 +59,10 @@ export const LanguageProvider = ({ children }) => {
             protein: 'Белки',
             carbs: 'Углеводы',
             fats: 'Жиры',
+            calorieStats: 'Статистика калорий',
+            targetCalories: 'Целевые калории',
+            consumedCalories: 'Потреблено калорий',
+            remainingCalories: 'Осталось калорий',
 
             // Рецепты
             addRecipe: 'Добавить рецепт',
@@ -105,7 +109,6 @@ export const LanguageProvider = ({ children }) => {
             results: 'Результаты',
             bmr: 'Базовый обмен веществ',
             tdee: 'Общий расход энергии',
-            targetCalories: 'Целевые калории',
             caloriesPerDay: 'калорий в день',
 
             // Настройки
@@ -170,6 +173,12 @@ export const LanguageProvider = ({ children }) => {
             analyticsDesc: 'Анализируйте свой прогресс и достижения',
             socialDesc: 'Делитесь опытом с единомышленниками',
             getStarted: 'Начать',
+            goals: 'Цели',
+            goalsSection: 'Раздел целей',
+            login: 'Войти',
+            loginAction: 'Войти в систему',
+            mealPlan: 'План питания',
+            mealPlanSection: 'Раздел планирования питания',
         },
         en: {
             // General
@@ -216,6 +225,10 @@ export const LanguageProvider = ({ children }) => {
             protein: 'Protein',
             carbs: 'Carbs',
             fats: 'Fats',
+            calorieStats: 'Calorie Statistics',
+            targetCalories: 'Target Calories',
+            consumedCalories: 'Consumed Calories',
+            remainingCalories: 'Remaining Calories',
 
             // Recipes
             addRecipe: 'Add Recipe',
@@ -262,7 +275,6 @@ export const LanguageProvider = ({ children }) => {
             results: 'Results',
             bmr: 'Basal Metabolic Rate',
             tdee: 'Total Daily Energy Expenditure',
-            targetCalories: 'Target Calories',
             caloriesPerDay: 'calories per day',
 
             // Settings
@@ -300,35 +312,11 @@ export const LanguageProvider = ({ children }) => {
             cooking: 'Cooking',
             social: 'Social',
             goals: 'Goals',
-
-            // Calendar
-            calendar: 'Calendar',
-            mealName: 'Meal Name',
-            mealType: 'Meal Type',
-            time: 'Time',
-            selectedDate: 'Selected Date',
-            noMeals: 'No Meals',
-
-            // Shopping List
-            shoppingList: 'Shopping List',
-            itemName: 'Item Name',
-            quantity: 'Quantity',
-            add: 'Add',
-            dairy: 'Dairy',
-            bakery: 'Bakery',
-            fruits: 'Fruits',
-            vegetables: 'Vegetables',
-            meat: 'Meat',
-            other: 'Other',
-
-            // GetStarted
-            getStartedSubtitle: 'Your Smart Meal Planning Assistant',
-            mealPlanningDesc: 'Create and track your meal plan',
-            recipesDesc: 'Explore and save your favorite recipes',
-            analyticsDesc: 'Analyze your progress and achievements',
-            socialDesc: 'Share your journey with like-minded people',
-            getStarted: 'Get Started',
+            goalsSection: 'Goals Section',
             login: 'Login',
+            loginAction: 'Sign In',
+            mealPlan: 'Meal Plan',
+            mealPlanSection: 'Meal Planning Section',
         },
         uk: {
             // Загальні
@@ -375,6 +363,10 @@ export const LanguageProvider = ({ children }) => {
             protein: 'Білки',
             carbs: 'Вуглеводи',
             fats: 'Жири',
+            calorieStats: 'Статистика калорій',
+            targetCalories: 'Цільові калорії',
+            consumedCalories: 'Спожито калорій',
+            remainingCalories: 'Осталось калорій',
 
             // Рецепти
             addRecipe: 'Додати рецепт',
@@ -421,7 +413,6 @@ export const LanguageProvider = ({ children }) => {
             results: 'Результати',
             bmr: 'Базовий обмін речовин',
             tdee: 'Загальна витрата енергії',
-            targetCalories: 'Цільові калорії',
             caloriesPerDay: 'калорій на день',
 
             // Графіки та аналітика
@@ -479,35 +470,11 @@ export const LanguageProvider = ({ children }) => {
             cooking: 'Готування',
             social: 'Соціальне',
             goals: 'Цілі',
-
-            // Календар
-            calendar: 'Календар',
-            mealName: 'Назва прийому їжі',
-            mealType: 'Тип прийому їжі',
-            time: 'Час',
-            selectedDate: 'Обрана дата',
-            noMeals: 'Немає прийомів їжі',
-
-            // Список покупок
-            shoppingList: 'Список покупок',
-            itemName: 'Назва товару',
-            quantity: 'Кількість',
-            add: 'Додати',
-            dairy: 'Молочні продукти',
-            bakery: 'Хлібобулочні вироби',
-            fruits: 'Фрукти',
-            vegetables: 'Овочі',
-            meat: 'М\'ясо',
-            other: 'Інше',
-
-            // GetStarted
-            getStartedSubtitle: 'Ваш розумний помічник у плануванні харчування',
-            mealPlanningDesc: 'Створюйте та відстежуйте свій план харчування',
-            recipesDesc: 'Вивчайте та зберігайте улюблені рецепти',
-            analyticsDesc: 'Аналізуйте свій прогрес та досягнення',
-            socialDesc: 'Діліться досвідом з однодумцями',
-            getStarted: 'Почати',
+            goalsSection: 'Розділ цілей',
             login: 'Увійти',
+            loginAction: 'Увійти в систему',
+            mealPlan: 'План харчування',
+            mealPlanSection: 'Розділ планування харчування',
         }
     };
 
