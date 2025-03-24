@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
-import { generateMealPlan } from './services/llmService.jsx';
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
     Box,
@@ -36,7 +36,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
 
-function MealPlanningApp() {
+function MealPlan() {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useLanguage();
@@ -65,6 +65,9 @@ function MealPlanningApp() {
     const [editingMeal, setEditingMeal] = useState(null);
     const [activeTab, setActiveTab] = useState(0);
     const [weeklyStats, setWeeklyStats] = useState(null);
+    const [isPremium, setIsPremium] = useState(false);
+    const [generationCount, setGenerationCount] = useState(0);
+    const [showPremiumModal, setShowPremiumModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         type: 'breakfast',
@@ -115,12 +118,26 @@ function MealPlanningApp() {
         }
     }, [t]);
 
+    // Load premium status and generation count
+    useEffect(() => {
+        const savedPremiumStatus = localStorage.getItem('isPremium');
+        const savedGenerationCount = localStorage.getItem('generationCount');
+
+        if (savedPremiumStatus === 'true') {
+            setIsPremium(true);
+        }
+
+        if (savedGenerationCount) {
+            setGenerationCount(parseInt(savedGenerationCount));
+        }
+    }, []);
+
     // Calculate weekly statistics
     useEffect(() => {
         const startDate = new Date(selectedDate);
         startDate.setDate(startDate.getDate() - startDate.getDay());
         const weekMeals = getMealsByWeek(startDate);
-        
+
         const stats = weekMeals.reduce((acc, meal) => {
             const day = new Date(meal.date).toLocaleDateString('en-US', { weekday: 'short' });
             if (!acc[day]) {
@@ -157,18 +174,57 @@ function MealPlanningApp() {
             setError(t.userDataNotFound);
             return;
         }
+
+        if (!isPremium && generationCount >= 5) {
+            setShowPremiumModal(true);
+            return;
+        }
+
         setIsLoadingWeekly(true);
         setError(null);
         try {
             const generatedPlan = await generateMealPlan({
                 ...userData,
-                isWeekly: true
+                isWeekly: true,
+                targetCalories: userData.targetCalories || 2000,
+                dietType: userData.dietType || 'basic',
+                mealPreferences: userData.mealPreferences || ''
             });
-            setWeeklyPlan(generatedPlan);
+
+            // Format the generated plan
+            const formattedPlan = generatedPlan.map(day => ({
+                date: day.date,
+                meals: day.meals.map(meal => ({
+                    ...meal,
+                    calories: Number(meal.calories),
+                    protein: Number(meal.protein),
+                    carbs: Number(meal.carbs),
+                    fat: Number(meal.fat)
+                }))
+            }));
+
+            // Add meals to the meal plan context
+            for (const day of formattedPlan) {
+                for (const meal of day.meals) {
+                    await addMeal({
+                        ...meal,
+                        date: day.date,
+                        userId: user.uid
+                    });
+                }
+            }
+
+            setWeeklyPlan(formattedPlan);
             setSelectedDate(new Date());
             setDailyPlan(null);
+
+            if (!isPremium) {
+                const newCount = generationCount + 1;
+                setGenerationCount(newCount);
+                localStorage.setItem('generationCount', newCount.toString());
+            }
         } catch (err) {
-            console.error(err);
+            console.error('Error generating weekly plan:', err);
             setError(t.weeklyPlanGenerationError || "Failed to generate weekly plan. Please try again later.");
         } finally {
             setIsLoadingWeekly(false);
@@ -180,17 +236,49 @@ function MealPlanningApp() {
             setError(t.userDataNotFound);
             return;
         }
+
+        if (!isPremium && generationCount >= 5) {
+            setShowPremiumModal(true);
+            return;
+        }
+
         setIsLoadingDaily(true);
         setError(null);
         try {
             const generatedPlan = await generateMealPlan({
                 ...userData,
-                isWeekly: false
+                isWeekly: false,
+                targetCalories: userData.targetCalories || 2000,
+                dietType: userData.dietType || 'basic',
+                mealPreferences: userData.mealPreferences || ''
             });
-            setDailyPlan(generatedPlan);
+
+            // Format the generated plan
+            const formattedPlan = generatedPlan.map(meal => ({
+                ...meal,
+                calories: Number(meal.calories),
+                protein: Number(meal.protein),
+                carbs: Number(meal.carbs),
+                fat: Number(meal.fat),
+                date: selectedDate.toISOString(),
+                userId: user.uid
+            }));
+
+            // Add meals to the meal plan context
+            for (const meal of formattedPlan) {
+                await addMeal(meal);
+            }
+
+            setDailyPlan(formattedPlan);
             setWeeklyPlan(null);
+
+            if (!isPremium) {
+                const newCount = generationCount + 1;
+                setGenerationCount(newCount);
+                localStorage.setItem('generationCount', newCount.toString());
+            }
         } catch (err) {
-            console.error(err);
+            console.error('Error generating daily plan:', err);
             setError(t.dailyPlanGenerationError || "Failed to generate daily plan. Please try again later.");
         } finally {
             setIsLoadingDaily(false);
@@ -424,6 +512,12 @@ function MealPlanningApp() {
                 </Grid>
             </Box>
         );
+    };
+
+    const handlePremiumSubscribe = () => {
+        setIsPremium(true);
+        localStorage.setItem('isPremium', 'true');
+        setShowPremiumModal(false);
     };
 
     if (loading) {
@@ -767,11 +861,30 @@ function MealPlanningApp() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {showPremiumModal && (
+                <Dialog open={showPremiumModal} onClose={() => setShowPremiumModal(false)}>
+                    <DialogTitle>{t('Upgrade to Premium')}</DialogTitle>
+                    <DialogContent>
+                        <Typography>
+                            {t('You have reached the limit of free meal plan generations.')}
+                            <br />
+                            {t('Upgrade to premium to generate unlimited meal plans!')}
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowPremiumModal(false)}>{t('Cancel')}</Button>
+                        <Button onClick={handlePremiumSubscribe} variant="contained" color="primary">
+                            {t('Upgrade to Premium')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </div>
     );
 }
 
-export default MealPlanningApp;
+export default MealPlan;
 
 
 
