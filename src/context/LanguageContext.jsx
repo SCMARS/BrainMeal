@@ -173,11 +173,8 @@ export const LanguageProvider = ({ children }) => {
             analyticsDesc: 'Анализируйте свой прогресс и достижения',
             socialDesc: 'Делитесь опытом с единомышленниками',
             getStarted: 'Начать',
-            goals: 'Цели',
             goalsSection: 'Раздел целей',
-            login: 'Войти',
             loginAction: 'Войти в систему',
-            mealPlan: 'План питания',
             mealPlanSection: 'Раздел планирования питания',
         },
         en: {
