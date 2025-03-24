@@ -1,193 +1,79 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { generateMealPlan } from './services/llmService.jsx';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+    Box,
+    Typography,
+    Grid,
+    Card,
+    CardContent,
+    Button,
+    TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    CircularProgress,
+    Tabs,
+    Tab,
+    Paper,
+    MenuItem,
+    useTheme,
+    Chip,
+    Stack,
+    Divider
+} from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { useLanguage } from '../context/LanguageContext';
+import { useMealPlan } from '../context/MealPlanContext';
+import { useAuth } from '../context/AuthContext';
 
 function MealPlanningApp() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useLanguage();
+    const theme = useTheme();
+    const { user } = useAuth();
+
+    const {
+        meals,
+        loading,
+        error,
+        addMeal,
+        updateMeal,
+        deleteMeal,
+        getMealsByDate,
+        getMealsByWeek,
+        getNutritionSummary
+    } = useMealPlan();
 
     const [userData, setUserData] = useState(null);
     const [weeklyPlan, setWeeklyPlan] = useState(null);
     const [dailyPlan, setDailyPlan] = useState(null);
     const [isLoadingWeekly, setIsLoadingWeekly] = useState(false);
     const [isLoadingDaily, setIsLoadingDaily] = useState(false);
-    const [error, setError] = useState(null);
-    const [nutritionStats, setNutritionStats] = useState(null);
-    const [selectedDay, setSelectedDay] = useState('monday');
-    const [isEditing, setIsEditing] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [openDialog, setOpenDialog] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
-    const [editingDay, setEditingDay] = useState(null);
-    const [editMealName, setEditMealName] = useState('');
-    const [editCalories, setEditCalories] = useState('');
-
-    // Translations
-    const translations = {
-        en: {
-            mainTitle: "Meal Planning",
-            subtitle: "Daily and Weekly Plans",
-            weeklyPlan: "Weekly Plan",
-            dailyPlan: "Daily Plan",
-            generateWeeklyPlan: "Generate Weekly Plan",
-            generateDailyPlan: "Generate Daily Plan",
-            breakfast: "Breakfast",
-            lunch: "Lunch",
-            dinner: "Dinner",
-            snack: "Snack",
-            sTip: "Eat more vegetables and protein foods",
-            calories: "Calories",
-            totalCalories: "Total Calories",
-            carbs: "Carbohydrates",
-            basic: "Basic",
-            gentle: "Gentle",
-            highProtein: "High Protein",
-            weightLoss: "Weight Loss",
-            muscleGain: "Muscle Gain",
-            errorLoadingProfile: "Error loading profile. Please go back to the profile page.",
-            userDataNotFound: "User data not found. Please fill in your profile.",
-            noDataForDay: "No data for this day",
-            notSpecified: "Not specified",
-            total: "Total",
-            totalCaloriesIntake: "Total calories: ",
-            nutritionInfo: "Nutrition Information",
-            generateMealPlan: "Generate Meal Plan",
-            mealPlanForWeek: "Meal Plan for the Week",
-            mealPlanForDay: "Meal Plan for the Day",
-            calorieDistribution: "Calorie Distribution",
-            recommendations: "Recommendations",
-            dietRecommendations: "Diet Recommendations",
-            hydrationTip: "Drink enough water throughout the day",
-            mealTimingTip: "Space your meals every 3-4 hours",
-            balancedDietTip: "Include a variety of foods in your diet",
-            proteinDietTip: "Consume more protein-rich foods (eggs, chicken breast, cheese)",
-            muscleGainTip: "Increase water intake to 2-3 liters per day",
-            complexCarbsTip: "Add more whole grains for energy",
-            weightLossTip: "Avoid sugar and simple carbohydrates",
-            eatSlowlyTip: "Eat slowly, chewing your food thoroughly",
-            moreVegetablesTip: "Eat more vegetables and protein-rich foods",
-            gentleDietTip: "Avoid spicy and fatty foods",
-            preferBoiledTip: "Prefer boiled and stewed foods",
-            warmWaterTip: "Drink more warm water between meals",
-            calorieStats: "Calorie Stats by Meal",
-            caloriesIntake: "Caloric Intake",
-            selectDay: "Select a day",
-            edit: "Edit",
-            delete: "Delete",
-            loading: "Loading...",
-            weeklyMealPlan: "Weekly Meal Plan",
-            dailyMealPlan: "Daily Meal Plan",
-            noMealData: "No data",
-            enterMealName: "Enter meal name",
-            enterCalories: "Enter number of calories",
-            monday: "Monday",
-            tuesday: "Tuesday",
-            wednesday: "Wednesday",
-            thursday: "Thursday",
-            friday: "Friday",
-            saturday: "Saturday",
-            sunday: "Sunday",
-            mealEditing: "Editing Meal",
-            day: "Day",
-            meal: "Meal",
-            mealName: "Meal Name",
-            caloriesCount: "Calories",
-            totalMacros: "Total Macros",
-            proteins: "Proteins",
-            fats: "Fats",
-
-            profile: "Your Profile",
-            weight: "Weight",
-            height: "Height",
-            age: "Age",
-            dietType: "Diet Type",
-            mealPreferences: "Meal Preferences",
-            save: "Save",
-            cancel: "Cancel",
-            back: "← Back",
-        },
-        uk: {
-            mainTitle: "План харчування",
-            subtitle: "Щоденні та тижневі плани",
-            weeklyPlan: "Тижневий план",
-            dailyPlan: "Щоденний план",
-            generateWeeklyPlan: "Згенерувати тижневий план",
-            generateDailyPlan: "Згенерувати щоденний план",
-            breakfast: "Сніданок",
-            lunch: "Обід",
-            dinner: "Вечеря",
-            snack: "Перекус",
-            calories: "Калорії",
-            totalCalories: "Всього калорій",
-            profile: "Ваш профіль",
-            weight: "Вага",
-            height: "Зріст",
-            age: "Вік",
-            dietType: "Тип дієти",
-            mealPreferences: "Харчові уподобання",
-            editMeal: "Редагувати прийом їжі",
-            save: "Зберегти",
-            cancel: "Скасувати",
-            back: "← Назад",
-            errorLoadingProfile: "Помилка завантаження профілю. Поверніться на сторінку профілю.",
-            userDataNotFound: "Дані користувача не знайдені. Будь ласка, заповніть профіль.",
-            noDataForDay: "Немає даних для цього дня",
-            notSpecified: "Не вказано",
-            total: "Всього",
-            totalCaloriesIntake: "Всього калорій: ",
-            nutritionInfo: "Інформація про поживні речовини",
-            generateMealPlan: "Згенерувати план харчування",
-            mealPlanForWeek: "План харчування на тиждень",
-            mealPlanForDay: "План харчування на день",
-            calorieDistribution: "Розподіл калорій",
-            recommendations: "Рекомендації",
-            dietRecommendations: "Рекомендації щодо харчування",
-            hydrationTip: "Пийте достатньо води протягом дня",
-            mealTimingTip: "Розділяйте прийоми їжі кожні 3-4 години",
-            balancedDietTip: "Включайте в раціон різноманітні продукти",
-            proteinDietTip: "Споживайте більше білкової їжі (яйця, куряча грудка, сир)",
-            muscleGainTip: "Збільшіть споживання води до 2-3 літрів на день",
-            complexCarbsTip: "Додавайте більше цільнозернових продуктів для енергії",
-            weightLossTip: "Уникайте цукру і простих вуглеводів",
-            eatSlowlyTip: "Їжте повільно, ретельно пережовуючи їжу",
-            moreVegetablesTip: "Споживайте більше овочів та білкової їжі",
-            gentleDietTip: "Уникайте гострих і жирних страв",
-            preferBoiledTip: "Надавайте перевагу вареній та тушкованій їжі",
-            warmWaterTip: "Пийте більше теплої води між прийомами їжі",
-            calorieStats: "Калорійність по прийомах їжі",
-            caloriesIntake: "Споживання калорій",
-            selectDay: "Виберіть день",
-            edit: "Редагувати",
-            delete: "Видалити",
-            loading: "Завантаження...",
-            weeklyMealPlan: "Тижневий план харчування",
-            dailyMealPlan: "Щоденний план харчування",
-            noMealData: "Немає даних",
-            enterMealName: "Введіть назву страви",
-            enterCalories: "Введіть кількість калорій",
-            monday: "Понеділок",
-            tuesday: "Вівторок",
-            wednesday: "Середа",
-            thursday: "Четвер",
-            friday: "П'ятниця",
-            saturday: "Субота",
-            sunday: "Неділя",
-            mealEditing: "Редагування прийому їжі",
-            day: "День",
-            meal: "Прийом їжі",
-            mealName: "Назва страви",
-            caloriesCount: "Калорії",
-            totalMacros: "Загальна кількість макроелементів",
-            proteins: "Білки",
-            fats: "Жири",
-            carbs: "Вуглеводи",
-            basic: "Базова",
-            gentle: "Щадяща",
-            highProtein: "Високобілкова",
-            weightLoss: "Для схуднення",
-            muscleGain: "Для набору м'язової маси"
-        }
-    };
+    const [activeTab, setActiveTab] = useState(0);
+    const [weeklyStats, setWeeklyStats] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        type: 'breakfast',
+        calories: '',
+        protein: '',
+        carbs: '',
+        fat: '',
+        notes: ''
+    });
 
     // Theme and language state
     const [darkMode, setDarkMode] = useState(() => {
@@ -205,9 +91,6 @@ function MealPlanningApp() {
         }
         return location.state?.language || 'en';
     });
-
-    const t = useMemo(() => translations[language], [language]);
-    const theme = darkMode ? 'dark-theme' : 'light-theme';
 
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
@@ -232,84 +115,41 @@ function MealPlanningApp() {
         }
     }, [t]);
 
-    // FIX: Modified useEffect to use the returned value from calculateNutritionStats
+    // Calculate weekly statistics
     useEffect(() => {
-        if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
-            const stats = calculateNutritionStats(weeklyPlan[selectedDay]);
-            setNutritionStats(stats);
-        } else if (dailyPlan) {
-            const stats = calculateNutritionStats(dailyPlan);
-            setNutritionStats(stats);
-        }
-    }, [weeklyPlan, dailyPlan, selectedDay]);
+        const startDate = new Date(selectedDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+        const weekMeals = getMealsByWeek(startDate);
+        
+        const stats = weekMeals.reduce((acc, meal) => {
+            const day = new Date(meal.date).toLocaleDateString('en-US', { weekday: 'short' });
+            if (!acc[day]) {
+                acc[day] = {
+                    calories: 0,
+                    protein: 0,
+                    carbs: 0,
+                    fat: 0,
+                    meals: 0
+                };
+            }
+            acc[day].calories += meal.calories || 0;
+            acc[day].protein += meal.protein || 0;
+            acc[day].carbs += meal.carbs || 0;
+            acc[day].fat += meal.fat || 0;
+            acc[day].meals += 1;
+            return acc;
+        }, {});
+
+        setWeeklyStats(stats);
+    }, [meals, selectedDate]);
 
     const backHandler = () => {
         navigate("/profile");
     };
 
-
-    // FIX: Modified function to return the calculated stats instead of setting state directly
-    const calculateNutritionStats = (plan) => {
-        let totalCalories = 0;
-
-        if (plan.breakfast_calories !== undefined) {
-            // Weekly plan format
-            totalCalories =
-                (parseInt(plan.breakfast_calories) || 0) +
-                (parseInt(plan.lunch_calories) || 0) +
-                (parseInt(plan.dinner_calories) || 0);
-        } else if (plan.breakfast?.calories !== undefined) {
-            // Daily plan format
-            totalCalories =
-                (parseInt(plan.breakfast?.calories) || 0) +
-                (parseInt(plan.lunch?.calories) || 0) +
-                (parseInt(plan.dinner?.calories) || 0) +
-                (parseInt(plan.snack?.calories) || 0);
-        }
-
-        // Default macronutrient distribution
-        let proteinPercentage = 0.25;
-        let fatPercentage = 0.3;
-        let carbsPercentage = 0.45;
-
-        // Adjust based on diet type
-        if (userData && userData.dietType) {
-            switch(userData.dietType) {
-                case "protein":
-                case "muscle_gain":
-                    proteinPercentage = 0.35;
-                    fatPercentage = 0.25;
-                    carbsPercentage = 0.4;
-                    break;
-                case "weight_loss":
-                    proteinPercentage = 0.3;
-                    fatPercentage = 0.35;
-                    carbsPercentage = 0.35;
-                    break;
-                case "gentle":
-                    proteinPercentage = 0.2;
-                    fatPercentage = 0.3;
-                    carbsPercentage = 0.5;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Calculate macros in grams
-        const protein = Math.round(totalCalories * proteinPercentage / 4);
-        const fat = Math.round(totalCalories * fatPercentage / 9);
-        const carbs = Math.round(totalCalories * carbsPercentage / 4);
-
-        // Return the stats instead of setting state
-        return {
-            calories: Math.round(totalCalories),
-            macros: [
-                { name: t.proteins, value: protein, grams: protein, color: '#8884d8' },
-                { name: t.fats, value: fat, grams: fat, color: '#82ca9d' },
-                { name: t.carbs, value: carbs, grams: carbs, color: '#ffc658' }
-            ]
-        };
+    const handleDateChange = (event) => {
+        const newDate = new Date(event.target.value);
+        setSelectedDate(newDate);
     };
 
     const handleGenerateWeeklyPlan = async () => {
@@ -325,7 +165,7 @@ function MealPlanningApp() {
                 isWeekly: true
             });
             setWeeklyPlan(generatedPlan);
-            setSelectedDay('monday');
+            setSelectedDate(new Date());
             setDailyPlan(null);
         } catch (err) {
             console.error(err);
@@ -357,381 +197,247 @@ function MealPlanningApp() {
         }
     };
 
-    const handleDayClick = (day) => {
-        setSelectedDay(day);
-    };
-
-    const startEditingWeeklyMeal = (day, meal) => {
-        setIsEditing(true);
-        setEditingDay(day);
-        setEditingMeal(meal);
-        setEditMealName(weeklyPlan[day][meal] || '');
-        setEditCalories(weeklyPlan[day][`${meal}_calories`] || 0);
-    };
-
-    const startEditingDailyMeal = (meal) => {
-        setIsEditing(true);
-        setEditingDay(null);
-        setEditingMeal(meal);
-        setEditMealName(dailyPlan[meal]?.meal || '');
-        setEditCalories(dailyPlan[meal]?.calories || 0);
-    };
-
-    const saveEditedMeal = () => {
-        if (editingDay) {
-            // Editing weekly plan
-            const updatedWeeklyPlan = { ...weeklyPlan };
-            if (!updatedWeeklyPlan[editingDay]) {
-                updatedWeeklyPlan[editingDay] = {};
-            }
-            updatedWeeklyPlan[editingDay] = { ...updatedWeeklyPlan[editingDay] };
-            updatedWeeklyPlan[editingDay][editingMeal] = editMealName;
-            updatedWeeklyPlan[editingDay][`${editingMeal}_calories`] = parseInt(editCalories) || 0;
-            setWeeklyPlan(updatedWeeklyPlan);
-            // Fix: Use the returned value to set nutrition stats
-            const stats = calculateNutritionStats(updatedWeeklyPlan[editingDay]);
-            setNutritionStats(stats);
+    const handleOpenDialog = (meal = null) => {
+        if (meal) {
+            setEditingMeal(meal);
+            setFormData(meal);
         } else {
-            // Editing daily plan
-            const updatedDailyPlan = { ...dailyPlan };
-            if (!updatedDailyPlan[editingMeal]) {
-                updatedDailyPlan[editingMeal] = {};
-            }
-            updatedDailyPlan[editingMeal] = {
-                ...updatedDailyPlan[editingMeal],
-                meal: editMealName,
-                calories: parseInt(editCalories) || 0
+            setEditingMeal(null);
+            setFormData({
+                name: '',
+                type: 'breakfast',
+                calories: '',
+                protein: '',
+                carbs: '',
+                fat: '',
+                notes: ''
+            });
+        }
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setEditingMeal(null);
+        setFormData({
+            name: '',
+            type: 'breakfast',
+            calories: '',
+            protein: '',
+            carbs: '',
+            fat: '',
+            notes: ''
+        });
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const mealData = {
+                ...formData,
+                date: selectedDate.toISOString(),
+                calories: Number(formData.calories),
+                protein: Number(formData.protein),
+                carbs: Number(formData.carbs),
+                fat: Number(formData.fat),
+                userId: user.uid
             };
-            setDailyPlan(updatedDailyPlan);
-            // Fix: Use the returned value to set nutrition stats
-            const stats = calculateNutritionStats(updatedDailyPlan);
-            setNutritionStats(stats);
-        }
-        setIsEditing(false);
-        setEditingMeal(null);
-        setEditingDay(null);
-    };
 
-    const cancelEditing = () => {
-        setIsEditing(false);
-        setEditingMeal(null);
-        setEditingDay(null);
-    };
-
-    // Edit modal
-    const renderEditModal = () => {
-        if (!isEditing) return null;
-        return (
-            <div className="modal">
-                <div className="modal-content">
-                    <h3>{t.mealEditing}</h3>
-                    {editingDay && <p>{t.day}: {t[editingDay]}</p>}
-                    <p>{t.meal}: {t[editingMeal]}</p>
-                    <div className="form-group">
-                        <label htmlFor="meal-name">{t.mealName}:</label>
-                        <input
-                            id="meal-name"
-                            type="text"
-                            value={editMealName}
-                            onChange={(e) => setEditMealName(e.target.value)}
-                            placeholder={t.enterMealName}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="calories">{t.caloriesCount}:</label>
-                        <input
-                            id="calories"
-                            type="number"
-                            value={editCalories}
-                            onChange={(e) => setEditCalories(e.target.value)}
-                            placeholder={t.enterCalories}
-                        />
-                    </div>
-                    <div className="button-group">
-                        <button className="save-button" onClick={saveEditedMeal}>{t.save}</button>
-                        <button className="cancel-button" onClick={cancelEditing}>{t.cancel}</button>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderCalorieStats = () => {
-        let mealCalories = [];
-        let total = 0;
-
-        if (weeklyPlan && selectedDay && weeklyPlan[selectedDay]) {
-            const dayPlan = weeklyPlan[selectedDay];
-            mealCalories = [
-                { name: t.breakfast, calories: Number(dayPlan.breakfast_calories) || 0 },
-                { name: t.lunch, calories: Number(dayPlan.lunch_calories) || 0 },
-                { name: t.dinner, calories: Number(dayPlan.dinner_calories) || 0 },
-            ];
-            total = mealCalories.reduce((acc, meal) => acc + meal.calories, 0);
-        } else if (dailyPlan) {
-            mealCalories = [
-                { name: t.breakfast, calories: Number(dailyPlan.breakfast?.calories) || 0 },
-                { name: t.lunch, calories: Number(dailyPlan.lunch?.calories) || 0 },
-                { name: t.dinner, calories: Number(dailyPlan.dinner?.calories) || 0 },
-                { name: t.snack, calories: Number(dailyPlan.snack?.calories) || 0 },
-            ];
-            total = mealCalories.reduce((acc, meal) => acc + meal.calories, 0);
-        }
-
-        if (mealCalories.length === 0) return null;
-
-        return (
-            <div className="calorie-stats">
-                <h3>{t.calorieStats}</h3>
-                {mealCalories.map((meal) => {
-                    const percentage = total ? Math.round((meal.calories / total) * 100) : 0;
-                    return (
-                        <div key={meal.name} className="meal-calorie-item">
-                            <span className="meal-name">{meal.name}:</span>
-                            <span className="meal-calories">{meal.calories} {t.calories} ({percentage}%)</span>
-                        </div>
-                    );
-                })}
-                <div className="total-calories">
-                    <strong>{t.totalCaloriesIntake} {total} {t.calories}</strong>
-                </div>
-            </div>
-        );
-    };
-
-    const renderNutritionStats = () => {
-        if (!nutritionStats) {
-            return (
-                <div className="nutrition-placeholder">
-                    <h3>{t.nutritionInfo}</h3>
-                    <p>{t.generateMealPlan}</p>
-                </div>
-            );
-        }
-
-        const getDietRecommendations = () => {
-            if (!userData || !userData.dietType) {
-                return [
-                    t.hydrationTip,
-                    t.mealTimingTip,
-                    t.balancedDietTip
-                ];
+            if (editingMeal) {
+                await updateMeal(editingMeal.id, mealData);
+            } else {
+                await addMeal(mealData);
             }
-            switch (userData.dietType) {
-                case 'protein':
-                case 'muscle_gain':
-                    return [
-                        t.proteinDietTip,
-                        t.muscleGainTip,
-                        t.complexCarbsTip
-                    ];
-                case 'weight_loss':
-                    return [
-                        t.eatSlowlyTip,
-                        t.weightLossTip,
-                        t.moreVegetablesTip
-                    ];
-                case 'gentle':
-                    return [
-                        t.gentleDietTip,
-                        t.preferBoiledTip,
-                        t.warmWaterTip
-                    ];
-                default:
-                    return [
-                        t.hydrationTip,
-                        t.mealTimingTip,
-                        t.balancedDietTip
-                    ];
-            }
-        };
+            handleCloseDialog();
+        } catch (error) {
+            console.error('Error saving meal:', error);
+        }
+    };
 
-        const recommendations = getDietRecommendations();
+    const handleDelete = async (mealId) => {
+        if (window.confirm(t('Are you sure you want to delete this meal?'))) {
+            try {
+                await deleteMeal(mealId);
+            } catch (error) {
+                console.error('Error deleting meal:', error);
+            }
+        }
+    };
+
+    const dailyMeals = getMealsByDate(selectedDate);
+    const nutritionSummary = getNutritionSummary(selectedDate);
+
+    const COLORS = ['#FF7849', '#FF9F7E', '#FFB39E', '#FFD1C2'];
+    const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+    const renderNutritionChart = () => {
+        const data = [
+            { name: t('Protein'), value: nutritionSummary.protein },
+            { name: t('Carbs'), value: nutritionSummary.carbs },
+            { name: t('Fat'), value: nutritionSummary.fat }
+        ];
 
         return (
-            <div className="nutrition-stats">
-                <h3>{t.totalMacros}</h3>
-                <div className="nutrition-summary">
-                    <div className="total-calories">
-                        <h4>{t.totalCalories}</h4>
-                        <p className="calories-value">{nutritionStats.calories} {t.calories}</p>
-                    </div>
-                    <div className="macros-list">
-                        {nutritionStats.macros.map((macro) => (
-                            <div key={macro.name} className="macro-item">
-                                <div className="color-indicator" style={{ backgroundColor: macro.color }}></div>
-                                <span className="macro-name">{macro.name}:</span>
-                                <span className="macro-value">{macro.grams} г</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="chart-container">
-                    <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                            <Pie
-                                data={nutritionStats.macros}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                paddingAngle={5}
-                                dataKey="value"
-                                label={({ name, grams }) => `${name}: ${grams}г`}
-                            >
-                                {nutritionStats.macros.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => `${value} г`} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="calorie-distribution">
-                    <h4>{t.calorieDistribution}</h4>
-                    <div className="distribution-items">
-                        {nutritionStats.macros.map((macro) => {
-                            const calories = (macro.name === t.proteins || macro.name === t.carbs)
-                                ? macro.grams * 4
-                                : macro.grams * 9;
-                            const percentage = nutritionStats.calories > 0
-                                ? Math.round((calories / nutritionStats.calories) * 100)
-                                : 0;
-                            return (
-                                <div key={`cal-${macro.name}`} className="distribution-item">
-                                    <span className="macro-name">{macro.name}:</span>
-                                    <span className="macro-calories">{calories} {t.calories} ({percentage}%)</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-                <div className="diet-recommendations">
-                    <h4>{t.recommendations}</h4>
-                    <ul>
-                        {recommendations.map((rec, index) => (
-                            <li key={index}>{rec}</li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
+            <Box height={300}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                    </PieChart>
+                </ResponsiveContainer>
+            </Box>
         );
     };
 
     const renderWeeklyPlan = () => {
-        if (isLoadingWeekly) {
-            return <div className="loading">{t.loading}</div>;
-        }
-        if (!weeklyPlan) {
-            return <div className="no-data">{t.noMealData}</div>;
-        }
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        if (!weeklyPlan) return null;
+
         return (
             <div className="weekly-plan">
-                <div className="day-selector">
-                    {days.map(day => (
-                        <button
-                            key={day}
-                            className={`day-button ${selectedDay === day ? 'selected' : ''}`}
-                            onClick={() => handleDayClick(day)}
-                        >
-                            {t[day]}
-                        </button>
-                    ))}
-                </div>
-                {selectedDay && weeklyPlan[selectedDay] ? (
-                    <div className="day-meals">
-                        <div className="meal-item">
-                            <div className="meal-header">
-                                <h4>{t.breakfast}</h4>
-                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'breakfast')}>
-                                    {t.edit}
-                                </button>
-                            </div>
-                            <p>{weeklyPlan[selectedDay].breakfast || t.noMealData}</p>
-                            <p className="meal-calories">{weeklyPlan[selectedDay].breakfast_calories} {t.calories}</p>
-                        </div>
-                        <div className="meal-item">
-                            <div className="meal-header">
-                                <h4>{t.lunch}</h4>
-                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'lunch')}>
-                                    {t.edit}
-                                </button>
-                            </div>
-                            <p>{weeklyPlan[selectedDay].lunch || t.noMealData}</p>
-                            <p className="meal-calories">{weeklyPlan[selectedDay].lunch_calories} {t.calories}</p>
-                        </div>
-                        <div className="meal-item">
-                            <div className="meal-header">
-                                <h4>{t.dinner}</h4>
-                                <button className="edit-button" onClick={() => startEditingWeeklyMeal(selectedDay, 'dinner')}>
-                                    {t.edit}
-                                </button>
-                            </div>
-                            <p>{weeklyPlan[selectedDay].dinner || t.noMealData}</p>
-                            <p className="meal-calories">{weeklyPlan[selectedDay].dinner_calories} {t.calories}</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="no-data">{t.noDataForDay}</div>
-                )}
+                {weeklyPlan.map((day, index) => (
+                    <Card key={index} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {new Date(day.date).toLocaleDateString(language, { weekday: 'long' })}
+                            </Typography>
+                            <List>
+                                {day.meals.map((meal, mealIndex) => (
+                                    <ListItem key={mealIndex}>
+                                        <ListItemText
+                                            primary={meal.name}
+                                            secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         );
     };
 
     const renderDailyPlan = () => {
-        if (isLoadingDaily) {
-            return <div className="loading">{t.loading}</div>;
-        }
-        if (!dailyPlan) {
-            return <div className="no-data">{t.noMealData}</div>;
-        }
+        if (!dailyPlan) return null;
+
         return (
             <div className="daily-plan">
-                <div className="meal-item">
-                    <div className="meal-header">
-                        <h4>{t.breakfast}</h4>
-                        <button className="edit-button" onClick={() => startEditingDailyMeal('breakfast')}>
-                            {t.edit}
-                        </button>
-                    </div>
-                    <p>{dailyPlan.breakfast?.meal || t.noMealData}</p>
-                    <p className="meal-calories">{dailyPlan.breakfast?.calories} {t.calories}</p>
-                </div>
-                <div className="meal-item">
-                    <div className="meal-header">
-                        <h4>{t.lunch}</h4>
-                        <button className="edit-button" onClick={() => startEditingDailyMeal('lunch')}>
-                            {t.edit}
-                        </button>
-                    </div>
-                    <p>{dailyPlan.lunch?.meal || t.noMealData}</p>
-                    <p className="meal-calories">{dailyPlan.lunch?.calories} {t.calories}</p>
-                </div>
-                <div className="meal-item">
-                    <div className="meal-header">
-                        <h4>{t.dinner}</h4>
-                        <button className="edit-button" onClick={() => startEditingDailyMeal('dinner')}>
-                            {t.edit}
-                        </button>
-                    </div>
-                    <p>{dailyPlan.dinner?.meal || t.noMealData}</p>
-                    <p className="meal-calories">{dailyPlan.dinner?.calories} {t.calories}</p>
-                </div>
-                <div className="meal-item">
-                    <div className="meal-header">
-                        <h4>{t.snack}</h4>
-                        <button className="edit-button" onClick={() => startEditingDailyMeal('snack')}>
-                            {t.edit}
-                        </button>
-                    </div>
-                    <p>{dailyPlan.snack?.meal || t.noMealData}</p>
-                    <p className="meal-calories">{dailyPlan.snack?.calories} {t.calories}</p>
-                </div>
+                {mealTypes.map((type) => (
+                    <Card key={type} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                            </Typography>
+                            <List>
+                                {dailyPlan
+                                    .filter(meal => meal.type === type)
+                                    .map((meal, index) => (
+                                        <ListItem key={index}>
+                                            <ListItemText
+                                                primary={meal.name}
+                                                secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                            />
+                                        </ListItem>
+                                    ))}
+                            </List>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         );
     };
+
+    const renderWeeklyStats = () => {
+        if (!weeklyStats) return null;
+
+        const data = Object.entries(weeklyStats).map(([day, stats]) => ({
+            day,
+            ...stats
+        }));
+
+        return (
+            <Box height={300}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="calories" fill="#FF7849" name={t('Calories')} />
+                        <Bar dataKey="protein" fill="#FF9F7E" name={t('Protein')} />
+                        <Bar dataKey="carbs" fill="#FFB39E" name={t('Carbs')} />
+                        <Bar dataKey="fat" fill="#FFD1C2" name={t('Fat')} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </Box>
+        );
+    };
+
+    const renderNutritionStats = () => {
+        // ... existing code ...
+    };
+
+    const renderCalorieStats = () => {
+        const dailyMeals = getMealsByDate(selectedDate);
+        const totalCalories = dailyMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+        const targetCalories = userData?.targetCalories || 2000;
+        const remainingCalories = targetCalories - totalCalories;
+
+        return (
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    {t('calorieStats')}
+                </Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('targetCalories')}</Typography>
+                            <Typography variant="h6">{targetCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('consumedCalories')}</Typography>
+                            <Typography variant="h6">{totalCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('remainingCalories')}</Typography>
+                            <Typography variant="h6" color={remainingCalories < 0 ? 'error' : 'inherit'}>
+                                {remainingCalories}
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Box>
+        );
+    };
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                    <Typography variant="h6">{t('Loading...')}</Typography>
+                </motion.div>
+            </Box>
+        );
+    }
 
     return (
         <div className={`meal-planning-container ${theme}`}>
@@ -806,7 +512,261 @@ function MealPlanningApp() {
                 </div>
             </div>
 
-            {renderEditModal()}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+                <Typography variant="h4" component="h1">
+                    {t('mealPlan')}
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenDialog()}
+                >
+                    {t('addMeal')}
+                </Button>
+            </Box>
+
+            <Box sx={{ p: 3 }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                        <Typography variant="h4">
+                            {t('Meal Plan')}
+                        </Typography>
+                        <TextField
+                            type="date"
+                            value={selectedDate.toISOString().split('T')[0]}
+                            onChange={handleDateChange}
+                            sx={{ width: 220 }}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                    </Box>
+                </motion.div>
+
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={8}>
+                        <Card>
+                            <CardContent>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                    <Typography variant="h6">
+                                        {t('Daily Meals')}
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleOpenDialog()}
+                                    >
+                                        {t('Add Meal')}
+                                    </Button>
+                                </Box>
+
+                                <AnimatePresence>
+                                    {mealTypes.map((type) => {
+                                        const typeMeals = dailyMeals.filter(meal => meal.type === type);
+                                        return (
+                                            <motion.div
+                                                key={type}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -20 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
+                                                    <CardContent>
+                                                        <Typography variant="h6" gutterBottom>
+                                                            {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                                                        </Typography>
+                                                        {typeMeals.length === 0 ? (
+                                                            <Typography color="text.secondary">
+                                                                {t('No meals added')}
+                                                            </Typography>
+                                                        ) : (
+                                                            typeMeals.map((meal) => (
+                                                                <Box
+                                                                    key={meal.id}
+                                                                    sx={{
+                                                                        p: 2,
+                                                                        mb: 1,
+                                                                        bgcolor: 'background.paper',
+                                                                        borderRadius: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center'
+                                                                    }}
+                                                                >
+                                                                    <Box>
+                                                                        <Typography variant="subtitle1">
+                                                                            {meal.name}
+                                                                        </Typography>
+                                                                        <Stack direction="row" spacing={1} mt={1}>
+                                                                            <Chip
+                                                                                label={`${meal.calories} ${t('kcal')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.protein}g ${t('protein')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.carbs}g ${t('carbs')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.fat}g ${t('fat')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                        </Stack>
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <IconButton
+                                                                            onClick={() => handleOpenDialog(meal)}
+                                                                            size="small"
+                                                                        >
+                                                                            <EditIcon />
+                                                                        </IconButton>
+                                                                        <IconButton
+                                                                            onClick={() => handleDelete(meal.id)}
+                                                                            size="small"
+                                                                            color="error"
+                                                                        >
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
+                                                                    </Box>
+                                                                </Box>
+                                                            ))
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        <Stack spacing={3}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Daily Summary')}
+                                    </Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="h4" color="primary">
+                                            {nutritionSummary.calories}
+                                            <Typography component="span" variant="h6" color="text.secondary">
+                                                {' '}{t('kcal')}
+                                            </Typography>
+                                        </Typography>
+                                    </Box>
+                                    {renderNutritionChart()}
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Weekly Progress')}
+                                    </Typography>
+                                    {renderWeeklyStats()}
+                                </CardContent>
+                            </Card>
+                        </Stack>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>
+                    {editingMeal ? t('Edit Meal') : t('Add New Meal')}
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2 }}>
+                        <TextField
+                            fullWidth
+                            label={t('Meal Name')}
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            select
+                            label={t('Meal Type')}
+                            value={formData.type}
+                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            sx={{ mb: 2 }}
+                        >
+                            {mealTypes.map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Calories')}
+                            value={formData.calories}
+                            onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Protein (g)')}
+                            value={formData.protein}
+                            onChange={(e) => setFormData({ ...formData, protein: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Carbs (g)')}
+                            value={formData.carbs}
+                            onChange={(e) => setFormData({ ...formData, carbs: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Fat (g)')}
+                            value={formData.fat}
+                            onChange={(e) => setFormData({ ...formData, fat: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            label={t('Notes')}
+                            value={formData.notes}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>{t('Cancel')}</Button>
+                    <Button
+                        onClick={handleSubmit}
+                        variant="contained"
+                        color="primary"
+                        disabled={!formData.name || !formData.calories}
+                    >
+                        {editingMeal ? t('Update') : t('Add')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

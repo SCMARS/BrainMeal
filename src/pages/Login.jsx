@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './styles/Login.css';
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
-import { auth } from "./services/firebase.ts";
+import { auth } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 const translations = {
