@@ -1,158 +1,105 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "./styles/WelcomeScreen.css";
+import { Box, Typography, Grid, Card, CardContent, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
-const translations = {
-    en: {
-        title: "Welcome to BrainMeal",
-        getStarted: "Get Started",
-        downloadGoogle: "Download Now from Google Play",
-        downloadApple: "Download Now from App Store",
-        pricing: "Pricing",
-        home: "Home",
-        contact: "Contact",
-        language: "Language:",
-        theme: "Theme:"
-    },
-    uk: {
-        title: "Ласкаво просимо до BrainMeal",
-        getStarted: "Почати",
-        downloadGoogle: "Завантажити з Google Play",
-        downloadApple: "Завантажити з App Store",
-        pricing: "Ціни",
-        home: "Головна",
-        contact: "Контакти",
-        language: "Мова:",
-        theme: "Тема:"
-    }
-};
-
-const LinkButton = ({ to, children, className }) => {
-    const handleClick = () => {
-        window.open(to, '_blank', 'noopener,noreferrer');
-    };
-
-    return (
-        <button className={className} onClick={handleClick}>
-            {children}
-        </button>
-    );
-};
-
-const WelcomeScreen = () => {
-    const [loading, setLoading] = useState(true);
-
-
-    const savedTheme = localStorage.getItem('theme');
-    const savedLanguage = localStorage.getItem('language');
-
-    const [darkMode, setDarkMode] = useState(savedTheme ? savedTheme === 'dark' : true);
-    const [language, setLanguage] = useState(savedLanguage || "en");
+export default function Home() {
+    const { t } = useLanguage();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
 
-    const t = translations[language];
-
-    useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 1500);
-        return () => clearTimeout(timer);
-    }, []);
-
-
-    useEffect(() => {
-        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-        localStorage.setItem('language', language);
-    }, [darkMode, language]);
-
-    const handleStart = () => {
-        // Сохраняем настройки в localStorage
-        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-        localStorage.setItem('language', language);
-
-
-        navigate('/login', {
-            state: {
-                darkMode,
-                language
-            }
-        });
-    };
-
-
-    const toggleTheme = () => {
-        setDarkMode(prevMode => !prevMode);
-    };
-
-    // Переключение языка
-    const toggleLanguage = () => {
-        setLanguage(prevLang => (prevLang === "en" ? "uk" : "en"));
-    };
-
-    if (loading) {
-        return (
-            <div className="preloader">
-                <div className="spinner"></div>
-            </div>
-        );
-    }
+    const features = [
+        {
+            title: t('mealPlan'),
+            description: 'Plan your meals and track your nutrition goals',
+            path: '/meal-plan',
+        },
+        {
+            title: t('recipes'),
+            description: 'Discover and save your favorite recipes',
+            path: '/recipes',
+        },
+        {
+            title: t('analytics'),
+            description: 'Track your progress and analyze your nutrition',
+            path: '/analytics',
+        },
+        {
+            title: t('social'),
+            description: 'Connect with other users and share your journey',
+            path: '/social',
+        },
+    ];
 
     return (
-        <div className={`welcome-container ${darkMode ? "dark" : "light"}`}>
-            {/* Header/Navigation */}
-            <header className="header">
-                <div className="logo">
-                    <span className="logo-icon">🍴</span>
-                    <span className="logo-text">BrainMeal</span>
-                </div>
-
-                <div className="controls">
-                    <div className="language-control">
-                        <span>{t.language}</span>
-                        <button
-                            className="language-dropdown"
-                            onClick={toggleLanguage}
+        <Box>
+            <Box
+                sx={{
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    py: 8,
+                    mb: 6,
+                    textAlign: 'center',
+                }}
+            >
+                <Typography variant="h2" component="h1" gutterBottom>
+                    Welcome to BrainMeal
+                </Typography>
+                <Typography variant="h5" component="h2" gutterBottom>
+                    Your personal nutrition assistant
+                </Typography>
+                {!currentUser && (
+                    <Box sx={{ mt: 4 }}>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            size="large"
+                            onClick={() => navigate('/register')}
+                            sx={{ mr: 2 }}
                         >
-                            {language === "en" ? "English" : "Українська"}
-                        </button>
-                    </div>
-                    <div className="theme-control">
-                        <span>{t.theme}</span>
-                        <label className="switch">
-                            <input type="checkbox" checked={darkMode} onChange={toggleTheme} />
-                            <span className="slider round"></span>
-                        </label>
-                    </div>
-                </div>
-            </header>
+                            {t('register')}
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            size="large"
+                            onClick={() => navigate('/login')}
+                        >
+                            {t('login')}
+                        </Button>
+                    </Box>
+                )}
+            </Box>
 
-            {/* Main Content */}
-            <div className="welcome-content">
-                <h1 className="welcome-title">{t.title}</h1>
-
-                <div className="cta-container">
-                    <button className="get-started-button" onClick={handleStart}>
-                        {t.getStarted}
-                    </button>
-                </div>
-
-                <div className="download-buttons">
-                    <LinkButton
-                        to="https://play.google.com/store"
-                        className="download-button google-play"
-                    >
-                        {t.downloadGoogle}
-                    </LinkButton>
-
-                    <LinkButton
-                        to="https://www.apple.com/app-store/"
-                        className="download-button app-store"
-                    >
-                        {t.downloadApple}
-                    </LinkButton>
-                </div>
-            </div>
-        </div>
+            <Grid container spacing={4}>
+                {features.map((feature) => (
+                    <Grid item xs={12} sm={6} md={3} key={feature.title}>
+                        <Card
+                            sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    transition: 'transform 0.2s',
+                                },
+                            }}
+                            onClick={() => navigate(feature.path)}
+                        >
+                            <CardContent>
+                                <Typography variant="h6" component="h3" gutterBottom>
+                                    {feature.title}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {feature.description}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+        </Box>
     );
-};
-
-export default WelcomeScreen;
+}
 

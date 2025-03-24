@@ -1,6 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './styles/Profile.css';
+
+const defaultTypicalMeals = {
+    breakfast: '',
+    lunch: '',
+    dinner: '',
+    snacks: ''
+};
 
 const translations = {
     en: {
@@ -121,7 +130,6 @@ const Profile = () => {
 
     const t = translations[language];
 
-
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);
@@ -130,7 +138,6 @@ const Profile = () => {
         localStorage.setItem('language', language);
     }, [language]);
 
-    // Основное состояние пользователя
     const [userData, setUserData] = useState({
         weight: '',
         age: '',
@@ -157,7 +164,6 @@ const Profile = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Загружаем сохраненные данные пользователя
     useEffect(() => {
         const savedData = localStorage.getItem('userData');
         if (savedData) {
@@ -371,11 +377,9 @@ const Profile = () => {
                     <h1 className="brainmeal-app-title">BrainMeal</h1>
                 </div>
                 <div className="header-controls">
-                    {/* Переключение темы */}
                     <button onClick={toggleTheme} className="theme-toggle-button">
                         {darkMode ? t.light : t.dark}
                     </button>
-                    {/* Выбор языка */}
                     <select
                         value={language}
                         onChange={(e) => changeLanguage(e.target.value)}
