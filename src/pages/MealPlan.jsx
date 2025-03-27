@@ -1,28 +1,59 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import "./styles/Mealplan.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import { generateMealPlan } from './services/llmService.jsx';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
     Box,
     Typography,
+    Grid,
+    Card,
+    CardContent,
     Button,
     TextField,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    MenuItem
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    CircularProgress,
+    Tabs,
+    Tab,
+    Paper,
+    MenuItem,
+    useTheme,
+    Chip,
+    Stack,
+    Divider
 } from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useLanguage } from '../context/LanguageContext';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
 
-
-function MealPlan() {
+function MealPlanningApp() {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useLanguage();
+    const theme = useTheme();
     const { user } = useAuth();
-    const { addMeal, updateMeal, deleteMeal, getMealsByDate, getNutritionSummary } = useMealPlan();
+
+    const {
+        meals,
+        loading,
+        error,
+        addMeal,
+        updateMeal,
+        deleteMeal,
+        getMealsByDate,
+        getMealsByWeek,
+        getNutritionSummary
+    } = useMealPlan();
 
     const [userData, setUserData] = useState(null);
     const [weeklyPlan, setWeeklyPlan] = useState(null);
@@ -30,9 +61,10 @@ function MealPlan() {
     const [isLoadingWeekly, setIsLoadingWeekly] = useState(false);
     const [isLoadingDaily, setIsLoadingDaily] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [error, setError] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
+    const [activeTab, setActiveTab] = useState(0);
+    const [weeklyStats, setWeeklyStats] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         type: 'breakfast',
@@ -43,11 +75,22 @@ function MealPlan() {
         notes: ''
     });
 
+    // Theme and language state
     const [darkMode, setDarkMode] = useState(() => {
         const savedTheme = localStorage.getItem('theme');
-        return savedTheme ? savedTheme === 'dark' : false;
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+        return location.state?.darkMode || false;
     });
-    const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
+
+    const [language, setLanguage] = useState(() => {
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) {
+            return savedLanguage;
+        }
+        return location.state?.language || 'en';
+    });
 
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
@@ -57,23 +100,52 @@ function MealPlan() {
         localStorage.setItem('language', language);
     }, [language]);
 
+    // Load user data on mount
     useEffect(() => {
-        if (location.state?.userData) {
-            setUserData(location.state.userData);
-        } else {
-            const storedUserData = localStorage.getItem('userData');
-            if (storedUserData) {
-                try {
-                    setUserData(JSON.parse(storedUserData));
-                } catch (err) {
-                    console.error("Error parsing user data:", err);
-                    setError(t.errorLoadingProfile || "Error loading user data.");
-                }
-            } else {
-                setError(t.userDataNotFound || "User data not found.");
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) {
+            try {
+                setUserData(JSON.parse(storedUserData));
+            } catch (err) {
+                console.error("Error parsing user data:", err);
+                setError(t.errorLoadingProfile);
             }
+        } else {
+            setError(t.userDataNotFound);
         }
-    }, [location.state, t]);
+    }, [t]);
+
+    // Calculate weekly statistics
+    useEffect(() => {
+        const startDate = new Date(selectedDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+        const weekMeals = getMealsByWeek(startDate);
+        
+        const stats = weekMeals.reduce((acc, meal) => {
+            const day = new Date(meal.date).toLocaleDateString('en-US', { weekday: 'short' });
+            if (!acc[day]) {
+                acc[day] = {
+                    calories: 0,
+                    protein: 0,
+                    carbs: 0,
+                    fat: 0,
+                    meals: 0
+                };
+            }
+            acc[day].calories += meal.calories || 0;
+            acc[day].protein += meal.protein || 0;
+            acc[day].carbs += meal.carbs || 0;
+            acc[day].fat += meal.fat || 0;
+            acc[day].meals += 1;
+            return acc;
+        }, {});
+
+        setWeeklyStats(stats);
+    }, [meals, selectedDate]);
+
+    const backHandler = () => {
+        navigate("/profile");
+    };
 
     const handleDateChange = (event) => {
         const newDate = new Date(event.target.value);
@@ -82,38 +154,21 @@ function MealPlan() {
 
     const handleGenerateWeeklyPlan = async () => {
         if (!userData) {
-            setError(t.userDataNotFound || "User data not found.");
+            setError(t.userDataNotFound);
             return;
         }
         setIsLoadingWeekly(true);
         setError(null);
         try {
-            const profileForAI = {
-                age: userData.age,
-                gender: userData.gender,
-                weight: userData.weight,
-                height: userData.height,
-                dietType: userData.dietType,           // используем dietType
-                calorieTarget: userData.calorieTarget, // используем calorieTarget
-                foodPreferences: userData.mealPreferences || 'нет ограничений',
-                allergies: userData.allergies?.join(', ') || 'нет'
-            };
-
-            const generatedPlan = await generateMealPlan(profileForAI);
-            for (const day of generatedPlan) {
-                for (const meal of day.meals) {
-                    await addMeal({
-                        ...meal,
-                        date: day.date,
-                        userId: user.uid
-                    });
-                }
-            }
+            const generatedPlan = await generateMealPlan({
+                ...userData,
+                isWeekly: true
+            });
             setWeeklyPlan(generatedPlan);
             setSelectedDate(new Date());
             setDailyPlan(null);
         } catch (err) {
-            console.error('Error generating weekly plan:', err);
+            console.error(err);
             setError(t.weeklyPlanGenerationError || "Failed to generate weekly plan. Please try again later.");
         } finally {
             setIsLoadingWeekly(false);
@@ -122,39 +177,20 @@ function MealPlan() {
 
     const handleGenerateDailyPlan = async () => {
         if (!userData) {
-            setError(t.userDataNotFound || "User data not found.");
+            setError(t.userDataNotFound);
             return;
         }
         setIsLoadingDaily(true);
         setError(null);
         try {
-            const profileForAI = {
-                age: userData.age,
-                gender: userData.gender,
-                weight: userData.weight,
-                height: userData.height,
-                goal: userData.dietType,
-                targetCalories: userData.calorieTarget,
-                foodPreferences: userData.mealPreferences || 'нет ограничений',
-                allergies: userData.allergies?.join(', ') || 'нет'
-            };
-            const generatedPlan = await generateMealPlan(profileForAI);
-            const formattedPlan = generatedPlan.map(meal => ({
-                ...meal,
-                calories: Number(meal.calories),
-                protein: Number(meal.protein),
-                carbs: Number(meal.carbs),
-                fat: Number(meal.fat),
-                date: selectedDate.toISOString(),
-                userId: user.uid
-            }));
-            for (const meal of formattedPlan) {
-                await addMeal(meal);
-            }
-            setDailyPlan(formattedPlan);
+            const generatedPlan = await generateMealPlan({
+                ...userData,
+                isWeekly: false
+            });
+            setDailyPlan(generatedPlan);
             setWeeklyPlan(null);
         } catch (err) {
-            console.error('Error generating daily plan:', err);
+            console.error(err);
             setError(t.dailyPlanGenerationError || "Failed to generate daily plan. Please try again later.");
         } finally {
             setIsLoadingDaily(false);
@@ -205,6 +241,7 @@ function MealPlan() {
                 fat: Number(formData.fat),
                 userId: user.uid
             };
+
             if (editingMeal) {
                 await updateMeal(editingMeal.id, mealData);
             } else {
@@ -228,36 +265,64 @@ function MealPlan() {
 
     const dailyMeals = getMealsByDate(selectedDate);
     const nutritionSummary = getNutritionSummary(selectedDate);
+
+    const COLORS = ['#FF7849', '#FF9F7E', '#FFB39E', '#FFD1C2'];
     const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 
-    const renderNutritionChart = () => (
-        <Box className="h-72 bg-gray-100 dark:bg-gray-800 rounded p-4 flex items-center justify-center shadow-lg border border-gray-700 transition-transform duration-300 hover:-translate-y-1">
-            <Typography variant="subtitle1" className="text-center">
-                {t('Nutrition Chart Placeholder')}
-            </Typography>
-        </Box>
-    );
+    const renderNutritionChart = () => {
+        const data = [
+            { name: t('Protein'), value: nutritionSummary.protein },
+            { name: t('Carbs'), value: nutritionSummary.carbs },
+            { name: t('Fat'), value: nutritionSummary.fat }
+        ];
+
+        return (
+            <Box height={300}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                    </PieChart>
+                </ResponsiveContainer>
+            </Box>
+        );
+    };
 
     const renderWeeklyPlan = () => {
         if (!weeklyPlan) return null;
+
         return (
-            <div className="space-y-4">
+            <div className="weekly-plan">
                 {weeklyPlan.map((day, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-800 rounded shadow p-4 border border-gray-200 dark:border-gray-600 transform transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
-                        <Typography variant="h6" className="font-bold text-orange-400">
-                            {new Date(day.date).toLocaleDateString(language, { weekday: 'long' })}
-                        </Typography>
-                        <ul className="mt-2 space-y-2">
-                            {day.meals.map((meal, mealIndex) => (
-                                <li key={mealIndex} className="border-b border-gray-200 dark:border-gray-600 pb-2">
-                                    <p className="font-medium">{meal.name}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                                        {meal.calories} {t('kcal')} | {meal.protein}g {t('protein')} | {meal.carbs}g {t('carbs')} | {meal.fat}g {t('fat')}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card key={index} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {new Date(day.date).toLocaleDateString(language, { weekday: 'long' })}
+                            </Typography>
+                            <List>
+                                {day.meals.map((meal, mealIndex) => (
+                                    <ListItem key={mealIndex}>
+                                        <ListItemText
+                                            primary={meal.name}
+                                            secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
         );
@@ -265,130 +330,448 @@ function MealPlan() {
 
     const renderDailyPlan = () => {
         if (!dailyPlan) return null;
+
         return (
-            <div className="space-y-4">
+            <div className="daily-plan">
                 {mealTypes.map((type) => (
-                    <div key={type} className="bg-white dark:bg-gray-800 rounded shadow p-4 border border-gray-200 dark:border-gray-600 transform transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
-                        <Typography variant="h6" className="font-bold text-orange-400">
-                            {t(type.charAt(0).toUpperCase() + type.slice(1))}
-                        </Typography>
-                        <ul className="mt-2 space-y-2">
-                            {dailyPlan.filter(meal => meal.type === type).map((meal, index) => (
-                                <li key={index} className="border-b border-gray-200 dark:border-gray-600 pb-2">
-                                    <p className="font-medium">{meal.name}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                                        {meal.calories} {t('kcal')} | {meal.protein}g {t('protein')} | {meal.carbs}g {t('carbs')} | {meal.fat}g {t('fat')}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    <Card key={type} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6">
+                                {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                            </Typography>
+                            <List>
+                                {dailyPlan
+                                    .filter(meal => meal.type === type)
+                                    .map((meal, index) => (
+                                        <ListItem key={index}>
+                                            <ListItemText
+                                                primary={meal.name}
+                                                secondary={`${meal.calories} ${t('kcal')} | ${meal.protein}g ${t('protein')} | ${meal.carbs}g ${t('carbs')} | ${meal.fat}g ${t('fat')}`}
+                                            />
+                                        </ListItem>
+                                    ))}
+                            </List>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
         );
     };
 
+    const renderWeeklyStats = () => {
+        if (!weeklyStats) return null;
+
+        const data = Object.entries(weeklyStats).map(([day, stats]) => ({
+            day,
+            ...stats
+        }));
+
+        return (
+            <Box height={300}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="calories" fill="#FF7849" name={t('Calories')} />
+                        <Bar dataKey="protein" fill="#FF9F7E" name={t('Protein')} />
+                        <Bar dataKey="carbs" fill="#FFB39E" name={t('Carbs')} />
+                        <Bar dataKey="fat" fill="#FFD1C2" name={t('Fat')} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </Box>
+        );
+    };
+
+    const renderNutritionStats = () => {
+        // ... existing code ...
+    };
+
+    const renderCalorieStats = () => {
+        const dailyMeals = getMealsByDate(selectedDate);
+        const totalCalories = dailyMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+        const targetCalories = userData?.targetCalories || 2000;
+        const remainingCalories = targetCalories - totalCalories;
+
+        return (
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                    {t('calorieStats')}
+                </Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('targetCalories')}</Typography>
+                            <Typography variant="h6">{targetCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('consumedCalories')}</Typography>
+                            <Typography variant="h6">{totalCalories}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Paper sx={{ p: 2, textAlign: 'center' }}>
+                            <Typography variant="subtitle2">{t('remainingCalories')}</Typography>
+                            <Typography variant="h6" color={remainingCalories < 0 ? 'error' : 'inherit'}>
+                                {remainingCalories}
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Box>
+        );
+    };
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                    <Typography variant="h6">{t('Loading...')}</Typography>
+                </motion.div>
+            </Box>
+        );
+    }
+
     return (
-        <div className={`min-h-screen bg-gradient-to-br ${darkMode
-            ? 'from-[#1a1a1a] via-[#2a2a2a] to-[#3a3a3a]'
-            : 'from-[#f5f5f5] via-[#ffffff] to-[#f0f0f0]'
-        } text-gray-100 dark:text-gray-200 transition-all duration-500`}>
-            {/* Header with enhanced styling */}
-            <header className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-[#FF6B00] to-[#FF4500] shadow-2xl">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                    <button
-                        className="text-white text-lg font-semibold hover:text-orange-100 transform hover:scale-105 transition-all duration-300"
-                        onClick={() => navigate("/profile")}
-                    >
-                        ← {t.back}
+        <div className={`meal-planning-container ${theme}`}>
+            <div className="header">
+                <button className="back-button" onClick={backHandler}>← {t.back}</button>
+                <div className="title-container">
+                    <h1 className="main-title">{t.mainTitle}</h1>
+                    <p className="subtitle">{t.subtitle}</p>
+                </div>
+                <div className="controls">
+                    <button onClick={() => setDarkMode(!darkMode)}>
+                        {darkMode ? "Light Mode" : "Dark Mode"}
                     </button>
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                        <option value="en">English</option>
+                        <option value="uk">Українська</option>
+                    </select>
+                </div>
+                <div className="spacer"></div>
+            </div>
 
-                    <div className="text-center">
-                        <h1 className="text-4xl font-extrabold text-white tracking-wide animate-pulse">
-                            {t.mainTitle}
-                        </h1>
-                        <p className="text-orange-100 mt-2 text-lg">{t.subtitle}</p>
+            {error && (
+                <div className="error-message">{error}</div>
+            )}
+
+            {userData && (
+                <div className="user-profile-summary">
+                    <h3 className="summary-title">{t.profile}</h3>
+                    <div className="summary-details">
+                        <p>{t.weight}: {userData.weight} кг | {t.height}: {userData.height} см | {t.age}: {userData.age}</p>
+                        <p>
+                            {t.dietType}: {userData.dietType === 'basic' ? t.basic :
+                            userData.dietType === 'gentle' ? t.gentle :
+                                userData.dietType === 'protein' ? t.highProtein :
+                                    userData.dietType === 'weight_loss' ? t.weightLoss : t.notSpecified}
+                        </p>
+                        {userData.mealPreferences && <p>{t.mealPreferences}: {userData.mealPreferences}</p>}
                     </div>
+                </div>
+            )}
 
-                    <div className="flex items-center space-x-4">
+            <div className="content-layout">
+                <div className="meal-plans-container">
+                    <div className="plan-card">
+                        <h2 className="plan-title">{t.weeklyPlan}</h2>
                         <button
-                            className="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-800 text-white rounded-full hover:from-orange-700 hover:to-orange-900 transform hover:scale-110 transition-all duration-300 shadow-lg"
-                            onClick={() => setDarkMode(!darkMode)}
-                        >
-                            {darkMode ? "☀️ Light" : "🌙 Dark"}
-                        </button>
-
-                        <select
-                            className="px-3 py-2 bg-orange-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300 transition-all"
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value)}
-                        >
-                            <option value="en" className="bg-orange-800">English</option>
-                            <option value="uk" className="bg-orange-800">Українська</option>
-                        </select>
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content with Card-based Layout */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 space-y-8">
-                {/* User Profile Card */}
-                <div className="bg-gradient-to-br from-orange-800/50 to-orange-900/50 backdrop-blur-lg rounded-2xl p-6 shadow-2xl transform hover:scale-[1.02] transition-all duration-500">
-                    <h2 className="text-2xl font-bold text-orange-200 mb-4">{t.profile}</h2>
-                    <div className="grid grid-cols-2 gap-4 text-orange-100">
-                        <p>{t.weight}: {userData?.weight} кг</p>
-                        <p>{t.height}: {userData?.height} см</p>
-                        <p>{t.age}: {userData?.age}</p>
-                        <p>{t.dietType}: {userData?.dietType}</p>
-                    </div>
-                </div>
-
-                {/* Meal Plan Sections */}
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Weekly Plan Card */}
-                    <div className="bg-gradient-to-br from-orange-900/60 to-orange-700/60 backdrop-blur-lg rounded-2xl p-6 shadow-2xl transform hover:scale-[1.03] transition-all duration-500">
-                        <h3 className="text-3xl font-bold text-orange-200 mb-6">{t.weeklyPlan}</h3>
-                        <Button
-                            variant="contained"
-                            className="bg-gradient-to-r from-orange-600 to-orange-800 text-white hover:from-orange-700 hover:to-orange-900 transform hover:scale-105 transition-all duration-300"
+                            className={`generate-button ${isLoadingWeekly ? 'loading' : ''}`}
                             onClick={handleGenerateWeeklyPlan}
+                            disabled={isLoadingWeekly}
                         >
                             {isLoadingWeekly ? t.loading : t.generateWeeklyPlan}
-                        </Button>
-                        {/* Existing weekly plan rendering */}
+                        </button>
+                        {renderWeeklyPlan()}
                     </div>
 
-                    {/* Daily Plan Card */}
-                    <div className="bg-gradient-to-br from-orange-900/60 to-orange-700/60 backdrop-blur-lg rounded-2xl p-6 shadow-2xl transform hover:scale-[1.03] transition-all duration-500">
-                        <h3 className="text-3xl font-bold text-orange-200 mb-6">{t.dailyPlan}</h3>
-                        <Button
-                            variant="contained"
-                            className="bg-gradient-to-r from-orange-600 to-orange-800 text-white hover:from-orange-700 hover:to-orange-900 transform hover:scale-105 transition-all duration-300"
+                    <div className="plan-card">
+                        <h2 className="plan-title">{t.dailyPlan}</h2>
+                        <button
+                            className={`generate-button ${isLoadingDaily ? 'loading' : ''}`}
                             onClick={handleGenerateDailyPlan}
+                            disabled={isLoadingDaily}
                         >
                             {isLoadingDaily ? t.loading : t.generateDailyPlan}
-                        </Button>
-                        {/* Existing daily plan rendering */}
+                        </button>
+                        {renderDailyPlan()}
                     </div>
                 </div>
-            </main>
 
-            {/* Keep existing dialog and other components */}
-            <Dialog
-                open={openDialog}
-                onClose={handleCloseDialog}
-                PaperProps={{
-                    className: "bg-gradient-to-br from-orange-900/80 to-orange-700/80 backdrop-blur-lg rounded-2xl"
-                }}
-            >
-                {/* Existing dialog content */}
+                <div className="nutrition-panel">
+                    {renderCalorieStats()}
+                    {renderNutritionStats()}
+                </div>
+            </div>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+                <Typography variant="h4" component="h1">
+                    {t('mealPlan')}
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={() => handleOpenDialog()}
+                >
+                    {t('addMeal')}
+                </Button>
+            </Box>
+
+            <Box sx={{ p: 3 }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                        <Typography variant="h4">
+                            {t('Meal Plan')}
+                        </Typography>
+                        <TextField
+                            type="date"
+                            value={selectedDate.toISOString().split('T')[0]}
+                            onChange={handleDateChange}
+                            sx={{ width: 220 }}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                        />
+                    </Box>
+                </motion.div>
+
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={8}>
+                        <Card>
+                            <CardContent>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                    <Typography variant="h6">
+                                        {t('Daily Meals')}
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleOpenDialog()}
+                                    >
+                                        {t('Add Meal')}
+                                    </Button>
+                                </Box>
+
+                                <AnimatePresence>
+                                    {mealTypes.map((type) => {
+                                        const typeMeals = dailyMeals.filter(meal => meal.type === type);
+                                        return (
+                                            <motion.div
+                                                key={type}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -20 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
+                                                    <CardContent>
+                                                        <Typography variant="h6" gutterBottom>
+                                                            {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                                                        </Typography>
+                                                        {typeMeals.length === 0 ? (
+                                                            <Typography color="text.secondary">
+                                                                {t('No meals added')}
+                                                            </Typography>
+                                                        ) : (
+                                                            typeMeals.map((meal) => (
+                                                                <Box
+                                                                    key={meal.id}
+                                                                    sx={{
+                                                                        p: 2,
+                                                                        mb: 1,
+                                                                        bgcolor: 'background.paper',
+                                                                        borderRadius: 1,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center'
+                                                                    }}
+                                                                >
+                                                                    <Box>
+                                                                        <Typography variant="subtitle1">
+                                                                            {meal.name}
+                                                                        </Typography>
+                                                                        <Stack direction="row" spacing={1} mt={1}>
+                                                                            <Chip
+                                                                                label={`${meal.calories} ${t('kcal')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.protein}g ${t('protein')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.carbs}g ${t('carbs')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                            <Chip
+                                                                                label={`${meal.fat}g ${t('fat')}`}
+                                                                                size="small"
+                                                                                color="primary"
+                                                                            />
+                                                                        </Stack>
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <IconButton
+                                                                            onClick={() => handleOpenDialog(meal)}
+                                                                            size="small"
+                                                                        >
+                                                                            <EditIcon />
+                                                                        </IconButton>
+                                                                        <IconButton
+                                                                            onClick={() => handleDelete(meal.id)}
+                                                                            size="small"
+                                                                            color="error"
+                                                                        >
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
+                                                                    </Box>
+                                                                </Box>
+                                                            ))
+                                                        )}
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </AnimatePresence>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        <Stack spacing={3}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Daily Summary')}
+                                    </Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="h4" color="primary">
+                                            {nutritionSummary.calories}
+                                            <Typography component="span" variant="h6" color="text.secondary">
+                                                {' '}{t('kcal')}
+                                            </Typography>
+                                        </Typography>
+                                    </Box>
+                                    {renderNutritionChart()}
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                        {t('Weekly Progress')}
+                                    </Typography>
+                                    {renderWeeklyStats()}
+                                </CardContent>
+                            </Card>
+                        </Stack>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>
+                    {editingMeal ? t('Edit Meal') : t('Add New Meal')}
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2 }}>
+                        <TextField
+                            fullWidth
+                            label={t('Meal Name')}
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            select
+                            label={t('Meal Type')}
+                            value={formData.type}
+                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            sx={{ mb: 2 }}
+                        >
+                            {mealTypes.map((type) => (
+                                <MenuItem key={type} value={type}>
+                                    {t(type.charAt(0).toUpperCase() + type.slice(1))}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Calories')}
+                            value={formData.calories}
+                            onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Protein (g)')}
+                            value={formData.protein}
+                            onChange={(e) => setFormData({ ...formData, protein: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Carbs (g)')}
+                            value={formData.carbs}
+                            onChange={(e) => setFormData({ ...formData, carbs: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={t('Fat (g)')}
+                            value={formData.fat}
+                            onChange={(e) => setFormData({ ...formData, fat: e.target.value })}
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            label={t('Notes')}
+                            value={formData.notes}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>{t('Cancel')}</Button>
+                    <Button
+                        onClick={handleSubmit}
+                        variant="contained"
+                        color="primary"
+                        disabled={!formData.name || !formData.calories}
+                    >
+                        {editingMeal ? t('Update') : t('Add')}
+                    </Button>
+                </DialogActions>
             </Dialog>
         </div>
     );
 }
 
-
-
+export default MealPlanningApp;
 
 
 

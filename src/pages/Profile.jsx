@@ -1,33 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
+import MenuComponent from '../components/common/Menu';
+import '../styles/Profile.css';
 
-const defaultUserData = {
-    weight: '',
-    height: '',
-    age: '',
-    gender: '',
-    activityLevel: 'moderate',
-    dietType: 'basic',
-    calorieTarget: '',
-    targetWeight: '',
-    mealFrequency: '3',
-    dietRestrictions: [],
-    allergies: [],
-    preferredCuisines: [],
+const defaultTypicalMeals = {
     breakfast: '',
     lunch: '',
     dinner: '',
-    snacks: '',
-    proteinTarget: ''
+    snacks: ''
 };
-
-const activityLevels = [
-    { value: 'sedentary', factor: 1.2 },
-    { value: 'light', factor: 1.375 },
-    { value: 'moderate', factor: 1.55 },
-    { value: 'active', factor: 1.725 },
-    { value: 'extreme', factor: 1.9 }
-];
 
 const translations = {
     en: {
@@ -126,22 +109,28 @@ const translations = {
     }
 };
 
-function Profile() {
-    const navigate = useNavigate();
+const Profile = () => {
     const location = useLocation();
+    const navigate = useNavigate();
 
-    const [userData, setUserData] = useState(() => {
-        const savedUserData = localStorage.getItem('userData');
-        return savedUserData ? JSON.parse(savedUserData) : defaultUserData;
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+        return location.state?.darkMode || false;
     });
-    const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
-    const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+
+    const [language, setLanguage] = useState(() => {
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) {
+            return savedLanguage;
+        }
+        return location.state?.language || 'en';
+    });
 
     const t = translations[language];
 
-    // Сохраняем тему, язык и данные пользователя
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     }, [darkMode]);
@@ -150,130 +139,199 @@ function Profile() {
         localStorage.setItem('language', language);
     }, [language]);
 
-    useEffect(() => {
-        localStorage.setItem('userData', JSON.stringify(userData));
-    }, [userData]);
+    const [userData, setUserData] = useState({
+        weight: '',
+        age: '',
+        gender: '',
+        height: '',
+        dietType: 'basic',
+        mealPreferences: '',
+        breakfast: '',
+        lunch: '',
+        dinner: '',
+        snacks: '',
+        targetWeight: '',
+        targetGain: '',
+        proteinTarget: '',
+        activityLevel: 'moderate',
+        dietRestrictions: [],
+        allergies: [],
+        mealFrequency: 3,
+        calorieTarget: '',
+        waterIntake: '',
+        preferredCuisines: []
+    });
 
-    // Функция расчета калорий
-    const calculateCalories = useCallback(() => {
-        const { weight, height, age, gender, dietType, calorieTarget } = userData;
-        if (weight && height && age && gender) {
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const savedData = localStorage.getItem('userData');
+        if (savedData) {
             try {
-                let bmr = gender === 'male'
-                    ? 10 * parseFloat(weight) + 6.25 * parseFloat(height) - 5 * parseInt(age) + 5
-                    : 10 * parseFloat(weight) + 6.25 * parseFloat(height) - 5 * parseInt(age) - 161;
+                const parsedData = JSON.parse(savedData);
+                setUserData(parsedData);
+            } catch (e) {
+                console.error("Failed to parse saved user data:", e);
+            }
+        }
+    }, []);
+
+    const logout = () => {
+        navigate('/login');
+    };
+
+    const toggleTheme = () => {
+        setDarkMode(prev => !prev);
+    };
+
+    const changeLanguage = (lang) => {
+        setLanguage(lang);
+    };
+
+    const getActivityLevelLabel = (value) => {
+        switch(value) {
+            case 'sedentary': return t.sedentary;
+            case 'light': return t.lightlyActive;
+            case 'moderate': return t.moderatelyActive;
+            case 'active': return t.veryActive;
+            case 'extreme': return t.extremelyActive;
+            default: return '';
+        }
+    };
+
+    const activityLevels = [
+        { value: 'sedentary', factor: 1.2 },
+        { value: 'light', factor: 1.375 },
+        { value: 'moderate', factor: 1.55 },
+        { value: 'active', factor: 1.725 },
+        { value: 'extreme', factor: 1.9 }
+    ];
+
+    const dietaryRestrictions = [
+        'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo', 'Low FODMAP', 'Sugar-Free'
+    ];
+
+    const commonAllergies = [
+        'Nuts', 'Shellfish', 'Eggs', 'Milk', 'Soy', 'Wheat', 'Fish', 'Sesame'
+    ];
+
+    const cuisineOptions = [
+        'Italian', 'Chinese', 'Japanese', 'Mexican', 'Indian',
+        'Mediterranean', 'French', 'Thai', 'American', 'Middle Eastern'
+    ];
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        if (type === 'checkbox') {
+            if (name.startsWith('restriction-')) {
+                const restriction = name.replace('restriction-', '');
+                setUserData(prev => ({
+                    ...prev,
+                    dietRestrictions: checked
+                        ? [...(prev.dietRestrictions || []), restriction]
+                        : (prev.dietRestrictions || []).filter(item => item !== restriction)
+                }));
+            } else if (name.startsWith('allergy-')) {
+                const allergy = name.replace('allergy-', '');
+                setUserData(prev => ({
+                    ...prev,
+                    allergies: checked
+                        ? [...(prev.allergies || []), allergy]
+                        : (prev.allergies || []).filter(item => item !== allergy)
+                }));
+            } else if (name.startsWith('cuisine-')) {
+                const cuisine = name.replace('cuisine-', '');
+                setUserData(prev => ({
+                    ...prev,
+                    preferredCuisines: checked
+                        ? [...(prev.preferredCuisines || []), cuisine]
+                        : (prev.preferredCuisines || []).filter(item => item !== cuisine)
+                }));
+            }
+        } else {
+            setUserData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+    };
+
+    const handleDietChange = (diet) => {
+        setUserData(prev => ({
+            ...prev,
+            dietType: diet
+        }));
+    };
+
+    useEffect(() => {
+        if (userData.weight && userData.height && userData.age && userData.gender) {
+            try {
+                let bmr = 0;
+                if (userData.gender === 'male') {
+                    bmr = 10 * parseFloat(userData.weight) +
+                        6.25 * parseFloat(userData.height) -
+                        5 * parseInt(userData.age) + 5;
+                } else if (userData.gender === 'female') {
+                    bmr = 10 * parseFloat(userData.weight) +
+                        6.25 * parseFloat(userData.height) -
+                        5 * parseInt(userData.age) - 161;
+                }
                 const activity = activityLevels.find(a => a.value === userData.activityLevel);
                 const activityFactor = activity ? activity.factor : 1.55;
                 let tdee = Math.round(bmr * activityFactor);
-                let targetCalories = tdee;
-                if (dietType === 'weightloss') {
-                    targetCalories = Math.max(1200, tdee - 500);
-                } else if (dietType === 'weightgain') {
-                    targetCalories = tdee + 500;
+                let calorieTarget = tdee;
+                if (userData.dietType === 'weightloss') {
+                    calorieTarget = Math.max(1200, tdee - 500);
+                } else if (userData.dietType === 'weightgain') {
+                    calorieTarget = tdee + 500;
                 }
-                if (!calorieTarget) {
-                    setUserData(prev => ({ ...prev, calorieTarget: targetCalories.toString() }));
+                if (!userData.calorieTarget) {
+                    setUserData(prev => ({
+                        ...prev,
+                        calorieTarget: calorieTarget.toString()
+                    }));
                 }
             } catch (e) {
                 console.error("Error calculating calories:", e);
             }
         }
-    }, [userData]);
+    }, [userData.weight, userData.height, userData.age, userData.gender, userData.dietType, userData.activityLevel, userData.calorieTarget]);
 
-    useEffect(() => {
-        calculateCalories();
-    }, [calculateCalories]);
-
-    // Логаут
-    const logout = () => {
-        navigate("/MealPlan", { state: { userData } });
+    const handleGenerateMealPlan = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            navigate("/MealPlan");
+        }, 500);
     };
 
-    // Переключение темы
-    const toggleTheme = () => {
-        setDarkMode(prev => !prev);
-    };
-
-    // Смена языка
-    const changeLanguage = (lang) => {
-        setLanguage(lang);
-    };
-
-    // Лейблы для активности
-    const getActivityLevelLabel = (value) => {
-        const labels = {
-            sedentary: t.sedentary,
-            light: t.lightlyActive,
-            moderate: t.moderatelyActive,
-            active: t.veryActive,
-            extreme: t.extremelyActive
-        };
-        return labels[value] || value;
-    };
-
-    // Обработка изменений формы
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setUserData(prev => {
-            if (type === 'checkbox') {
-                if (name.startsWith('restriction-')) {
-                    const restriction = name.replace('restriction-', '');
-                    return {
-                        ...prev,
-                        dietRestrictions: checked
-                            ? [...(prev.dietRestrictions || []), restriction]
-                            : (prev.dietRestrictions || []).filter(item => item !== restriction)
-                    };
-                } else if (name.startsWith('allergy-')) {
-                    const allergy = name.replace('allergy-', '');
-                    return {
-                        ...prev,
-                        allergies: checked
-                            ? [...(prev.allergies || []), allergy]
-                            : (prev.allergies || []).filter(item => item !== allergy)
-                    };
-                }
-            }
-            return { ...prev, [name]: value };
-        });
-    };
-
-    // Выбор типа диеты
-    const handleDietChange = (diet) => {
-        setUserData(prev => ({ ...prev, dietType: diet }));
-    };
-
-    // Рендер специфических полей
     const renderDietSpecificFields = () => {
-        switch (userData.dietType) {
+        switch(userData.dietType) {
             case 'weightloss':
                 return (
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Target Weight (kg)
-                        </label>
+                    <div className="brainmeal-form-field diet-specific-field">
+                        <label className="brainmeal-label">Target Weight (kg)</label>
                         <input
                             type="number"
                             name="targetWeight"
-                            className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
+                            className="brainmeal-input"
                             placeholder="Specify your target weight"
                             value={userData.targetWeight}
                             onChange={handleChange}
                         />
-                        <small className="text-xs text-gray-500 dark:text-gray-400">
+                        <small className="brainmeal-field-hint">
                             Recommended: no more than 0.5-1 kg loss per week
                         </small>
                     </div>
                 );
             case 'weightgain':
                 return (
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t.activityLevel}
-                        </label>
+                    <div className="brainmeal-form-field">
+                        <label className="brainmeal-label">{t.activityLevel}</label>
                         <select
                             name="activityLevel"
-                            className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
+                            className="brainmeal-select"
                             value={userData.activityLevel}
                             onChange={handleChange}
                         >
@@ -287,19 +345,17 @@ function Profile() {
                 );
             case 'protein':
                 return (
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Protein Target (g/day)
-                        </label>
+                    <div className="brainmeal-form-field diet-specific-field">
+                        <label className="brainmeal-label">Protein Target (g/day)</label>
                         <input
                             type="number"
                             name="proteinTarget"
-                            className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
+                            className="brainmeal-input"
                             placeholder="Daily protein target"
-                            value={userData.proteinTarget || ''}
+                            value={userData.proteinTarget}
                             onChange={handleChange}
                         />
-                        <small className="text-xs text-gray-500 dark:text-gray-400">
+                        <small className="brainmeal-field-hint">
                             Recommended: 1.6-2.2g per kg of body weight
                         </small>
                     </div>
@@ -309,291 +365,329 @@ function Profile() {
         }
     };
 
-    // Генерация плана
-    const handleGenerateMealPlan = () => {
-        const requiredFields = ['weight', 'height', 'age', 'gender'];
-        const missingFields = requiredFields.filter(field => !userData[field]);
-        if (missingFields.length > 0) {
-            setError(`Please fill in the following required fields: ${missingFields.join(', ')}`);
-            return;
-        }
-        setLoading(true);
-        setError('');
-        setTimeout(() => {
-            setLoading(false);
-            navigate("/meal-plan", { state: { userData } });
-        }, 500);
-
-
-    };
-
     return (
-        // Градиентный фон. Можно менять from/to, если хотите другой цвет
-        <div
-            className={`
-                min-h-screen w-full
-                ${darkMode
-                ? 'bg-gradient-to-tr from-gray-800 via-gray-900 to-black text-gray-100'
-                : 'bg-gradient-to-tr from-orange-50 via-orange-100 to-white text-gray-900'
-            }
-            `}
-        >
-            {/* Шапка */}
-            <header className="bg-transparent py-4 px-4 md:px-8">
-                <nav className="max-w-7xl mx-auto flex items-center justify-between">
-                    <h1 className="text-xl md:text-2xl font-bold text-orange-700 dark:text-orange-400">
-                        BrainMeal
-                    </h1>
-                    <div className="flex items-center space-x-2 md:space-x-4">
-                        {/* Переключатель темы */}
-                        <button
-                            onClick={toggleTheme}
-                            className="px-3 py-1 rounded bg-white/30 dark:bg-gray-700/40 hover:bg-white/50 dark:hover:bg-gray-600/60 text-sm text-gray-900 dark:text-gray-100 transition"
-                        >
-                            {darkMode ? t.light : t.dark}
-                        </button>
-                        {/* Смена языка */}
-                        <select
-                            value={language}
-                            onChange={(e) => changeLanguage(e.target.value)}
-                            className="px-2 py-1 rounded bg-white/30 dark:bg-gray-700/40 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-400"
-                        >
-                            <option value="en">EN</option>
-                            <option value="uk">UK</option>
-                        </select>
-                        {/* Кнопка логаута (или перехода на MealPlan) */}
-                        <button
-                            onClick={logout}
-                            className="px-3 py-1 rounded bg-white/30 dark:bg-gray-700/40 hover:bg-white/50 dark:hover:bg-gray-600/60 text-sm text-gray-900 dark:text-gray-100 transition"
-                        >
-                            {t.logout}
-                        </button>
+        <div className={`brainmeal-container ${darkMode ? 'theme-dark' : 'theme-light'}`}>
+            <header className="brainmeal-header">
+                <div className="brainmeal-logo">
+                    <div className="brainmeal-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10z" />
+                        </svg>
                     </div>
-                </nav>
+                    <h1 className="brainmeal-app-title">BrainMeal</h1>
+                </div>
+                <div className="header-controls">
+                    <button onClick={toggleTheme} className="theme-toggle-button">
+                        {darkMode ? t.light : t.dark}
+                    </button>
+                    <select
+                        value={language}
+                        onChange={(e) => changeLanguage(e.target.value)}
+                        className="language-select"
+                    >
+                        <option value="en">EN</option>
+                        <option value="uk">UK</option>
+                    </select>
+                    <button onClick={logout} className="brainmeal-logout-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                        </svg>
+                        {t.logout}
+                    </button>
+                </div>
             </header>
 
-            {/* Основной контент */}
-            <main className="max-w-xl mx-auto px-4 md:px-0 py-8">
-                <div
-                    className={`
-                        bg-white dark:bg-neutral-800
-                        rounded-xl shadow-lg
-                        p-6 md:p-8
-                        space-y-6
-                        transition-colors
-                    `}
-                >
-                    <h2 className="text-2xl font-bold text-orange-700 dark:text-orange-400 mb-2">
-                        {t.profileSettings}
-                    </h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t.profileDescription}
-                    </p>
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
-                            {error}
-                        </div>
-                    )}
+            <main className="brainmeal-content">
+                <h2 className="brainmeal-section-title">{t.profileSettings}</h2>
+                <p className="brainmeal-description">{t.profileDescription}</p>
 
-                    {/* Форма */}
-                    <form className="space-y-6">
-                        {/* Секция «Персональная информация» */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-300">
-                                {t.personalInformation}
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Вес */}
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.weight}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="weight"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        value={userData.weight}
-                                        onChange={handleChange}
-                                        placeholder="e.g. 70"
-                                        required
-                                    />
-                                </div>
-                                {/* Рост */}
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.height}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="height"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        value={userData.height}
-                                        onChange={handleChange}
-                                        placeholder="e.g. 170"
-                                        required
-                                    />
-                                </div>
-                                {/* Возраст */}
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.age}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="age"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        value={userData.age}
-                                        onChange={handleChange}
-                                        placeholder="e.g. 30"
-                                        required
-                                    />
-                                </div>
-                                {/* Пол */}
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.gender}
-                                    </label>
-                                    <select
-                                        name="gender"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        value={userData.gender}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">{t.selectGender}</option>
-                                        <option value="male">{t.male}</option>
-                                        <option value="female">{t.female}</option>
-                                        <option value="other">{t.other}</option>
-                                    </select>
-                                </div>
+                {error && <div className="brainmeal-error">{error}</div>}
+
+                <form className="brainmeal-form">
+                    {/* Personal Information */}
+                    <section className="brainmeal-form-section">
+                        <h3 className="brainmeal-subsection-title">{t.personalInformation}</h3>
+                        <div className="brainmeal-form-row">
+                            <div className="brainmeal-form-field">
+                                <label className="brainmeal-label">{t.weight}</label>
+                                <input
+                                    type="number"
+                                    name="weight"
+                                    className="brainmeal-input"
+                                    placeholder="Enter your weight"
+                                    value={userData.weight}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="brainmeal-form-field">
+                                <label className="brainmeal-label">{t.height}</label>
+                                <input
+                                    type="number"
+                                    name="height"
+                                    className="brainmeal-input"
+                                    placeholder="Enter your height"
+                                    value={userData.height}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </div>
                         </div>
 
-                        {/* Выбор типа диеты */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-300">
-                                {t.dietType}
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {['basic', 'weightloss', 'weightgain', 'protein'].map(diet => (
-                                    <button
-                                        key={diet}
-                                        type="button"
-                                        onClick={() => handleDietChange(diet)}
-                                        className={`
-                                            flex flex-col items-center justify-center
-                                            p-3 rounded transition
-                                            text-sm font-semibold
-                                            ${
-                                            userData.dietType === diet
-                                                ? 'bg-orange-500 text-white'
-                                                : 'bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-gray-200 hover:bg-orange-100'
-                                        }
-                                        `}
-                                    >
-                                        <span>{t[diet]}</span>
-                                        <span className="text-xs opacity-70 mt-1">
-                                            {t[`${diet}Desc`]}
-                                        </span>
-                                    </button>
+                        <div className="brainmeal-form-row">
+                            <div className="brainmeal-form-field">
+                                <label className="brainmeal-label">{t.age}</label>
+                                <input
+                                    type="number"
+                                    name="age"
+                                    className="brainmeal-input"
+                                    placeholder="Enter your age"
+                                    value={userData.age}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="brainmeal-form-field">
+                                <label className="brainmeal-label">{t.gender}</label>
+                                <select
+                                    name="gender"
+                                    className="brainmeal-select"
+                                    value={userData.gender}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">{t.selectGender}</option>
+                                    <option value="male">{t.male}</option>
+                                    <option value="female">{t.female}</option>
+                                    <option value="other">{t.other}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.activityLevel}</label>
+                            <select
+                                name="activityLevel"
+                                className="brainmeal-select"
+                                value={userData.activityLevel}
+                                onChange={handleChange}
+                            >
+                                {activityLevels.map(level => (
+                                    <option key={level.value} value={level.value}>
+                                        {getActivityLevelLabel(level.value)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </section>
+
+                    {/* Diet Type */}
+                    <section className="brainmeal-form-section">
+                        <h3 className="brainmeal-subsection-title">{t.dietType}</h3>
+                        <div className="brainmeal-diet-options">
+                            <div className={`brainmeal-diet-option ${userData.dietType === 'basic' ? 'selected' : ''}`}
+                                 onClick={() => handleDietChange('basic')}>
+                                <div className="brainmeal-diet-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M3 3a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                                    </svg>
+                                </div>
+                                <h4 className="brainmeal-diet-title">{t.basic}</h4>
+                                <p className="brainmeal-diet-description">{t.balancedNutrition}</p>
+                            </div>
+
+                            <div className={`brainmeal-diet-option ${userData.dietType === 'weightloss' ? 'selected' : ''}`}
+                                 onClick={() => handleDietChange('weightloss')}>
+                                <div className="brainmeal-diet-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <h4 className="brainmeal-diet-title">{t.weightLoss}</h4>
+                                <p className="brainmeal-diet-description">{t.weightLossDesc}</p>
+                            </div>
+
+                            <div className={`brainmeal-diet-option ${userData.dietType === 'weightgain' ? 'selected' : ''}`}
+                                 onClick={() => handleDietChange('weightgain')}>
+                                <div className="brainmeal-diet-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <h4 className="brainmeal-diet-title">{t.weightGain}</h4>
+                                <p className="brainmeal-diet-description">{t.weightGainDesc}</p>
+                            </div>
+
+                            <div className={`brainmeal-diet-option ${userData.dietType === 'protein' ? 'selected' : ''}`}
+                                 onClick={() => handleDietChange('protein')}>
+                                <div className="brainmeal-diet-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
+                                    </svg>
+                                </div>
+                                <h4 className="brainmeal-diet-title">{t.highProtein}</h4>
+                                <p className="brainmeal-diet-description">{t.highProteinDesc}</p>
+                            </div>
+                        </div>
+                        {renderDietSpecificFields()}
+                    </section>
+
+                    {/* Diet Preferences */}
+                    <section className="brainmeal-form-section">
+                        <h3 className="brainmeal-subsection-title">{t.dietPreferences}</h3>
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.calorieTarget}</label>
+                            <input
+                                type="number"
+                                name="calorieTarget"
+                                className="brainmeal-input"
+                                placeholder="Auto-calculated based on your data"
+                                value={userData.calorieTarget}
+                                onChange={handleChange}
+                            />
+                            <small className="brainmeal-field-hint">
+                                Leave empty for auto-calculation or enter your target
+                            </small>
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.mealFrequency}</label>
+                            <select
+                                name="mealFrequency"
+                                className="brainmeal-select"
+                                value={userData.mealFrequency}
+                                onChange={handleChange}
+                            >
+                                <option value="3">3 meals per day</option>
+                                <option value="4">4 meals per day</option>
+                                <option value="5">5 meals per day</option>
+                                <option value="6">6 meals per day</option>
+                            </select>
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.dietaryRestrictions}</label>
+                            <div className="brainmeal-checkbox-group">
+                                {dietaryRestrictions.map(restriction => (
+                                    <div key={restriction} className="brainmeal-checkbox-item">
+                                        <input
+                                            type="checkbox"
+                                            id={`restriction-${restriction}`}
+                                            name={`restriction-${restriction}`}
+                                            checked={userData.dietRestrictions?.includes(restriction) || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label htmlFor={`restriction-${restriction}`}>{restriction}</label>
+                                    </div>
                                 ))}
                             </div>
-                            {/* Дополнительные поля в зависимости от типа диеты */}
-                            {renderDietSpecificFields()}
                         </div>
 
-                        {/* Текущие привычки питания */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-300">
-                                {t.currentMealHabits}
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.breakfast}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="breakfast"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        placeholder="e.g. Oatmeal with fruits"
-                                        value={userData.breakfast}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.lunch}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="lunch"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        placeholder="e.g. Grilled chicken salad"
-                                        value={userData.lunch}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.dinner}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="dinner"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        placeholder="e.g. Steamed fish and veggies"
-                                        value={userData.dinner}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        {t.snacks}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="snacks"
-                                        className="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 dark:bg-neutral-700 dark:text-gray-100"
-                                        placeholder="e.g. Nuts, fruits"
-                                        value={userData.snacks}
-                                        onChange={handleChange}
-                                    />
-                                </div>
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.allergies}</label>
+                            <div className="brainmeal-checkbox-group">
+                                {commonAllergies.map(allergy => (
+                                    <div key={allergy} className="brainmeal-checkbox-item">
+                                        <input
+                                            type="checkbox"
+                                            id={`allergy-${allergy}`}
+                                            name={`allergy-${allergy}`}
+                                            checked={userData.allergies?.includes(allergy) || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label htmlFor={`allergy-${allergy}`}>{allergy}</label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Кнопка генерации плана */}
-                        <div className="flex justify-center mt-4">
-                            <button
-                                type="button"
-                                onClick={handleGenerateMealPlan}
-                                disabled={loading}
-                                className={`
-                                    px-6 py-2 rounded-full font-bold
-                                    transition-colors duration-300
-                                    ${
-                                    loading
-                                        ? 'bg-orange-300 cursor-not-allowed text-gray-100'
-                                        : 'bg-orange-600 hover:bg-orange-700 text-white'
-                                }
-                                `}
-                            >
-                                {loading ? t.generating : t.generateMealPlan}
-                            </button>
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.preferredCuisines}</label>
+                            <div className="brainmeal-checkbox-group">
+                                {cuisineOptions.map(cuisine => (
+                                    <div key={cuisine} className="brainmeal-checkbox-item">
+                                        <input
+                                            type="checkbox"
+                                            id={`cuisine-${cuisine}`}
+                                            name={`cuisine-${cuisine}`}
+                                            checked={userData.preferredCuisines?.includes(cuisine) || false}
+                                            onChange={handleChange}
+                                        />
+                                        <label htmlFor={`cuisine-${cuisine}`}>{cuisine}</label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </section>
+
+                    {/* Current Meal Habits */}
+                    <section className="brainmeal-form-section">
+                        <h3 className="brainmeal-subsection-title">{t.currentMealHabits}</h3>
+                        <p className="brainmeal-description">{t.describeMeals}</p>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.breakfast}</label>
+                            <textarea
+                                name="breakfast"
+                                className="brainmeal-textarea"
+                                placeholder={`Describe your typical ${t.breakfast.toLowerCase()}`}
+                                value={userData.breakfast}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.lunch}</label>
+                            <textarea
+                                name="lunch"
+                                className="brainmeal-textarea"
+                                placeholder={`Describe your typical ${t.lunch.toLowerCase()}`}
+                                value={userData.lunch}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.dinner}</label>
+                            <textarea
+                                name="dinner"
+                                className="brainmeal-textarea"
+                                placeholder={`Describe your typical ${t.dinner.toLowerCase()}`}
+                                value={userData.dinner}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="brainmeal-form-field">
+                            <label className="brainmeal-label">{t.snacks}</label>
+                            <textarea
+                                name="snacks"
+                                className="brainmeal-textarea"
+                                placeholder={`Describe your typical ${t.snacks.toLowerCase()}`}
+                                value={userData.snacks}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </section>
+
+                    <div className="brainmeal-form-actions">
+                        <button
+                            type="button"
+                            className="brainmeal-submit-button"
+                            onClick={handleGenerateMealPlan}
+                            disabled={loading}
+                        >
+                            {loading ? t.generating : t.generateMealPlan}
+                        </button>
+                    </div>
+                </form>
             </main>
         </div>
     );
-}
+};
 
 export default Profile;
-
-
-
-
 
 
 
