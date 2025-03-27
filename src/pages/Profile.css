@@ -102,7 +102,6 @@
     --error-border: #ff7d00;
 }
 
-/* ------------- Base Styles ------------- */
 html, body {
     height: 100%;
     width: 100%;
@@ -114,7 +113,49 @@ html, body {
     line-height: 1.6;
     overflow-x: hidden;
     transition: background 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* Firefox Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
 }
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 10px;
+    transition: background var(--transition-medium) ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
+}
+
+
+/* Specific Theme Scrollbars */
+.light-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f0f0f0;
+}
+
+.dark-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #666 #333;
+}
+
+/* Smooth Scroll Behavior */
+html {
+    scroll-behavior: smooth;
+}
+
 
 .brainmeal-container {
     width: 100%;
@@ -122,13 +163,16 @@ html, body {
     height: auto;
     margin: 0;
     padding: 0 0 60px;
-
+    scroll-snap-type: y mandatory;
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     box-sizing: border-box;
     animation: fadeInPage 0.8s ease forwards;
+}
+.brainmeal-section {
+    scroll-snap-align: start;
 }
 
 @keyframes fadeInPage {
@@ -153,9 +197,6 @@ html, body {
     z-index: 100;
     width: 100%;
     box-sizing: border-box;
-    transition: transform var(--header-transition-speed) cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
