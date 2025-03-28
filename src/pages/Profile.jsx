@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
-import MenuComponent from '../components/common/Menu';
 
 
 const defaultTypicalMeals = {
