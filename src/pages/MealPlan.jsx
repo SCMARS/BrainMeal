@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import  { useState, useEffect,  } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import "./styles/Mealplan.css";
+
 import { useLocation, useNavigate } from "react-router-dom";
-import { generateMealPlan } from './services/llmService.jsx';
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
     Box,
@@ -120,7 +120,7 @@ function MealPlanningApp() {
         const startDate = new Date(selectedDate);
         startDate.setDate(startDate.getDate() - startDate.getDay());
         const weekMeals = getMealsByWeek(startDate);
-        
+
         const stats = weekMeals.reduce((acc, meal) => {
             const day = new Date(meal.date).toLocaleDateString('en-US', { weekday: 'short' });
             if (!acc[day]) {
@@ -772,6 +772,7 @@ function MealPlanningApp() {
 }
 
 export default MealPlanningApp;
+
 
 
 

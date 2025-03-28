@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MenuComponent from '../components/common/Menu';
-import '../styles/Profile.css';
+
 
 const defaultTypicalMeals = {
     breakfast: '',
