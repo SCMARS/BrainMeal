@@ -31,6 +31,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLanguage } from '../context/LanguageContext';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
+import {generateMealPlan} from "../services/geminiService.js";
 
 function MealPlanningApp() {
     const navigate = useNavigate();

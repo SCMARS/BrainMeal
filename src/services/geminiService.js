@@ -6,7 +6,7 @@ export const generateMealPlan = async (userProfile) => {
         throw new Error('Необходимо предоставить полный профиль пользователя');
     }
 
-    const genAI = new GoogleGenerativeAI("AIzaSyCCRO7QCa0S6LavZcXEH9ymcXZb3UnfMTk");
+    const genAI = new GoogleGenerativeAI("AIzaSyDvp5H76M33BQvmFa87T4jvHpBI8y4FG7g");
 
     const prompt = `Создай детальный план питания на неделю для человека со следующими параметрами:
 - Возраст: ${userProfile.age}
