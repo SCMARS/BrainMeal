@@ -49,8 +49,11 @@ export const generateMealPlan = async (userProfile) => {
         const text = response.text();
         console.log("Response text:", text);
         
+        // Очищаем ответ от markdown-форматирования
+        const cleanText = text.replace(/```json\n|\n```/g, '').trim();
+        
         // Парсим ответ и структурируем его
-        const mealPlan = JSON.parse(text);
+        const mealPlan = JSON.parse(cleanText);
         console.log('Meal plan parsed successfully');
         
         // Добавляем метаданные
