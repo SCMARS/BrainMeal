@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { generateMealPlan } from '../services/geminiService';
 
 const translations = {
     en: {
@@ -344,25 +345,25 @@ const Profile = () => {
     const handleGenerateMealPlan = async () => {
         try {
             setLoading(true);
-            // Add animation class for the button
-            const button = document.getElementById('generate-button');
-            if (button) button.classList.add('loading-animation');
+            setError('');
 
-            // Scroll to bottom smoothly with a nicer animation
-            setIsScrolling(true);
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,
-                behavior: 'smooth'
-            });
+            // Проверяем наличие обязательных данных
+            if (!userData.age || !userData.gender || !userData.weight || !userData.height) {
+                setError('Пожалуйста, заполните все обязательные поля');
+                return;
+            }
 
-            // Small delay to allow scrolling to complete
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Save user data to localStorage
+            // Сохраняем данные пользователя
             localStorage.setItem('userData', JSON.stringify(userData));
 
-            // Navigate to meal plan page with user data
-            navigate("/meal-plan", {
+            // Генерируем план питания
+            const mealPlan = await generateMealPlan(userData);
+            
+            // Сохраняем сгенерированный план
+            localStorage.setItem('generatedMealPlan', JSON.stringify(mealPlan));
+            
+            // Перенаправляем на страницу плана питания
+            navigate('/meal-plan', {
                 state: {
                     userData,
                     darkMode,
@@ -371,12 +372,40 @@ const Profile = () => {
             });
         } catch (error) {
             console.error('Error generating meal plan:', error);
-            setError('Failed to generate meal plan. Please try again.');
-            const button = document.getElementById('generate-button');
-            if (button) button.classList.remove('loading-animation');
+            setError('Не удалось сгенерировать план питания. Пожалуйста, попробуйте снова.');
         } finally {
             setLoading(false);
-            setIsScrolling(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // Сохраняем данные пользователя в localStorage
+            const userData = {
+                age: userData.age,
+                gender: userData.gender,
+                weight: userData.weight,
+                height: userData.height,
+                dietType: userData.dietType,
+                calorieTarget: userData.calorieTarget,
+                foodPreferences: userData.mealPreferences,
+                allergies: userData.allergies,
+                activityLevel: userData.activityLevel
+            };
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Генерируем план питания
+            const mealPlan = await generateMealPlan(userData);
+            
+            // Сохраняем сгенерированный план
+            localStorage.setItem('generatedMealPlan', JSON.stringify(mealPlan));
+            
+            // Перенаправляем на страницу плана питания
+            navigate('/meal-plan');
+        } catch (error) {
+            console.error('Error generating meal plan:', error);
+            setError('Failed to generate meal plan. Please try again.');
         }
     };
 

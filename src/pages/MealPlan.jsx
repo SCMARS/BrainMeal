@@ -42,7 +42,7 @@ function MealPlanningApp() {
     const {
         meals,
         loading,
-        error,
+        error: mealPlanError,
         addMeal,
         updateMeal,
         deleteMeal,
@@ -111,15 +111,32 @@ function MealPlanningApp() {
 
     // Загрузка данных пользователя
     useEffect(() => {
-        const storedUserData = localStorage.getItem('userData');
-        if (storedUserData) {
+        const loadData = () => {
             try {
-                setUserData(JSON.parse(storedUserData));
-            } catch (err) {
-                console.error("Error parsing user data:", err);
+                // Загружаем данные пользователя
+                const storedUserData = localStorage.getItem('userData');
+                if (storedUserData) {
+                    setUserData(JSON.parse(storedUserData));
+                }
+
+                // Загружаем сгенерированный план питания
+                const storedMealPlan = localStorage.getItem('generatedMealPlan');
+                if (storedMealPlan) {
+                    const parsedPlan = JSON.parse(storedMealPlan);
+                    if (parsedPlan.isWeekly) {
+                        setWeeklyPlan(parsedPlan.plan);
+                    } else {
+                        setDailyPlan(parsedPlan.plan);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                setError('Failed to load user data and meal plan');
             }
-        }
-    }, [t]);
+        };
+
+        loadData();
+    }, []);
 
     // Расчет недельной статистики
     useEffect(() => {
@@ -238,6 +255,22 @@ function MealPlanningApp() {
             fat: '',
             notes: ''
         });
+    };
+
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleGenerateMealPlan = async () => {
+        setIsGenerating(true);
+        setError(null);
+        try {
+            const mealPlan = await generateMealPlan(formData);
+            // Handle success
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const handleSubmit = async () => {
@@ -486,8 +519,8 @@ function MealPlanningApp() {
                         </Box>
                     </Box>
 
-                    {error && (
-                        <Typography variant="body1" sx={{ color: 'red', textAlign: 'center', mb: 2 }}>{error}</Typography>
+                    {mealPlanError && (
+                        <Typography variant="body1" sx={{ color: 'red', textAlign: 'center', mb: 2 }}>{mealPlanError}</Typography>
                     )}
 
                     {userData && (

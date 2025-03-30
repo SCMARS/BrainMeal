@@ -17,6 +17,7 @@ export const generateMealPlan = async (userProfile) => {
 - Целевые калории: ${userProfile.calorieTarget}
 - Предпочтения в еде: ${userProfile.foodPreferences || 'нет ограничений'}
 - Аллергии: ${userProfile.allergies || 'нет'}
+- Уровень активности: ${userProfile.activityLevel}
 
 План должен включать:
 1. Расписание приемов пищи (завтрак, обед, ужин, перекусы)
@@ -32,18 +33,71 @@ export const generateMealPlan = async (userProfile) => {
 Формат ответа должен быть в JSON.`;
 
     try {
-        // Вызываем метод generateText напрямую на экземпляре genAI
-        const result = await genAI.generateText({
-            model: "text-bison",
-            prompt: prompt,
+        console.log('Starting meal plan generation with user profile:', userProfile);
+        
+        // Создаем модель с правильной конфигурацией
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-pro",
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+            }
         });
-        const response = result.response;
-        const text = await response.text();
+        
+        console.log('Model initialized successfully');
+        
+        // Генерируем контент с правильными параметрами
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+            }
+        });
+        
+        console.log('Content generation completed');
+        
+        const response = await result.response;
+        console.log('Response received');
+        
+        const text = response.text();
         console.log("Response text:", text);
+        
+        // Парсим ответ и структурируем его
         const mealPlan = JSON.parse(text);
-        return mealPlan;
+        console.log('Meal plan parsed successfully');
+        
+        // Добавляем метаданные
+        return {
+            isWeekly: true,
+            plan: mealPlan,
+            generatedAt: new Date().toISOString(),
+            userProfile: userProfile
+        };
     } catch (error) {
-        console.error('Ошибка генерации плана питания:', error);
-        throw new Error('Не удалось сгенерировать план питания. Пожалуйста, попробуйте снова.');
+        console.error('Detailed error in generateMealPlan:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause
+        });
+        
+        // Более информативное сообщение об ошибке
+        let errorMessage = 'Не удалось сгенерировать план питания. ';
+        if (error.message.includes('404')) {
+            errorMessage += 'Ошибка доступа к API. Пожалуйста, проверьте подключение к интернету и API ключ.';
+        } else if (error.message.includes('401') || error.message.includes('403')) {
+            errorMessage += 'Ошибка авторизации API. Пожалуйста, проверьте API ключ.';
+        } else if (error.message.includes('429')) {
+            errorMessage += 'Превышен лимит запросов. Пожалуйста, подождите немного и попробуйте снова.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        throw new Error(errorMessage);
     }
 };
