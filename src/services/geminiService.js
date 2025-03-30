@@ -35,30 +35,12 @@ export const generateMealPlan = async (userProfile) => {
     try {
         console.log('Starting meal plan generation with user profile:', userProfile);
         
-        // Создаем модель с правильной конфигурацией
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-pro",
-            generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 2048,
-            }
-        });
-        
+        // Создаем модель
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         console.log('Model initialized successfully');
         
-        // Генерируем контент с правильными параметрами
-        const result = await model.generateContent({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 2048,
-            }
-        });
-        
+        // Генерируем контент
+        const result = await model.generateContent(prompt);
         console.log('Content generation completed');
         
         const response = await result.response;
