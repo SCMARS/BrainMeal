@@ -36,7 +36,7 @@ export const generateMealPlan = async (userProfile) => {
         console.log('Starting meal plan generation with user profile:', userProfile);
         
         // Создаем модель
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         console.log('Model initialized successfully');
         
         // Генерируем контент
