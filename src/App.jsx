@@ -19,7 +19,7 @@ import WelcomeScreen from "./pages/WelcomeScreen";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Profile from "./pages/Profile";
+import Profile from "./pages/Profile.jsx";
 import MealPlan from "./pages/MealPlan";
 import Recipes from "./pages/Recipes";
 import Analytics from "./pages/Analytics";
@@ -47,7 +47,7 @@ function App() {
                                             <Route path="/login" element={<Login />} />
                                             <Route path="/register" element={<Register />} />
                                             <Route path="/home" element={<Layout><Home /></Layout>} />
-                                            <Route path="/profile" element={<Layout><ProtectedRoute><Profile /></ProtectedRoute></Layout>} />
+                                            <Route path="/profile" element={<Layout><Profile /></Layout>} />
                                             <Route path="/meal-plan" element={<Layout><ProtectedRoute><MealPlan /></ProtectedRoute></Layout>} />
                                             <Route path="/recipes" element={<Layout><ProtectedRoute><Recipes /></ProtectedRoute></Layout>} />
                                             <Route path="/analytics" element={<Layout><ProtectedRoute><Analytics /></ProtectedRoute></Layout>} />
