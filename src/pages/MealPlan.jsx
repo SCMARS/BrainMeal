@@ -182,15 +182,23 @@ function MealPlanningApp() {
         }
         setIsLoadingWeekly(true);
         try {
+            // Получаем все существующие приемы пищи
+            const existingMeals = meals || [];
             const generatedPlan = await generateMealPlan({
                 ...userData,
                 isWeekly: true
-            });
-            setWeeklyPlan(generatedPlan);
+            }, existingMeals);
+            
+            // Устанавливаем план питания
+            setWeeklyPlan(generatedPlan.plan);
             setSelectedDate(new Date());
             setDailyPlan(null);
+            
+            // Сохраняем сгенерированный план
+            localStorage.setItem('generatedMealPlan', JSON.stringify(generatedPlan));
         } catch (err) {
             console.error(err);
+            setError(err.message);
         } finally {
             setIsLoadingWeekly(false);
         }
@@ -203,10 +211,12 @@ function MealPlanningApp() {
         }
         setIsLoadingDaily(true);
         try {
+            // Получаем приемы пищи за выбранный день
+            const existingMeals = getMealsByDate(selectedDate) || [];
             const generatedPlan = await generateMealPlan({
                 ...userData,
                 isWeekly: false
-            });
+            }, existingMeals);
             setDailyPlan(generatedPlan);
             setWeeklyPlan(null);
         } catch (err) {
@@ -344,7 +354,7 @@ function MealPlanningApp() {
     };
 
     const renderWeeklyPlan = () => {
-        if (!weeklyPlan) return null;
+        if (!weeklyPlan || !Array.isArray(weeklyPlan)) return null;
 
         return (
             <div className="weekly-plan">
