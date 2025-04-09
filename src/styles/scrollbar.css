@@ -1,0 +1,21 @@
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #FFF3E0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FF5722;
+    border-radius: 4px;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-track {
+    background: #2D2D2D;
+}
+
+[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FF8A50;
+} 

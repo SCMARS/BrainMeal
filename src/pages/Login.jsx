@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
 import { auth } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from '../context/AuthContext';
 
 const translations = {
     en: {
@@ -40,6 +41,7 @@ const translations = {
 
 const Login = () => {
     const location = useLocation();
+    const { login } = useAuth();
 
     // Get theme from state or localStorage, default is dark
     const themeFromNav = location.state?.darkMode !== undefined ?
@@ -111,26 +113,19 @@ const Login = () => {
         setWarning("");
 
         try {
-            // 1. Authenticate with Firebase
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in:", userCredential.user);
+            // 1. Authenticate with Firebase through AuthContext
+            const firebaseUser = await login(email, password);
+            console.log("User logged in:", firebaseUser);
 
             // 2. Try to communicate with backend
             const backendResponse = await sendUserIdToBackend(
-                userCredential.user.uid,
-                userCredential.user
+                firebaseUser.uid,
+                firebaseUser
             );
 
             // 3. Check if backend is available
             if (!backendResponse.backendAvailable) {
                 setWarning(t.backendError);
-                // Store user data in localStorage as fallback
-                localStorage.setItem('userData', JSON.stringify({
-                    uid: userCredential.user.uid,
-                    email: userCredential.user.email,
-                    displayName: userCredential.user.displayName,
-                    lastLogin: new Date().toISOString()
-                }));
             }
 
             // 4. Navigate to profile with state (even if backend failed)

@@ -1,28 +1,31 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import {
-    createUserWithEmailAndPassword,
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { 
     signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    updateProfile,
+    GoogleAuthProvider,
+    signInWithPopup,
+    setPersistence,
+    browserLocalPersistence
 } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth } from '../firebase';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Set persistence to LOCAL
+        setPersistence(auth, browserLocalPersistence)
+            .catch((error) => {
+                console.error('Error setting persistence:', error);
+            });
+
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
             setLoading(false);
@@ -31,21 +34,36 @@ export const AuthProvider = ({ children }) => {
         return unsubscribe;
     }, []);
 
-    const signup = async (email, password, displayName) => {
+    const signup = async (email, password) => {
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(userCredential.user, { displayName });
-            return userCredential.user;
+            await setPersistence(auth, browserLocalPersistence);
+            return await createUserWithEmailAndPassword(auth, email, password);
         } catch (error) {
+            console.error('Signup error:', error);
             throw error;
         }
     };
 
     const login = async (email, password) => {
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            return userCredential.user;
+            await setPersistence(auth, browserLocalPersistence);
+            return await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
+            console.error('Login error:', error);
+            throw error;
+        }
+    };
+
+    const loginWithGoogle = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            await setPersistence(auth, browserLocalPersistence);
+            return await signInWithPopup(auth, provider);
+        } catch (error) {
+            console.error('Google login error:', error);
             throw error;
         }
     };
@@ -54,6 +72,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await signOut(auth);
         } catch (error) {
+            console.error('Logout error:', error);
             throw error;
         }
     };
@@ -62,8 +81,8 @@ export const AuthProvider = ({ children }) => {
         currentUser,
         signup,
         login,
-        logout,
-        loading,
+        loginWithGoogle,
+        logout
     };
 
     return (

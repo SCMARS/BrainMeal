@@ -16,16 +16,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// Initialize Analytics only in production
-let analytics = null;
-if (process.env.NODE_ENV === 'production') {
-    analytics = getAnalytics(app);
-}
+const analytics = getAnalytics(app);
 
 export { app, auth, db, storage, analytics }; 

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../config/firebase';
 import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { generateMealPlan as generateMealPlanService } from '../services/geminiService';
 
 const MealPlanContext = createContext();
 
@@ -15,6 +16,8 @@ export const useMealPlan = () => {
 
 export const MealPlanProvider = ({ children }) => {
     const { user } = useAuth();
+    const [mealPlan, setMealPlan] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [meals, setMeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -27,6 +30,29 @@ export const MealPlanProvider = ({ children }) => {
             setLoading(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        const loadMealPlan = () => {
+            try {
+                const storedPlan = localStorage.getItem('mealPlan');
+                if (storedPlan) {
+                    const parsedPlan = JSON.parse(storedPlan);
+                    setMeals(parsedPlan.plan || []);
+                }
+            } catch (err) {
+                console.error('Error loading meal plan:', err);
+                setError('Ошибка загрузки плана питания');
+            }
+        };
+
+        loadMealPlan();
+    }, []);
+
+    useEffect(() => {
+        if (mealPlan && mealPlan.length > 0) {
+            localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+        }
+    }, [mealPlan]);
 
     const fetchMeals = async () => {
         try {
@@ -112,7 +138,44 @@ export const MealPlanProvider = ({ children }) => {
         }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
     };
 
+    const generateMealPlan = async (userData, existingMeals = []) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const plan = await generateMealPlanService(userData, existingMeals);
+            setMealPlan(plan);
+
+            // Увеличиваем счетчик сгенерированных планов
+            const planCount = parseInt(localStorage.getItem('mealPlanCount') || '0');
+            localStorage.setItem('mealPlanCount', (planCount + 1).toString());
+
+            return plan;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updateMealPlan = (newPlan) => {
+        try {
+            setMeals(newPlan);
+            const mealPlan = {
+                plan: newPlan,
+                lastUpdated: new Date().toISOString()
+            };
+            localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+        } catch (err) {
+            console.error('Error updating meal plan:', err);
+            setError('Ошибка обновления плана питания');
+        }
+    };
+
     const value = {
+        mealPlan,
+        isLoading,
         meals,
         loading,
         error,
@@ -122,7 +185,9 @@ export const MealPlanProvider = ({ children }) => {
         getMealsByDate,
         getMealsByWeek,
         getNutritionSummary,
-        refreshMeals: fetchMeals
+        refreshMeals: fetchMeals,
+        generateMealPlan,
+        updateMealPlan
     };
 
     return (

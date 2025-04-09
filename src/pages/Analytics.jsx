@@ -31,7 +31,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     CircularProgress,
-    Alert
+    Alert,
+    Fab
 } from '@mui/material';
 import {
     LineChart,
@@ -69,6 +70,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import InfoIcon from '@mui/icons-material/Info';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useLanguage } from '../context/LanguageContext';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -140,6 +143,9 @@ const Analytics = () => {
     // Данные для прогнозов
     const [predictions, setPredictions] = useState([]);
     const [showPredictions, setShowPredictions] = useState(false);
+
+    // Добавляем состояние для отслеживания видимости кнопки прокрутки
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Обработчик изменения вкладок
     const handleTabChange = (event, newValue) => {
@@ -267,167 +273,270 @@ const Analytics = () => {
         });
     };
 
-    // Применение фильтров к данным
+    // Функция получения активных данных для графика
+    const getActiveChartData = () => {
+        if (compareMode) {
+            return compareData;
+        }
+        return chartData;
+    };
+
+    // Функция применения фильтров
     const applyFilters = (data) => {
         return data.filter(item => {
-            // Фильтр по типу приема пищи (если эта информация есть)
-            if (item.mealType && !filters.mealTypes.includes(item.mealType)) {
-                return false;
-            }
-
-            // Фильтр по времени суток (если эта информация есть)
-            if (item.timeOfDay && !filters.timeOfDay.includes(item.timeOfDay)) {
-                return false;
-            }
-
             // Фильтр по калориям
             if (item.calories < filters.minCalories || item.calories > filters.maxCalories) {
                 return false;
+            }
+
+            // Фильтр по типам приемов пищи
+            if (item.meals && item.meals.length > 0) {
+                const mealTypes = item.meals.map(meal => meal.type);
+                const hasSelectedTypes = mealTypes.some(type => filters.mealTypes.includes(type));
+                if (!hasSelectedTypes) {
+                    return false;
+                }
+            }
+
+            // Фильтр по времени суток
+            if (item.meals && item.meals.length > 0) {
+                const timeOfDay = item.meals.map(meal => {
+                    const hour = new Date(meal.time).getHours();
+                    if (hour >= 5 && hour < 12) return 'morning';
+                    if (hour >= 12 && hour < 17) return 'afternoon';
+                    if (hour >= 17 && hour < 22) return 'evening';
+                    return 'night';
+                });
+                const hasSelectedTime = timeOfDay.some(time => filters.timeOfDay.includes(time));
+                if (!hasSelectedTime) {
+                    return false;
+                }
             }
 
             return true;
         });
     };
 
-    // Загрузка и обработка данных для аналитики
-    const loadData = () => {
-        let startDate = new Date();
-        let endDate = new Date();
-
-        // Определение временного диапазона
-        if (timeRange === 'week') {
-            startDate.setDate(startDate.getDate() - 7);
-        } else if (timeRange === 'month') {
-            startDate.setMonth(startDate.getMonth() - 1);
-        } else if (timeRange === 'year') {
-            startDate.setFullYear(startDate.getFullYear() - 1);
-        } else if (timeRange === 'custom' && compareMode) {
-            startDate = new Date(compareDates.currentStart);
-            endDate = new Date(compareDates.currentEnd);
-        }
-
-        // Получение данных о приемах пищи
-        const weeklyMeals = getMealsByWeek(startDate, endDate);
-
-        // Применение фильтров
-        const filteredMeals = applyFilters(weeklyMeals);
-
-        // Преобразование данных для графиков
-        const data = filteredMeals.map(meal => ({
-            date: new Date(meal.date).toLocaleDateString(),
-            time: meal.time || '00:00',
-            mealType: meal.mealType || 'unknown',
-            timeOfDay: meal.timeOfDay || 'unknown',
-            calories: meal.calories,
-            protein: meal.protein,
-            carbs: meal.carbs,
-            fat: meal.fat
-        }));
-
-        setChartData(data);
-
-        // Расчет средних показателей
-        if (data.length > 0) {
-            const avg = data.reduce((acc, curr) => ({
-                calories: acc.calories + curr.calories,
-                protein: acc.protein + curr.protein,
-                carbs: acc.carbs + curr.carbs,
-                fat: acc.fat + curr.fat
-            }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
-
-            const count = data.length;
-            setNutritionData([
-                { name: t('Calories'), value: Math.round(avg.calories / count) },
-                { name: t('Protein'), value: Math.round(avg.protein / count) },
-                { name: t('Carbs'), value: Math.round(avg.carbs / count) },
-                { name: t('Fat'), value: Math.round(avg.fat / count) }
-            ]);
-        } else {
-            setNutritionData([
-                { name: t('Calories'), value: 0 },
-                { name: t('Protein'), value: 0 },
-                { name: t('Carbs'), value: 0 },
-                { name: t('Fat'), value: 0 }
-            ]);
-        }
-
-        // Загрузка данных для сравнения, если включен режим сравнения
-        if (compareMode) {
-            loadCompareData();
-        }
-
-        // Генерация прогнозов
-        if (data.length > 3) {
-            generatePredictions(data);
-        }
-    };
-
-    // Загрузка данных для сравнения
-    const loadCompareData = () => {
-        const startDate = new Date(compareDates.compareStart);
-        const endDate = new Date(compareDates.compareEnd);
-
-        const compareMeals = getMealsByWeek(startDate, endDate);
-        const filteredCompareMeals = applyFilters(compareMeals);
-
-        const data = filteredCompareMeals.map(meal => ({
-            date: new Date(meal.date).toLocaleDateString(),
-            calories: meal.calories,
-            protein: meal.protein,
-            carbs: meal.carbs,
-            fat: meal.fat,
-            period: t('Previous')
-        }));
-
-        // Добавление метки периода к текущим данным
-        const currentDataWithPeriod = chartData.map(item => ({
-            ...item,
-            period: t('Current')
-        }));
-
-        setCompareData([...currentDataWithPeriod, ...data]);
-    };
-
-    // Генерация прогнозов на основе линейной регрессии
+    // Функция генерации прогнозов
     const generatePredictions = (data) => {
-        if (data.length < 4) return;
+        if (data.length < 3) return;
 
-        try {
-            // Данные для регрессии (индекс, значение)
-            const caloriesData = data.map((item, index) => [index, item.calories]);
-            const proteinData = data.map((item, index) => [index, item.protein]);
-            const carbsData = data.map((item, index) => [index, item.carbs]);
-            const fatData = data.map((item, index) => [index, item.fat]);
+        const predictions = [];
+        const lastDate = new Date(data[data.length - 1].date);
+        const nutrients = ['calories', 'protein', 'carbs', 'fat'];
 
-            // Расчет линейной регрессии
-            const caloriesResult = regression.linear(caloriesData);
-            const proteinResult = regression.linear(proteinData);
-            const carbsResult = regression.linear(carbsData);
-            const fatResult = regression.linear(fatData);
+        nutrients.forEach(nutrient => {
+            const values = data.map(item => item[nutrient]);
+            const result = regression.linear(
+                values.map((value, index) => [index, value])
+            );
 
-            // Прогноз на 7 дней вперед
-            const predictions = [];
-            const lastIndex = data.length - 1;
-            const lastDate = new Date(data[lastIndex].date);
-
+            // Прогноз на следующие 7 дней
             for (let i = 1; i <= 7; i++) {
                 const predictionDate = new Date(lastDate);
-                predictionDate.setDate(predictionDate.getDate() + i);
+                predictionDate.setDate(lastDate.getDate() + i);
+                const predictedValue = result.predict([data.length + i - 1])[1];
 
                 predictions.push({
-                    date: predictionDate.toLocaleDateString(),
-                    calories: Math.max(0, Math.round(caloriesResult.predict(lastIndex + i)[1])),
-                    protein: Math.max(0, Math.round(proteinResult.predict(lastIndex + i)[1])),
-                    carbs: Math.max(0, Math.round(carbsResult.predict(lastIndex + i)[1])),
-                    fat: Math.max(0, Math.round(fatResult.predict(lastIndex + i)[1])),
+                    date: predictionDate.toISOString().split('T')[0],
+                    [nutrient]: Math.round(predictedValue),
                     isPrediction: true
                 });
             }
+        });
 
-            setPredictions(predictions);
+        setPredictions(predictions);
+    };
+
+    // Функция загрузки данных
+    const loadData = () => {
+        try {
+            setIsLoading(true);
+            const today = new Date();
+            let startDate = new Date();
+            let endDate = new Date();
+
+            // Определяем диапазон дат в зависимости от выбранного периода
+            switch (timeRange) {
+                case 'week':
+                    startDate.setDate(today.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(today.getMonth() - 1);
+                    break;
+                case 'year':
+                    startDate.setFullYear(today.getFullYear() - 1);
+                    break;
+                default:
+                    startDate.setDate(today.getDate() - 7);
+            }
+
+            // Получаем данные о приемах пищи из контекста
+            const mealsData = meals || [];
+            
+            // Фильтруем данные по выбранному периоду
+            const filteredMeals = mealsData.filter(meal => {
+                const mealDate = new Date(meal.date);
+                return mealDate >= startDate && mealDate <= endDate;
+            });
+            
+            // Группируем данные по дням
+            const groupedData = {};
+            filteredMeals.forEach(meal => {
+                const date = new Date(meal.date).toISOString().split('T')[0];
+                if (!groupedData[date]) {
+                    groupedData[date] = {
+                        date,
+                        calories: 0,
+                        protein: 0,
+                        carbs: 0,
+                        fat: 0,
+                        meals: []
+                    };
+                }
+                groupedData[date].calories += parseInt(meal.calories) || 0;
+                groupedData[date].protein += parseInt(meal.protein) || 0;
+                groupedData[date].carbs += parseInt(meal.carbs) || 0;
+                groupedData[date].fat += parseInt(meal.fat) || 0;
+                groupedData[date].meals.push(meal);
+            });
+
+            // Преобразуем в массив для графика
+            const chartDataArray = Object.values(groupedData).sort((a, b) => 
+                new Date(a.date) - new Date(b.date)
+            );
+
+            // Добавляем данные о питательных веществах
+            const nutritionDataArray = chartDataArray.map(day => ({
+                date: day.date,
+                calories: day.calories,
+                protein: day.protein,
+                carbs: day.carbs,
+                fat: day.fat,
+                meals: day.meals
+            }));
+
+            setChartData(chartDataArray);
+            setNutritionData(nutritionDataArray);
+
+            // Генерируем прогнозы
+            if (showPredictions) {
+                generatePredictions(chartDataArray);
+            }
+
+            setSnackbar({
+                open: true,
+                message: t('Data loaded successfully'),
+                severity: 'success'
+            });
         } catch (error) {
-            console.error("Error generating predictions:", error);
-            setPredictions([]);
+            console.error('Error loading data:', error);
+            setSnackbar({
+                open: true,
+                message: t('Error loading data'),
+                severity: 'error'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Функция для получения данных о распределении калорий по типам приемов пищи
+    const getMealTypeDistribution = () => {
+        const distribution = {
+            breakfast: 0,
+            lunch: 0,
+            dinner: 0,
+            snack: 0
+        };
+
+        chartData.forEach(day => {
+            day.meals.forEach(meal => {
+                const type = meal.type?.toLowerCase() || 'snack';
+                if (distribution[type] !== undefined) {
+                    distribution[type] += parseInt(meal.calories) || 0;
+                }
+            });
+        });
+
+        return Object.entries(distribution).map(([name, value]) => ({
+            name: t(name.charAt(0).toUpperCase() + name.slice(1)),
+            value
+        }));
+    };
+
+    // Функция для получения данных о распределении калорий по времени суток
+    const getTimeOfDayDistribution = () => {
+        const distribution = {
+            morning: 0,
+            afternoon: 0,
+            evening: 0,
+            night: 0
+        };
+
+        chartData.forEach(day => {
+            day.meals.forEach(meal => {
+                const hour = new Date(meal.date).getHours();
+                if (hour >= 5 && hour < 12) distribution.morning += parseInt(meal.calories) || 0;
+                else if (hour >= 12 && hour < 17) distribution.afternoon += parseInt(meal.calories) || 0;
+                else if (hour >= 17 && hour < 22) distribution.evening += parseInt(meal.calories) || 0;
+                else distribution.night += parseInt(meal.calories) || 0;
+            });
+        });
+
+        return Object.entries(distribution).map(([name, value]) => ({
+            name: t(name.charAt(0).toUpperCase() + name.slice(1)),
+            calories: value
+        }));
+    };
+
+    // Функция загрузки данных для сравнения
+    const loadCompareData = () => {
+        try {
+            const { currentStart, currentEnd, compareStart, compareEnd } = compareDates;
+            
+            // Получаем данные для текущего периода
+            const currentData = getMealsByWeek(currentStart);
+            const compareData = getMealsByWeek(compareStart);
+
+            // Группируем данные по дням для обоих периодов
+            const processData = (meals, period) => {
+                const grouped = {};
+                meals.forEach(meal => {
+                    const date = new Date(meal.date).toISOString().split('T')[0];
+                    if (!grouped[date]) {
+                        grouped[date] = {
+                            date,
+                            calories: 0,
+                            protein: 0,
+                            carbs: 0,
+                            fat: 0
+                        };
+                    }
+                    grouped[date].calories += parseInt(meal.calories) || 0;
+                    grouped[date].protein += parseInt(meal.protein) || 0;
+                    grouped[date].carbs += parseInt(meal.carbs) || 0;
+                    grouped[date].fat += parseInt(meal.fat) || 0;
+                });
+                return Object.values(grouped).map(day => ({
+                    ...day,
+                    period
+                }));
+            };
+
+            const processedData = [
+                ...processData(currentData, 'current'),
+                ...processData(compareData, 'compare')
+            ];
+
+            setCompareData(processedData);
+        } catch (error) {
+            console.error('Error loading compare data:', error);
+            setSnackbar({
+                open: true,
+                message: t('Error loading compare data'),
+                severity: 'error'
+            });
         }
     };
 
@@ -455,11 +564,23 @@ const Analytics = () => {
         loadData();
     }, [timeRange, meals, compareMode]);
 
-    // Прокрутка к детальной аналитике
-    const scrollDown = () => {
-        if (analyticsRef.current) {
-            analyticsRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+    // Добавляем обработчик скролла
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            setShowScrollTop(scrollTop > 300);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Функция прокрутки вверх
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     };
 
     // Объединение текущих данных и прогнозов
@@ -473,255 +594,157 @@ const Analytics = () => {
     // Получение доступных цветов
     const COLORS = ['#FF7849', '#FF9F7E', '#FFB39E', '#FFD1C2'];
 
-    // Получение данных для отображения в зависимости от режима
-    const getActiveChartData = () => {
-        if (compareMode) {
-            return compareData;
-        }
-        return getDisplayData();
-    };
-
-    // Рендер линейного графика
+    // Функция рендеринга линейного графика
     const renderLineChart = () => (
-        <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
-            <LineChart data={getActiveChartData()}>
-                {chartSettings.showGrid && <CartesianGrid strokeDasharray="3 3" />}
-                <XAxis dataKey="date" />
+        <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+                data={getActiveChartData()}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                ref={chartRef}
+            >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                />
                 <YAxis />
-                <ReTooltip
-                    content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                            return (
-                                <div style={{
-                                    backgroundColor: theme.palette.background.paper,
-                                    padding: '10px',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '5px',
-                                    boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
-                                }}>
-                                    <p style={{ margin: 0 }}><strong>{label}</strong></p>
-                                    {payload.map((p, index) => (
-                                        <p key={index} style={{
-                                            margin: '5px 0',
-                                            color: p.color
-                                        }}>
-                                            {p.name}: {p.value}
-                                            {p.payload && p.payload.isPrediction &&
-                                                <span style={{
-                                                    fontSize: '0.8em',
-                                                    marginLeft: '5px',
-                                                    color: theme.palette.warning.main
-                                                }}>
-                                                    (прогноз)
-                                                </span>
-                                            }
-                                        </p>
-                                    ))}
-                                </div>
-                            );
-                        }
-                        return null;
-                    }}
+                <ReTooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    formatter={(value, name) => [`${value}${name === 'calories' ? ' ккал' : 'г'}`, t(name)]}
                 />
                 <Legend />
-
-                {/* Отображаем только выбранные в фильтрах питательные вещества */}
-                {filters.nutrients.includes('calories') && (
-                    <Line
-                        type={chartSettings.lineType}
-                        dataKey="calories"
-                        stroke={chartSettings.colors.calories}
-                        name={t('Calories')}
-                        dot={{ r: (point) => point.isPrediction ? 0 : 3 }}
-                        strokeDasharray={(point) => point && point.isPrediction ? "5 5" : "0"}
-                    />
-                )}
-                {filters.nutrients.includes('protein') && (
-                    <Line
-                        type={chartSettings.lineType}
-                        dataKey="protein"
-                        stroke={chartSettings.colors.protein}
-                        name={t('Protein')}
-                        dot={{ r: (point) => point.isPrediction ? 0 : 3 }}
-                        strokeDasharray={(point) => point && point.isPrediction ? "5 5" : "0"}
-                    />
-                )}
-                {filters.nutrients.includes('carbs') && (
-                    <Line
-                        type={chartSettings.lineType}
-                        dataKey="carbs"
-                        stroke={chartSettings.colors.carbs}
-                        name={t('Carbs')}
-                        dot={{ r: (point) => point.isPrediction ? 0 : 3 }}
-                        strokeDasharray={(point) => point && point.isPrediction ? "5 5" : "0"}
-                    />
-                )}
-                {filters.nutrients.includes('fat') && (
-                    <Line
-                        type={chartSettings.lineType}
-                        dataKey="fat"
-                        stroke={chartSettings.colors.fat}
-                        name={t('Fat')}
-                        dot={{ r: (point) => point.isPrediction ? 0 : 3 }}
-                        strokeDasharray={(point) => point && point.isPrediction ? "5 5" : "0"}
-                    />
-                )}
-
-                {/* Отображение средних значений */}
-                {chartSettings.showAverages && nutritionData.length > 0 && (
+                <Line 
+                    type="monotone" 
+                    dataKey="calories" 
+                    stroke={chartSettings.colors.calories} 
+                    name={t('Calories')}
+                    dot={{ r: 4 }}
+                />
+                <Line 
+                    type="monotone" 
+                    dataKey="protein" 
+                    stroke={chartSettings.colors.protein} 
+                    name={t('Protein')}
+                    dot={{ r: 4 }}
+                />
+                <Line 
+                    type="monotone" 
+                    dataKey="carbs" 
+                    stroke={chartSettings.colors.carbs} 
+                    name={t('Carbs')}
+                    dot={{ r: 4 }}
+                />
+                <Line 
+                    type="monotone" 
+                    dataKey="fat" 
+                    stroke={chartSettings.colors.fat} 
+                    name={t('Fat')}
+                    dot={{ r: 4 }}
+                />
+                {chartSettings.showTrends && (
                     <>
-                        {filters.nutrients.includes('calories') && (
-                            <ReferenceLine
-                                y={nutritionData[0].value}
-                                stroke={chartSettings.colors.calories}
-                                strokeDasharray="3 3"
-                                label={{
-                                    value: `Avg: ${nutritionData[0].value}`,
-                                    position: 'insideTopRight',
-                                    fill: chartSettings.colors.calories
-                                }}
-                            />
-                        )}
-                        {filters.nutrients.includes('protein') && (
-                            <ReferenceLine
-                                y={nutritionData[1].value}
-                                stroke={chartSettings.colors.protein}
-                                strokeDasharray="3 3"
-                                label={{
-                                    value: `Avg: ${nutritionData[1].value}`,
-                                    position: 'insideTopRight',
-                                    fill: chartSettings.colors.protein
-                                }}
-                            />
-                        )}
+                        <ReferenceLine y={2000} stroke="#ff0000" strokeDasharray="3 3" />
+                        <ReferenceLine y={2500} stroke="#00ff00" strokeDasharray="3 3" />
                     </>
-                )}
-
-                {/* Разделитель между фактическими данными и прогнозами */}
-                {showPredictions && predictions.length > 0 && (
-                    <ReferenceLine
-                        x={chartData[chartData.length-1].date}
-                        stroke="#666"
-                        strokeDasharray="3 3"
-                        label={{
-                            value: t('Forecast start'),
-                            position: 'insideTopRight',
-                            fill: '#666'
-                        }}
-                    />
-                )}
-
-                {compareMode && (
-                    <Brush dataKey="date" height={30} stroke="#8884d8" />
                 )}
             </LineChart>
         </ResponsiveContainer>
     );
 
-    // Рендер столбчатого графика
+    // Функция рендеринга столбчатого графика
     const renderBarChart = () => (
-        <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
-            <BarChart data={getActiveChartData()}>
-                {chartSettings.showGrid && <CartesianGrid strokeDasharray="3 3" />}
-                <XAxis dataKey="date" />
+        <ResponsiveContainer width="100%" height={400}>
+            <BarChart
+                data={getActiveChartData()}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                ref={chartRef}
+            >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                />
                 <YAxis />
-                <ReTooltip />
+                <ReTooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    formatter={(value, name) => [`${value}${name === 'calories' ? ' ккал' : 'г'}`, t(name)]}
+                />
                 <Legend />
-
-                {filters.nutrients.includes('calories') && (
-                    <Bar
-                        dataKey="calories"
-                        fill={chartSettings.colors.calories}
-                        name={t('Calories')}
-                        opacity={(data) => data.isPrediction ? 0.5 : 1}
-                    />
-                )}
-                {filters.nutrients.includes('protein') && (
-                    <Bar
-                        dataKey="protein"
-                        fill={chartSettings.colors.protein}
-                        name={t('Protein')}
-                        opacity={(data) => data.isPrediction ? 0.5 : 1}
-                    />
-                )}
-                {filters.nutrients.includes('carbs') && (
-                    <Bar
-                        dataKey="carbs"
-                        fill={chartSettings.colors.carbs}
-                        name={t('Carbs')}
-                        opacity={(data) => data.isPrediction ? 0.5 : 1}
-                    />
-                )}
-                {filters.nutrients.includes('fat') && (
-                    <Bar
-                        dataKey="fat"
-                        fill={chartSettings.colors.fat}
-                        name={t('Fat')}
-                        opacity={(data) => data.isPrediction ? 0.5 : 1}
-                    />
-                )}
-
-                {compareMode && (
-                    <Brush dataKey="date" height={30} stroke="#8884d8" />
-                )}
+                <Bar 
+                    dataKey="calories" 
+                    fill={chartSettings.colors.calories} 
+                    name={t('Calories')}
+                />
+                <Bar 
+                    dataKey="protein" 
+                    fill={chartSettings.colors.protein} 
+                    name={t('Protein')}
+                />
+                <Bar 
+                    dataKey="carbs" 
+                    fill={chartSettings.colors.carbs} 
+                    name={t('Carbs')}
+                />
+                <Bar 
+                    dataKey="fat" 
+                    fill={chartSettings.colors.fat} 
+                    name={t('Fat')}
+                />
             </BarChart>
         </ResponsiveContainer>
     );
 
-    // Рендер графика областей
+    // Функция рендеринга графика с областями
     const renderAreaChart = () => (
-        <ResponsiveContainer width="100%" height="100%" ref={chartRef}>
-            <AreaChart data={getActiveChartData()}>
-                {chartSettings.showGrid && <CartesianGrid strokeDasharray="3 3" />}
-                <XAxis dataKey="date" />
+        <ResponsiveContainer width="100%" height={400}>
+            <AreaChart
+                data={getActiveChartData()}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                ref={chartRef}
+            >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                />
                 <YAxis />
-                <ReTooltip />
+                <ReTooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    formatter={(value, name) => [`${value}${name === 'calories' ? ' ккал' : 'г'}`, t(name)]}
+                />
                 <Legend />
-
-                {filters.nutrients.includes('calories') && (
-                    <Area
-                        type={chartSettings.lineType}
-                        dataKey="calories"
-                        fill={chartSettings.colors.calories}
-                        stroke={chartSettings.colors.calories}
-                        name={t('Calories')}
-                        fillOpacity={0.3}
-                    />
-                )}
-                {filters.nutrients.includes('protein') && (
-                    <Area
-                        type={chartSettings.lineType}
-                        dataKey="protein"
-                        fill={chartSettings.colors.protein}
-                        stroke={chartSettings.colors.protein}
-                        name={t('Protein')}
-                        fillOpacity={0.3}
-                    />
-                )}
-                {filters.nutrients.includes('carbs') && (
-                    <Area
-                        type={chartSettings.lineType}
-                        dataKey="carbs"
-                        fill={chartSettings.colors.carbs}
-                        stroke={chartSettings.colors.carbs}
-                        name={t('Carbs')}
-                        fillOpacity={0.3}
-                    />
-                )}
-                {filters.nutrients.includes('fat') && (
-                    <Area
-                        type={chartSettings.lineType}
-                        dataKey="fat"
-                        fill={chartSettings.colors.fat}
-                        stroke={chartSettings.colors.fat}
-                        name={t('Fat')}
-                        fillOpacity={0.3}
-                    />
-                )}
-
-                {compareMode && (
-                    <Brush dataKey="date" height={30} stroke="#8884d8" />
-                )}
+                <Area 
+                    type="monotone" 
+                    dataKey="calories" 
+                    stackId="1" 
+                    stroke={chartSettings.colors.calories} 
+                    fill={chartSettings.colors.calories} 
+                    name={t('Calories')}
+                />
+                <Area 
+                    type="monotone" 
+                    dataKey="protein" 
+                    stackId="2" 
+                    stroke={chartSettings.colors.protein} 
+                    fill={chartSettings.colors.protein} 
+                    name={t('Protein')}
+                />
+                <Area 
+                    type="monotone" 
+                    dataKey="carbs" 
+                    stackId="3" 
+                    stroke={chartSettings.colors.carbs} 
+                    fill={chartSettings.colors.carbs} 
+                    name={t('Carbs')}
+                />
+                <Area 
+                    type="monotone" 
+                    dataKey="fat" 
+                    stackId="4" 
+                    stroke={chartSettings.colors.fat} 
+                    fill={chartSettings.colors.fat} 
+                    name={t('Fat')}
+                />
             </AreaChart>
         </ResponsiveContainer>
     );
@@ -740,7 +763,30 @@ const Analytics = () => {
     };
 
     return (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ 
+            p: 3,
+            height: '100vh',
+            overflowY: 'auto',
+            position: 'relative',
+            '&::-webkit-scrollbar': {
+                width: '8px',
+                height: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+                borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+                background: '#888',
+                borderRadius: '4px',
+                '&:hover': {
+                    background: '#555',
+                },
+            },
+            '&::-webkit-scrollbar-corner': {
+                background: '#f1f1f1',
+            }
+        }}>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -982,12 +1028,7 @@ const Analytics = () => {
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
-                                                data={[
-                                                    { name: t('Breakfast'), value: 300 },
-                                                    { name: t('Lunch'), value: 450 },
-                                                    { name: t('Dinner'), value: 400 },
-                                                    { name: t('Snacks'), value: 250 }
-                                                ]}
+                                                data={getMealTypeDistribution()}
                                                 cx="50%"
                                                 cy="50%"
                                                 labelLine={false}
@@ -1015,12 +1056,7 @@ const Analytics = () => {
                                 <Box sx={{ height: 300 }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
-                                            data={[
-                                                { name: t('Morning'), calories: 350 },
-                                                { name: t('Afternoon'), calories: 450 },
-                                                { name: t('Evening'), calories: 400 },
-                                                { name: t('Night'), calories: 200 }
-                                            ]}
+                                            data={getTimeOfDayDistribution()}
                                         >
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="name" />
@@ -1110,6 +1146,23 @@ const Analytics = () => {
                     </Grid>
                 )}
             </div>
+
+            {/* Добавляем кнопку прокрутки вверх */}
+            {showScrollTop && (
+                <Fab
+                    color="primary"
+                    aria-label="scroll to top"
+                    onClick={scrollToTop}
+                    sx={{
+                        position: 'fixed',
+                        bottom: 16,
+                        right: 16,
+                        zIndex: 1000
+                    }}
+                >
+                    <KeyboardArrowUpIcon />
+                </Fab>
+            )}
 
             {/* Диалог фильтрации */}
             <Dialog
