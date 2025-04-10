@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './styles/Login.css';
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from 'axios';
-import { auth } from "../config/firebase";
+import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from '../context/AuthContext';
+import { Button, TextField, Typography, Box, Alert } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 const translations = {
     en: {
@@ -39,9 +41,28 @@ const translations = {
     }
 };
 
+const LoginContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  padding: theme.spacing(3),
+  backgroundColor: theme.palette.background.default,
+}));
+
+const LoginForm = styled(Box)(({ theme }) => ({
+  width: '100%',
+  maxWidth: 400,
+  padding: theme.spacing(4),
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[3],
+}));
+
 const Login = () => {
     const location = useLocation();
-    const { login } = useAuth();
+    const { user } = useAuth();
 
     // Get theme from state or localStorage, default is dark
     const themeFromNav = location.state?.darkMode !== undefined ?
@@ -83,15 +104,36 @@ const Login = () => {
     // Send UID to backend for session verification with fallback
     const sendUserIdToBackend = async (uid, user) => {
         try {
-            const response = await axios.post("http://localhost:5000/api/user/login", { uid }, {
-                timeout: 5000 // Set a timeout of 5 seconds
-            });
+            const response = await axios.post("/api/user/login", 
+                { uid },
+                {
+                    timeout: 5000,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    withCredentials: true
+                }
+            );
             console.log("Response from backend:", response.data);
             return response.data;
         } catch (error) {
-            console.error("Error sending UID to backend:", error.message);
-            // Instead of throwing an error, return a default value
-            // that indicates the backend is not available
+            console.error("Error sending UID to backend:", error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.error("Error response data:", error.response.data);
+                console.error("Error response status:", error.response.status);
+                console.error("Error response headers:", error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error("No response received:", error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error("Error setting up request:", error.message);
+            }
+            
+            // Return a default value that indicates the backend is not available
             return {
                 success: false,
                 backendAvailable: false,
@@ -100,53 +142,16 @@ const Login = () => {
         }
     };
 
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!email || !password) {
-            setError(t.errorEmpty);
-            return;
-        }
-
+        setError('');
         setLoading(true);
-        setError("");
-        setWarning("");
 
         try {
-            // 1. Authenticate with Firebase through AuthContext
-            const firebaseUser = await login(email, password);
-            console.log("User logged in:", firebaseUser);
-
-            // 2. Try to communicate with backend
-            const backendResponse = await sendUserIdToBackend(
-                firebaseUser.uid,
-                firebaseUser
-            );
-
-            // 3. Check if backend is available
-            if (!backendResponse.backendAvailable) {
-                setWarning(t.backendError);
-            }
-
-            // 4. Navigate to profile with state (even if backend failed)
-            navigate("/profile", {
-                state: {
-                    language: language,
-                    darkMode: theme === 'dark',
-                    backendAvailable: backendResponse.backendAvailable || false
-                }
-            });
+            await signInWithEmailAndPassword(auth, email, password);
+            navigate('/dashboard');
         } catch (error) {
-            console.error("Login error:", error.code, error.message);
-
-            // Firebase error handling
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                setError(t.errorInvalidCredentials);
-            } else if (error.code === 'auth/too-many-requests') {
-                setError(t.errorTooManyAttempts);
-            } else {
-                setError(t.errorGeneral);
-            }
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -165,67 +170,63 @@ const Login = () => {
         });
     };
 
+    if (user) {
+        navigate('/dashboard');
+        return null;
+    }
+
     return (
-        <div className={`login-container ${theme}`}>
-            <div className="login-box">
-                <h1 className="form-title">{t.loginTitle}</h1>
+        <LoginContainer>
+            <LoginForm component="form" onSubmit={handleSubmit}>
+                <Typography variant="h4" component="h1" gutterBottom align="center">
+                    {t.loginTitle}
+                </Typography>
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                <TextField
+                    fullWidth
+                    label={t.emailLabel}
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                    }}
+                    margin="normal"
+                    required
+                />
+                <TextField
+                    fullWidth
+                    label={t.passwordLabel}
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        setError("");
+                    }}
+                    margin="normal"
+                    required
+                />
+                <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    disabled={loading}
+                    sx={{ mt: 3 }}
+                >
+                    {loading ? 'Logging in...' : t.loginButton}
+                </Button>
+            </LoginForm>
 
-                {error && (
-                    <div className="error-message">
-                        {error}
-                    </div>
-                )}
-
-                {warning && !error && (
-                    <div className="warning-message">
-                        {warning}
-                    </div>
-                )}
-
-                <form onSubmit={handleLogin}>
-                    <div className="input-group">
-                        <label>{t.emailLabel}</label>
-                        <input
-                            type="email"
-                            placeholder={t.emailPlaceholder}
-                            value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                                setError("");
-                            }}
-                        />
-                    </div>
-                    <div className="input-group">
-                        <label>{t.passwordLabel}</label>
-                        <input
-                            type="password"
-                            placeholder={t.passwordPlaceholder}
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError("");
-                            }}
-                        />
-                    </div>
-                    <button
-                        className="login-button"
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? <div className="spinner"></div> : t.loginButton}
-                    </button>
-                </form>
-
-                <div className="auth-links">
-                    <a href="#" onClick={handleForgotPassword}>{t.forgotPassword}</a> | <a href="#" onClick={handleRegister}>{t.register}</a>
-                </div>
+            <div className="auth-links">
+                <a href="#" onClick={handleForgotPassword}>{t.forgotPassword}</a> | <a href="#" onClick={handleRegister}>{t.register}</a>
             </div>
 
             {/* Theme toggle button */}
             <button className="theme-toggle" onClick={toggleTheme}>
                 {theme === 'dark' ? '🌞' : '🌙'}
             </button>
-        </div>
+        </LoginContainer>
     );
 };
 

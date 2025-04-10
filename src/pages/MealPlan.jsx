@@ -89,7 +89,7 @@ const ScrollableContainer = styled(Box)(({ theme }) => ({
     }
 }));
 
-const StyledCard = styled(motion.create(Card))(({ theme }) => ({
+const StyledCard = styled(Card)(({ theme }) => ({
     background: 'rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(10px)',
     borderRadius: '16px',
@@ -102,7 +102,7 @@ const StyledCard = styled(motion.create(Card))(({ theme }) => ({
     },
 }));
 
-const StyledDialog = styled(motion.create(Dialog))(({ theme }) => ({
+const StyledDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialog-paper': {
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(10px)',
@@ -112,7 +112,7 @@ const StyledDialog = styled(motion.create(Dialog))(({ theme }) => ({
     },
 }));
 
-const StyledTextField = styled(motion.create(TextField))(({ theme }) => ({
+const StyledTextField = styled(TextField)(({ theme }) => ({
     '& .MuiOutlinedInput-root': {
         '& fieldset': {
             borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -133,9 +133,9 @@ const StyledTextField = styled(motion.create(TextField))(({ theme }) => ({
     },
 }));
 
-const MotionCard = motion.create(StyledCard);
-const MotionDiv = motion.create('div');
-const MotionBox = motion.create(Box);
+const MotionCard = motion(Card);
+const MotionDiv = motion.div;
+const MotionBox = motion(Box);
 
 const COLORS = ['#FF7849', '#FF9F7E', '#FFB39E', '#FFD1C2'];
 const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];

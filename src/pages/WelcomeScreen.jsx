@@ -48,7 +48,9 @@ const WelcomeScreen = () => {
     const [language, setLanguage] = useState(savedLanguage || "en");
     const navigate = useNavigate();
 
-    const t = translations[language];
+    // Ensure we have a valid language
+    const currentLanguage = language || "en";
+    const t = translations[currentLanguage] || translations.en;
 
     useEffect(() => {
         const timer = setTimeout(() => setLoading(false), 1500);
@@ -57,17 +59,17 @@ const WelcomeScreen = () => {
 
     useEffect(() => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-        localStorage.setItem('language', language);
-    }, [darkMode, language]);
+        localStorage.setItem('language', currentLanguage);
+    }, [darkMode, currentLanguage]);
 
     const handleStart = () => {
         localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-        localStorage.setItem('language', language);
+        localStorage.setItem('language', currentLanguage);
 
         navigate('/login', {
             state: {
                 darkMode,
-                language
+                language: currentLanguage
             }
         });
     };

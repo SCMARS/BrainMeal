@@ -1,6 +1,11 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import { useLanguage } from '../../context/LanguageContext';
+
+const defaultTranslations = {
+    somethingWentWrong: 'Something went wrong',
+    errorOccurred: 'An error occurred. Please try refreshing the page.',
+    refreshPage: 'Refresh Page'
+};
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -33,17 +38,17 @@ class ErrorBoundary extends React.Component {
                     p={3}
                 >
                     <Typography variant="h4" gutterBottom color="error">
-                        {this.props.t('somethingWentWrong')}
+                        {defaultTranslations.somethingWentWrong}
                     </Typography>
                     <Typography variant="body1" color="textSecondary" paragraph>
-                        {this.props.t('errorOccurred')}
+                        {defaultTranslations.errorOccurred}
                     </Typography>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={() => window.location.reload()}
                     >
-                        {this.props.t('refreshPage')}
+                        {defaultTranslations.refreshPage}
                     </Button>
                 </Box>
             );
@@ -53,9 +58,4 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-const ErrorBoundaryWrapper = (props) => {
-    const { t } = useLanguage();
-    return <ErrorBoundary {...props} t={t} />;
-};
-
-export default ErrorBoundaryWrapper; 
+export default ErrorBoundary; 

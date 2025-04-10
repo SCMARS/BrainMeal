@@ -64,146 +64,148 @@ const RouteWrapper = ({ children }) => {
 
 function App() {
     return (
-        <ThemeProvider>
-            <AuthProvider>
+        <ErrorBoundary>
+            <ThemeProvider>
                 <LanguageProvider>
-                    <ErrorBoundary>
+                    <AuthProvider>
                         <NotificationProvider>
                             <MealPlanProvider>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <Router>
+                                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                                         <Notification />
-                                        <Routes>
-                                            <Route path="/" element={<WelcomeScreen />} />
-                                            <Route path="/login" element={<Login />} />
-                                            <Route path="/register" element={<Register />} />
-                                            
-                                            {/* Protected Routes */}
-                                            <Route path="/dashboard" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
+                                        <RouteWrapper>
+                                            <Routes>
+                                                <Route path="/" element={<WelcomeScreen />} />
+                                                <Route path="/login" element={<Login />} />
+                                                <Route path="/register" element={<Register />} />
+                                                
+                                                {/* Protected Routes */}
+                                                <Route path="/dashboard" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Dashboard />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/home" element={
+                                                    <Layout>
                                                         <RouteWrapper>
-                                                            <Dashboard />
+                                                            <Home />
                                                         </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/home" element={
-                                                <Layout>
-                                                    <RouteWrapper>
-                                                        <Home />
-                                                    </RouteWrapper>
-                                                </Layout>
-                                            } />
-                                            <Route path="/profile" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Profile />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/meal-plan" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <MealPlan />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/recipes" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Recipes />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/analytics" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Analytics />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/social" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Social />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/education" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Education />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/settings" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Settings />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/achievements" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Achievements />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/calendar" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <Calendar />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/shopping-list" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <ShoppingList />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/calorie-calculator" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <RouteWrapper>
-                                                            <CalorieCalculator />
-                                                        </RouteWrapper>
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="*" element={<Navigate to="/" replace />} />
-                                        </Routes>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/profile" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Profile />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/meal-plan" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <MealPlan />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/recipes" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Recipes />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/analytics" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Analytics />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/social" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Social />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/education" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Education />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/settings" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Settings />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/achievements" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Achievements />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/calendar" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <Calendar />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/shopping-list" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <ShoppingList />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="/calorie-calculator" element={
+                                                    <Layout>
+                                                        <ProtectedRoute>
+                                                            <RouteWrapper>
+                                                                <CalorieCalculator />
+                                                            </RouteWrapper>
+                                                        </ProtectedRoute>
+                                                    </Layout>
+                                                } />
+                                                <Route path="*" element={<Navigate to="/" replace />} />
+                                            </Routes>
+                                        </RouteWrapper>
                                     </Router>
                                 </LocalizationProvider>
                             </MealPlanProvider>
                         </NotificationProvider>
-                    </ErrorBoundary>
+                    </AuthProvider>
                 </LanguageProvider>
-            </AuthProvider>
-        </ThemeProvider>
+            </ThemeProvider>
+        </ErrorBoundary>
     );
 }
 

@@ -13,10 +13,12 @@ import { auth } from '../firebase';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+    return useContext(AuthContext);
+}
 
-export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+export function AuthProvider({ children }) {
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }) => {
             });
 
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setCurrentUser(user);
+            setUser(user);
             setLoading(false);
         });
 
@@ -78,7 +80,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     const value = {
-        currentUser,
+        user,
+        loading,
         signup,
         login,
         loginWithGoogle,
@@ -90,4 +93,4 @@ export const AuthProvider = ({ children }) => {
             {!loading && children}
         </AuthContext.Provider>
     );
-}; 
+} 

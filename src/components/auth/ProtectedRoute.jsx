@@ -1,11 +1,21 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Box, CircularProgress } from '@mui/material';
 
 export default function ProtectedRoute({ children }) {
-    const { user, isLoading } = useAuth();
+    const { user, loading } = useAuth();
 
-    if (isLoading) {
-        return <div>Loading...</div>;
+    if (loading) {
+        return (
+            <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minHeight="100vh"
+            >
+                <CircularProgress />
+            </Box>
+        );
     }
 
     if (!user) {
