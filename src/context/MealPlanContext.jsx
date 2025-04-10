@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { generateMealPlan } from '../services/mealPlanService';
+import { getDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { generateMealPlan as generateMealPlanService } from '../services/geminiService';
+import logger from '../utils/logger';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const MealPlanContext = createContext();
 
@@ -15,56 +18,44 @@ export const useMealPlan = () => {
 };
 
 export const MealPlanProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, getIdToken } = useAuth();
     const [mealPlan, setMealPlan] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [meals, setMeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [generatedPlansCount, setGeneratedPlansCount] = useState(0);
+
+    const getAuthHeader = async () => {
+        const token = await getIdToken();
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+    };
 
     useEffect(() => {
         if (user) {
-            fetchMeals();
+            fetchMealPlan();
         } else {
             setMeals([]);
             setLoading(false);
         }
     }, [user]);
 
-    useEffect(() => {
-        const loadMealPlan = () => {
-            try {
-                const storedPlan = localStorage.getItem('mealPlan');
-                if (storedPlan) {
-                    const parsedPlan = JSON.parse(storedPlan);
-                    setMeals(parsedPlan.plan || []);
-                }
-            } catch (err) {
-                console.error('Error loading meal plan:', err);
-                setError('Ошибка загрузки плана питания');
-            }
-        };
-
-        loadMealPlan();
-    }, []);
-
-    useEffect(() => {
-        if (mealPlan && mealPlan.length > 0) {
-            localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
-        }
-    }, [mealPlan]);
-
-    const fetchMeals = async () => {
+    const fetchMealPlan = async () => {
         try {
             setLoading(true);
-            const mealsRef = collection(db, 'meals');
-            const q = query(mealsRef, where('userId', '==', user.uid));
-            const querySnapshot = await getDocs(q);
-            const mealsData = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setMeals(mealsData);
+            const headers = await getAuthHeader();
+            const response = await fetch(`${API_URL}/meal-plan`, { headers });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch meal plan');
+            }
+
+            const data = await response.json();
+            setMealPlan(data);
+            setMeals(data.plan || []);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -72,40 +63,99 @@ export const MealPlanProvider = ({ children }) => {
         }
     };
 
-    const addMeal = async (mealData) => {
+    const generateMealPlan = async (userProfile) => {
+        if (!user) {
+            setError('User not authenticated');
+            return;
+        }
+
         try {
-            const mealsRef = collection(db, 'meals');
-            const docRef = await addDoc(mealsRef, {
-                ...mealData,
-                userId: user.uid,
-                createdAt: new Date().toISOString()
+            setIsLoading(true);
+            setError(null);
+
+            // Validate required fields
+            const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
+            const missingFields = requiredFields.filter(field => !userProfile[field]);
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+            }
+
+            // Validate numeric fields
+            const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
+            const invalidFields = numericFields.filter(field => {
+                const value = userProfile[field];
+                return isNaN(value) || value <= 0;
             });
-            setMeals(prev => [...prev, { id: docRef.id, ...mealData }]);
-            return docRef.id;
+
+            if (invalidFields.length > 0) {
+                throw new Error(`Invalid values for fields: ${invalidFields.join(', ')}`);
+            }
+
+            // Prepare user profile data
+            const profileData = {
+                ...userProfile,
+                age: Number(userProfile.age),
+                weight: Number(userProfile.weight),
+                height: Number(userProfile.height),
+                calorieTarget: Number(userProfile.calorieTarget),
+                dietaryPreferences: userProfile.dietaryPreferences || [],
+                allergies: userProfile.allergies || [],
+                activityLevel: userProfile.activityLevel,
+                dietType: userProfile.dietType
+            };
+
+            const generatedPlan = await generateMealPlan(profileData);
+            
+            if (generatedPlan) {
+                setMealPlan(generatedPlan);
+                await saveMealPlan(generatedPlan);
+                setGeneratedPlansCount(prev => prev + 1);
+                localStorage.setItem('generatedPlansCount', generatedPlansCount + 1);
+            }
+        } catch (error) {
+            logger.error('Error generating meal plan:', error);
+            setError(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const updateMealPlan = async (newPlan) => {
+        try {
+            const headers = await getAuthHeader();
+            const response = await fetch(`${API_URL}/meal-plan/${mealPlan.id}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ plan: newPlan })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update meal plan');
+            }
+
+            setMeals(newPlan);
+            setMealPlan(prev => ({ ...prev, plan: newPlan }));
         } catch (err) {
             setError(err.message);
             throw err;
         }
     };
 
-    const updateMeal = async (mealId, mealData) => {
+    const deleteMealPlan = async () => {
         try {
-            const mealRef = doc(db, 'meals', mealId);
-            await updateDoc(mealRef, mealData);
-            setMeals(prev => prev.map(meal => 
-                meal.id === mealId ? { ...meal, ...mealData } : meal
-            ));
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        }
-    };
+            const headers = await getAuthHeader();
+            const response = await fetch(`${API_URL}/meal-plan/${mealPlan.id}`, {
+                method: 'DELETE',
+                headers
+            });
 
-    const deleteMeal = async (mealId) => {
-        try {
-            const mealRef = doc(db, 'meals', mealId);
-            await deleteDoc(mealRef);
-            setMeals(prev => prev.filter(meal => meal.id !== mealId));
+            if (!response.ok) {
+                throw new Error('Failed to delete meal plan');
+            }
+
+            setMealPlan(null);
+            setMeals([]);
         } catch (err) {
             setError(err.message);
             throw err;
@@ -138,87 +188,19 @@ export const MealPlanProvider = ({ children }) => {
         }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
     };
 
-    const generateMealPlan = async (userData, existingMeals = []) => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            // Validate required user profile fields
-            const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
-            const missingFields = requiredFields.filter(field => !userData[field]);
-            
-            if (missingFields.length > 0) {
-                throw new Error(`Missing required profile fields: ${missingFields.join(', ')}. Please complete your profile first.`);
-            }
-
-            // Ensure numeric fields are numbers
-            const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
-            const invalidFields = numericFields.filter(field => 
-                userData[field] && isNaN(Number(userData[field]))
-            );
-            
-            if (invalidFields.length > 0) {
-                throw new Error(`Invalid numeric values in fields: ${invalidFields.join(', ')}`);
-            }
-
-            // Prepare the user profile data
-            const userProfile = {
-                age: Number(userData.age),
-                gender: userData.gender,
-                weight: Number(userData.weight),
-                height: Number(userData.height),
-                dietType: userData.dietType,
-                calorieTarget: Number(userData.calorieTarget),
-                activityLevel: userData.activityLevel,
-                foodPreferences: userData.dietaryPreferences || [],
-                allergies: userData.allergies || []
-            };
-
-            const plan = await generateMealPlanService(userProfile, existingMeals);
-            setMealPlan(plan);
-
-            // Увеличиваем счетчик сгенерированных планов
-            const planCount = parseInt(localStorage.getItem('mealPlanCount') || '0');
-            localStorage.setItem('mealPlanCount', (planCount + 1).toString());
-
-            return plan;
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const updateMealPlan = (newPlan) => {
-        try {
-            setMeals(newPlan);
-            const mealPlan = {
-                plan: newPlan,
-                lastUpdated: new Date().toISOString()
-            };
-            localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
-        } catch (err) {
-            console.error('Error updating meal plan:', err);
-            setError('Ошибка обновления плана питания');
-        }
-    };
-
     const value = {
         mealPlan,
-        isLoading,
         meals,
+        isLoading,
         loading,
         error,
-        addMeal,
-        updateMeal,
-        deleteMeal,
+        generateMealPlan,
+        updateMealPlan,
+        deleteMealPlan,
         getMealsByDate,
         getMealsByWeek,
         getNutritionSummary,
-        refreshMeals: fetchMeals,
-        generateMealPlan,
-        updateMealPlan
+        generatedPlansCount
     };
 
     return (

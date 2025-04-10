@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useMealPlan } from '../context/MealPlanContext';
-import { updateProfileData } from '../services/profileService';
+import { saveProfileData, getProfileData, updateProfileData } from '../services/profileService';
 import { styled } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -32,7 +32,9 @@ import {
     DialogContent,
     DialogActions,
     Chip,
-    Tooltip
+    Tooltip,
+    Container,
+    Paper
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -41,25 +43,29 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
+import logger from '../utils/logger';
+import {
+    Cancel as CancelIcon,
+    AddPhotoAlternate as AddPhotoIcon
+} from '@mui/icons-material';
 
 const ScrollableContainer = styled(Box)(({ theme }) => ({
-    height: '100%',
+    height: '100vh',
     overflowY: 'auto',
+    padding: theme.spacing(2),
     '&::-webkit-scrollbar': {
         width: '8px',
     },
     '&::-webkit-scrollbar-track': {
-        background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-        borderRadius: '4px',
+        background: theme.palette.background.default,
     },
     '&::-webkit-scrollbar-thumb': {
         background: theme.palette.primary.main,
         borderRadius: '4px',
-        '&:hover': {
-            background: theme.palette.primary.dark,
-        },
     },
 }));
 
@@ -72,6 +78,9 @@ const Profile = () => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const profileRef = useRef(null);
+    const mountedRef = useRef(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [profileData, setProfileData] = useState({
         name: '',
         email: '',
@@ -130,8 +139,6 @@ const Profile = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -196,60 +203,54 @@ const Profile = () => {
     const [settings, setSettings] = useState({});
     const [showPreferencesDialog, setShowPreferencesDialog] = useState(false);
     const [preferences, setPreferences] = useState({});
-    const [mountedRef, setMountedRef] = useState(true);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+    const fileInputRef = useRef(null);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
 
     const getUserProfile = async () => {
         if (!user) return;
         try {
-            setLoading(true);
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) {
-                setProfileData(userDoc.data());
+            setIsLoading(true);
+            setError(null);
+            const profileData = await getProfileData();
+            if (mountedRef.current) {
+                setProfileData(profileData);
             }
         } catch (error) {
-            console.error('Error loading profile:', error);
-            setError(error.message);
+            logger.error('Error loading profile:', error);
+            if (mountedRef.current) {
+                setError(error.message);
+            }
         } finally {
-            setLoading(false);
+            if (mountedRef.current) {
+                setIsLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        setMountedRef(true);
+        mountedRef.current = true;
         getUserProfile();
 
-        // Store the cleanup function
-        const cleanup = navigate((location) => {
-            if (!mountedRef) return;
-            setIsEditing(false);
-            setProfileData(prev => ({ ...prev }));
-        });
-
         return () => {
-            setMountedRef(false);
-            if (typeof cleanup === 'function') {
-                cleanup();
-            }
+            mountedRef.current = false;
         };
-    }, [user, navigate, mountedRef]);
+    }, [user]);
 
-    // Remove the duplicate useEffect for navigation
     useEffect(() => {
-        if (!mountedRef) return;
-
-        const handleNavigation = () => {
-            if (location.pathname === '/profile') {
-                window.scrollTo(0, 0);
-                setIsEditing(false);
-            }
-        };
-
-        handleNavigation();
-    }, [location, mountedRef]);
+        if (location.pathname === '/profile') {
+            window.scrollTo(0, 0);
+            setIsEditing(false);
+        }
+    }, [location]);
 
     // Handle scroll
     useEffect(() => {
-        if (!mountedRef) return;
+        if (!mountedRef.current) return;
 
         const handleScroll = () => {
             if (profileRef.current) {
@@ -385,54 +386,64 @@ const Profile = () => {
         }
     }, [user, mealPlan, achievements]);
 
-    // Обработка сохранения профиля
+    const handleCloseSnackbar = () => {
+        setSnackbar(prev => ({ ...prev, open: false }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Validate required fields
-        const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
-        const missingFields = requiredFields.filter(field => !profileData[field]);
-        
-        if (missingFields.length > 0) {
-            alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
-            return;
-        }
-
-        // Validate numeric fields
-        const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
-        const invalidFields = numericFields.filter(field => 
-            profileData[field] && isNaN(Number(profileData[field]))
-        );
-        
-        if (invalidFields.length > 0) {
-            alert(`Please enter valid numbers for: ${invalidFields.join(', ')}`);
-            return;
-        }
-
         try {
             setIsLoading(true);
-            const updatedUserData = await updateProfileData(user, {
+            setError(null);
+
+            // Validate required fields
+            const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
+            const missingFields = requiredFields.filter(field => !profileData[field]);
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+            }
+
+            // Validate numeric fields
+            const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
+            const invalidFields = numericFields.filter(field => {
+                const value = profileData[field];
+                return isNaN(value) || value <= 0;
+            });
+
+            if (invalidFields.length > 0) {
+                throw new Error(`Invalid values for fields: ${invalidFields.join(', ')}`);
+            }
+
+            // Prepare data for saving
+            const dataToSave = {
                 ...profileData,
                 age: Number(profileData.age),
                 weight: Number(profileData.weight),
                 height: Number(profileData.height),
-                calorieTarget: Number(profileData.calorieTarget)
-            });
+                calorieTarget: Number(profileData.calorieTarget),
+                lastUpdated: new Date().toISOString()
+            };
+
+            // Save to MongoDB
+            const savedData = await updateProfileData(dataToSave);
             
-            // Обновляем состояние редактирования
+            // Update local state
+            setProfileData(savedData);
             setIsEditing(false);
             
-            // Показываем уведомление об успехе
+            // Show success message
             setSnackbar({
                 open: true,
                 message: t('Profile updated successfully'),
                 severity: 'success'
             });
         } catch (error) {
-            console.error('Error updating profile:', error);
+            logger.error('Error updating profile:', error);
+            setError(error.message);
             setSnackbar({
                 open: true,
-                message: t('Error updating profile'),
+                message: error.message,
                 severity: 'error'
             });
         } finally {
@@ -457,487 +468,569 @@ const Profile = () => {
         tap: { scale: 0.95 }
     };
 
+    const handlePhotoClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handlePhotoChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            setIsUploadingPhoto(true);
+            setError(null);
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                throw new Error('Please upload an image file');
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('File size should be less than 5MB');
+            }
+
+            // Create a reference to the file location in Firebase Storage
+            const storageRef = ref(storage, `profile-photos/${user.uid}/${file.name}`);
+            
+            // Upload the file
+            await uploadBytes(storageRef, file);
+            
+            // Get the download URL
+            const downloadURL = await getDownloadURL(storageRef);
+            
+            // Update profile in MongoDB
+            const updatedProfile = await updateProfileData({
+                ...profileData,
+                photoURL: downloadURL
+            });
+
+            // Update local state
+            setProfileData(updatedProfile);
+
+            logger.info('Profile photo uploaded successfully');
+        } catch (error) {
+            logger.error('Error uploading profile photo:', error);
+            setError(error.message);
+        } finally {
+            setIsUploadingPhoto(false);
+        }
+    };
+
     return (
         <ScrollableContainer ref={profileRef}>
-            <Box sx={{ p: 3 }}>
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <Typography variant="h4" gutterBottom>
-                        {t('Profile')}
-                    </Typography>
-                </motion.div>
-
-                <Grid container spacing={3} ref={profileRef}>
-                    {/* Основная информация */}
-                    <Grid item xs={12} md={4}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    height: '100%',
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.light}15, ${theme.palette.primary.main}15)`,
-                                    border: `1px solid ${theme.palette.primary.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
+            <Container maxWidth="md">
+                <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+                    <Grid container spacing={3}>
+                        {/* Основная информация */}
+                        <Grid item xs={12} md={4}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5 }}
                             >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <Avatar
-                                            sx={{
-                                                width: 80,
-                                                height: 80,
-                                                bgcolor: theme.palette.primary.main,
-                                                fontSize: '2rem',
-                                                marginRight: 2
-                                            }}
-                                        >
-                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </Avatar>
-                                        <Box>
-                                            <Typography variant="h5" gutterBottom>
-                                                {user?.name || t('User')}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                {user?.email || t('No email provided')}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                        <Typography variant="subtitle2" color="textSecondary">
-                                            {t('Member since')}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            {new Date(user?.createdAt).toLocaleDateString()}
-                                        </Typography>
-                                    </Box>
-
-                                    <Divider sx={{ my: 2 }} />
-
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                        <Typography variant="subtitle2" color="textSecondary">
-                                            {t('Last login')}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            {new Date(user?.lastLogin).toLocaleDateString()}
-                                        </Typography>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Grid>
-
-                    {/* Цели и предпочтения */}
-                    <Grid item xs={12} md={8}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    height: '100%',
-                                    background: `linear-gradient(135deg, ${theme.palette.secondary.light}15, ${theme.palette.secondary.main}15)`,
-                                    border: `1px solid ${theme.palette.secondary.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
-                            >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                        <Typography variant="h6">
-                                            {t('Goals & Preferences')}
-                                        </Typography>
-                                        <motion.div
-                                            variants={buttonVariants}
-                                            whileHover="hover"
-                                            whileTap="tap"
-                                        >
-                                            <IconButton
-                                                onClick={() => setIsEditing(!isEditing)}
-                                                color={isEditing ? 'primary' : 'default'}
-                                            >
-                                                {isEditing ? <SaveIcon /> : <EditIcon />}
-                                            </IconButton>
-                                        </motion.div>
-                                    </Box>
-
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} sm={6}>
-                                            <FormControl fullWidth disabled={!isEditing}>
-                                                <InputLabel>{t('Activity Level')}</InputLabel>
-                                                <Select
-                                                    value={profileData?.activityLevel || ''}
-                                                    onChange={(e) => setProfileData(prev => ({ ...prev, activityLevel: e.target.value }))}
-                                                    disabled={!isEditing}
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        height: '100%',
+                                        background: `linear-gradient(135deg, ${theme.palette.primary.light}15, ${theme.palette.primary.main}15)`,
+                                        border: `1px solid ${theme.palette.primary.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, position: 'relative' }}>
+                                            <Box sx={{ position: 'relative' }}>
+                                                <Avatar
+                                                    src={profileData.photoURL}
+                                                    sx={{
+                                                        width: 80,
+                                                        height: 80,
+                                                        bgcolor: theme.palette.primary.main,
+                                                        fontSize: '2rem',
+                                                        marginRight: 2,
+                                                        cursor: 'pointer',
+                                                        '&:hover': {
+                                                            opacity: 0.8
+                                                        }
+                                                    }}
+                                                    onClick={handlePhotoClick}
                                                 >
-                                                    <MenuItem value="sedentary">Sedentary</MenuItem>
-                                                    <MenuItem value="light">Light</MenuItem>
-                                                    <MenuItem value="moderate">Moderate</MenuItem>
-                                                    <MenuItem value="active">Active</MenuItem>
-                                                    <MenuItem value="very_active">Very Active</MenuItem>
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={6}>
-                                            <FormControl fullWidth disabled={!isEditing}>
-                                                <InputLabel>{t('Diet Type')}</InputLabel>
-                                                <Select
-                                                    value={profileData?.dietType || ''}
-                                                    onChange={(e) => setProfileData(prev => ({ ...prev, dietType: e.target.value }))}
-                                                    disabled={!isEditing}
-                                                >
-                                                    <MenuItem value="balanced">Balanced</MenuItem>
-                                                    <MenuItem value="keto">Keto</MenuItem>
-                                                    <MenuItem value="vegetarian">Vegetarian</MenuItem>
-                                                    <MenuItem value="vegan">Vegan</MenuItem>
-                                                    <MenuItem value="paleo">Paleo</MenuItem>
-                                                    <MenuItem value="mediterranean">Mediterranean</MenuItem>
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-
-                                        <Grid item xs={12}>
-                                            <FormControl fullWidth>
-                                                <InputLabel>{t('Health Goals')}</InputLabel>
-                                                <Select
-                                                    multiple
-                                                    value={profileData?.healthGoals || []}
-                                                    onChange={(e) => setProfileData(prev => ({ ...prev, healthGoals: e.target.value }))}
-                                                    disabled={!isEditing}
-                                                >
-                                                    <MenuItem value="weight_loss">{t('Weight Loss')}</MenuItem>
-                                                    <MenuItem value="muscle_gain">{t('Muscle Gain')}</MenuItem>
-                                                    <MenuItem value="maintenance">{t('Maintenance')}</MenuItem>
-                                                    <MenuItem value="energy">{t('Energy')}</MenuItem>
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-                                    </Grid>
-
-                                    {isEditing && (
-                                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                                            <motion.div
-                                                variants={buttonVariants}
-                                                whileHover="hover"
-                                                whileTap="tap"
-                                            >
-                                                <Button
-                                                    variant="contained"
-                                                    startIcon={<SaveIcon />}
-                                                    onClick={handleSubmit}
-                                                >
-                                                    {t('Save Changes')}
-                                                </Button>
-                                            </motion.div>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Grid>
-
-                    {/* Физические параметры */}
-                    <Grid item xs={12} md={6}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5, delay: 0.3 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    height: '100%',
-                                    background: `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`,
-                                    border: `1px solid ${theme.palette.success.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
-                            >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <FitnessCenterIcon sx={{ mr: 1, color: theme.palette.success.main }} />
-                                        <Typography variant="h6">
-                                            {t('Physical Parameters')}
-                                        </Typography>
-                                    </Box>
-
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Age')}
-                                                type="number"
-                                                value={profileData?.age || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={6}>
-                                            <FormControl fullWidth>
-                                                <InputLabel>{t('Gender')}</InputLabel>
-                                                <Select
-                                                    value={profileData?.gender || ''}
-                                                    onChange={(e) => setProfileData(prev => ({ ...prev, gender: e.target.value }))}
-                                                    disabled={!isEditing}
-                                                >
-                                                    <MenuItem value="male">{t('Male')}</MenuItem>
-                                                    <MenuItem value="female">{t('Female')}</MenuItem>
-                                                    <MenuItem value="other">{t('Other')}</MenuItem>
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Weight (kg)')}
-                                                type="number"
-                                                value={profileData?.weight || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={6}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Height (cm)')}
-                                                type="number"
-                                                value={profileData?.height || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Grid>
-
-                    {/* Целевые показатели питания */}
-                    <Grid item xs={12} md={6}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5, delay: 0.4 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    height: '100%',
-                                    background: `linear-gradient(135deg, ${theme.palette.info.light}15, ${theme.palette.info.main}15)`,
-                                    border: `1px solid ${theme.palette.info.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
-                            >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <RestaurantIcon sx={{ mr: 1, color: theme.palette.info.main }} />
-                                        <Typography variant="h6">
-                                            {t('Nutrition Targets')}
-                                        </Typography>
-                                    </Box>
-
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Target Calories')}
-                                                type="number"
-                                                value={profileData?.calorieTarget || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, calorieTarget: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Protein (g)')}
-                                                type="number"
-                                                value={profileData?.targetProtein || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetProtein: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Carbs (g)')}
-                                                type="number"
-                                                value={profileData?.targetCarbs || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetCarbs: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={12} sm={4}>
-                                            <TextField
-                                                fullWidth
-                                                label={t('Fat (g)')}
-                                                type="number"
-                                                value={profileData?.targetFat || ''}
-                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetFat: e.target.value }))}
-                                                disabled={!isEditing}
-                                            />
-                                        </Grid>
-                                    </Grid>
-
-                                    {isEditing && (
-                                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                                            <motion.div
-                                                variants={buttonVariants}
-                                                whileHover="hover"
-                                                whileTap="tap"
-                                            >
-                                                <Button
-                                                    variant="contained"
-                                                    startIcon={<SaveIcon />}
-                                                    onClick={handleSubmit}
-                                                >
-                                                    {t('Save Changes')}
-                                                </Button>
-                                            </motion.div>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Grid>
-
-                    {/* Кнопка генерации плана питания */}
-                    <Grid item xs={12}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5, delay: 0.5 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    background: `linear-gradient(135deg, ${theme.palette.warning.light}15, ${theme.palette.warning.main}15)`,
-                                    border: `1px solid ${theme.palette.warning.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
-                            >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <RestaurantMenuIcon sx={{ mr: 1, color: theme.palette.warning.main }} />
-                                        <Typography variant="h6">
-                                            {t('Generate Meal Plan')}
-                                        </Typography>
-                                    </Box>
-
-                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                        <motion.div
-                                            variants={buttonVariants}
-                                            whileHover="hover"
-                                            whileTap="tap"
-                                        >
-                                            <Button
-                                                variant="contained"
-                                                color="warning"
-                                                startIcon={isMealPlanLoading ? <CircularProgress size={20} /> : <RestaurantMenuIcon />}
-                                                onClick={generateMealPlan}
-                                                disabled={isMealPlanLoading}
-                                            >
-                                                {isMealPlanLoading ? t('Generating...') : t('Generate New Plan')}
-                                            </Button>
-                                        </motion.div>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Grid>
-
-                    {/* Достижения */}
-                    <Grid item xs={12}>
-                        <motion.div
-                            variants={cardVariants}
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ duration: 0.5, delay: 0.6 }}
-                        >
-                            <Card
-                                elevation={3}
-                                sx={{
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.light}15, ${theme.palette.primary.main}15)`,
-                                    border: `1px solid ${theme.palette.primary.light}30`,
-                                    transition: 'transform 0.3s',
-                                    '&:hover': {
-                                        transform: 'translateY(-5px)'
-                                    }
-                                }}
-                            >
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <EmojiEventsIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-                                        <Typography variant="h6">
-                                            {t('Achievements')}
-                                        </Typography>
-                                    </Box>
-
-                                    <Grid container spacing={2}>
-                                        {achievements.map((achievement) => (
-                                            <Grid item xs={12} sm={6} md={3} key={achievement.id}>
-                                                <Tooltip title={achievement.description}>
-                                                    <Card
+                                                    {profileData.name?.charAt(0)?.toUpperCase() || 'U'}
+                                                </Avatar>
+                                                {isUploadingPhoto && (
+                                                    <CircularProgress
+                                                        size={24}
                                                         sx={{
-                                                            height: '100%',
-                                                            background: achievement.completed
-                                                                ? `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`
-                                                                : `linear-gradient(135deg, ${theme.palette.grey[300]}15, ${theme.palette.grey[400]}15)`,
-                                                            border: `1px solid ${achievement.completed ? theme.palette.success.light : theme.palette.grey[300]}30`,
-                                                            position: 'relative',
-                                                            overflow: 'hidden'
+                                                            position: 'absolute',
+                                                            top: '50%',
+                                                            left: '50%',
+                                                            marginTop: '-12px',
+                                                            marginLeft: '-12px',
                                                         }}
+                                                    />
+                                                )}
+                                            </Box>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                style={{ display: 'none' }}
+                                                accept="image/*"
+                                                onChange={handlePhotoChange}
+                                            />
+                                            <Box>
+                                                <Typography variant="h5" gutterBottom>
+                                                    {profileData.name || t('User')}
+                                                </Typography>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    {profileData.email || t('No email provided')}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                            <Typography variant="subtitle2" color="textSecondary">
+                                                {t('Member since')}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {new Date(user?.createdAt).toLocaleDateString()}
+                                            </Typography>
+                                        </Box>
+
+                                        <Divider sx={{ my: 2 }} />
+
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                            <Typography variant="subtitle2" color="textSecondary">
+                                                {t('Last login')}
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                {new Date(user?.lastLogin).toLocaleDateString()}
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+
+                        {/* Цели и предпочтения */}
+                        <Grid item xs={12} md={8}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                            >
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        height: '100%',
+                                        background: `linear-gradient(135deg, ${theme.palette.secondary.light}15, ${theme.palette.secondary.main}15)`,
+                                        border: `1px solid ${theme.palette.secondary.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                            <Typography variant="h6">
+                                                {t('Goals & Preferences')}
+                                            </Typography>
+                                            <motion.div
+                                                variants={buttonVariants}
+                                                whileHover="hover"
+                                                whileTap="tap"
+                                            >
+                                                <IconButton
+                                                    onClick={() => setIsEditing(!isEditing)}
+                                                    color={isEditing ? 'primary' : 'default'}
+                                                >
+                                                    {isEditing ? <SaveIcon /> : <EditIcon />}
+                                                </IconButton>
+                                            </motion.div>
+                                        </Box>
+
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={12} sm={6}>
+                                                <FormControl fullWidth disabled={!isEditing}>
+                                                    <InputLabel>{t('Activity Level')}</InputLabel>
+                                                    <Select
+                                                        value={profileData?.activityLevel || ''}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, activityLevel: e.target.value }))}
+                                                        disabled={!isEditing}
                                                     >
-                                                        <CardContent>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                                                                {achievement.icon}
-                                                            </Box>
-                                                        </CardContent>
-                                                    </Card>
-                                                </Tooltip>
+                                                        <MenuItem value="sedentary">Sedentary</MenuItem>
+                                                        <MenuItem value="light">Light</MenuItem>
+                                                        <MenuItem value="moderate">Moderate</MenuItem>
+                                                        <MenuItem value="active">Active</MenuItem>
+                                                        <MenuItem value="very_active">Very Active</MenuItem>
+                                                    </Select>
+                                                </FormControl>
                                             </Grid>
-                                        ))}
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
+
+                                            <Grid item xs={12} sm={6}>
+                                                <FormControl fullWidth disabled={!isEditing}>
+                                                    <InputLabel>{t('Diet Type')}</InputLabel>
+                                                    <Select
+                                                        value={profileData?.dietType || ''}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, dietType: e.target.value }))}
+                                                        disabled={!isEditing}
+                                                    >
+                                                        <MenuItem value="balanced">Balanced</MenuItem>
+                                                        <MenuItem value="keto">Keto</MenuItem>
+                                                        <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                                                        <MenuItem value="vegan">Vegan</MenuItem>
+                                                        <MenuItem value="paleo">Paleo</MenuItem>
+                                                        <MenuItem value="mediterranean">Mediterranean</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+
+                                            <Grid item xs={12}>
+                                                <FormControl fullWidth>
+                                                    <InputLabel>{t('Health Goals')}</InputLabel>
+                                                    <Select
+                                                        multiple
+                                                        value={profileData?.healthGoals || []}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, healthGoals: e.target.value }))}
+                                                        disabled={!isEditing}
+                                                    >
+                                                        <MenuItem value="weight_loss">{t('Weight Loss')}</MenuItem>
+                                                        <MenuItem value="muscle_gain">{t('Muscle Gain')}</MenuItem>
+                                                        <MenuItem value="maintenance">{t('Maintenance')}</MenuItem>
+                                                        <MenuItem value="energy">{t('Energy')}</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+                                        </Grid>
+
+                                        {isEditing && (
+                                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                                                <motion.div
+                                                    variants={buttonVariants}
+                                                    whileHover="hover"
+                                                    whileTap="tap"
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={<SaveIcon />}
+                                                        onClick={handleSubmit}
+                                                    >
+                                                        {t('Save Changes')}
+                                                    </Button>
+                                                </motion.div>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+
+                        {/* Физические параметры */}
+                        <Grid item xs={12} md={6}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5, delay: 0.3 }}
+                            >
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        height: '100%',
+                                        background: `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`,
+                                        border: `1px solid ${theme.palette.success.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <FitnessCenterIcon sx={{ mr: 1, color: theme.palette.success.main }} />
+                                            <Typography variant="h6">
+                                                {t('Physical Parameters')}
+                                            </Typography>
+                                        </Box>
+
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Age')}
+                                                    type="number"
+                                                    value={profileData?.age || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={6}>
+                                                <FormControl fullWidth>
+                                                    <InputLabel>{t('Gender')}</InputLabel>
+                                                    <Select
+                                                        value={profileData?.gender || ''}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, gender: e.target.value }))}
+                                                        disabled={!isEditing}
+                                                    >
+                                                        <MenuItem value="male">{t('Male')}</MenuItem>
+                                                        <MenuItem value="female">{t('Female')}</MenuItem>
+                                                        <MenuItem value="other">{t('Other')}</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Weight (kg)')}
+                                                    type="number"
+                                                    value={profileData?.weight || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Height (cm)')}
+                                                    type="number"
+                                                    value={profileData?.height || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+
+                        {/* Целевые показатели питания */}
+                        <Grid item xs={12} md={6}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5, delay: 0.4 }}
+                            >
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        height: '100%',
+                                        background: `linear-gradient(135deg, ${theme.palette.info.light}15, ${theme.palette.info.main}15)`,
+                                        border: `1px solid ${theme.palette.info.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <RestaurantIcon sx={{ mr: 1, color: theme.palette.info.main }} />
+                                            <Typography variant="h6">
+                                                {t('Nutrition Targets')}
+                                            </Typography>
+                                        </Box>
+
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Target Calories')}
+                                                    type="number"
+                                                    value={profileData?.calorieTarget || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, calorieTarget: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Protein (g)')}
+                                                    type="number"
+                                                    value={profileData?.targetProtein || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, targetProtein: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Carbs (g)')}
+                                                    type="number"
+                                                    value={profileData?.targetCarbs || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, targetCarbs: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+
+                                            <Grid item xs={12} sm={4}>
+                                                <TextField
+                                                    fullWidth
+                                                    label={t('Fat (g)')}
+                                                    type="number"
+                                                    value={profileData?.targetFat || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, targetFat: e.target.value }))}
+                                                    disabled={!isEditing}
+                                                />
+                                            </Grid>
+                                        </Grid>
+
+                                        {isEditing && (
+                                            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                                                <motion.div
+                                                    variants={buttonVariants}
+                                                    whileHover="hover"
+                                                    whileTap="tap"
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={<SaveIcon />}
+                                                        onClick={handleSubmit}
+                                                    >
+                                                        {t('Save Changes')}
+                                                    </Button>
+                                                </motion.div>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+
+                        {/* Кнопка генерации плана питания */}
+                        <Grid item xs={12}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5, delay: 0.5 }}
+                            >
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        background: `linear-gradient(135deg, ${theme.palette.warning.light}15, ${theme.palette.warning.main}15)`,
+                                        border: `1px solid ${theme.palette.warning.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <RestaurantMenuIcon sx={{ mr: 1, color: theme.palette.warning.main }} />
+                                            <Typography variant="h6">
+                                                {t('Generate Meal Plan')}
+                                            </Typography>
+                                        </Box>
+
+                                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                            <motion.div
+                                                variants={buttonVariants}
+                                                whileHover="hover"
+                                                whileTap="tap"
+                                            >
+                                                <Button
+                                                    variant="contained"
+                                                    color="warning"
+                                                    startIcon={isMealPlanLoading ? <CircularProgress size={20} /> : <RestaurantMenuIcon />}
+                                                    onClick={generateMealPlan}
+                                                    disabled={isMealPlanLoading}
+                                                >
+                                                    {isMealPlanLoading ? t('Generating...') : t('Generate New Plan')}
+                                                </Button>
+                                            </motion.div>
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+
+                        {/* Достижения */}
+                        <Grid item xs={12}>
+                            <motion.div
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ duration: 0.5, delay: 0.6 }}
+                            >
+                                <Card
+                                    elevation={3}
+                                    sx={{
+                                        background: `linear-gradient(135deg, ${theme.palette.primary.light}15, ${theme.palette.primary.main}15)`,
+                                        border: `1px solid ${theme.palette.primary.light}30`,
+                                        transition: 'transform 0.3s',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <EmojiEventsIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
+                                            <Typography variant="h6">
+                                                {t('Achievements')}
+                                            </Typography>
+                                        </Box>
+
+                                        <Grid container spacing={2}>
+                                            {achievements.map((achievement) => (
+                                                <Grid item xs={12} sm={6} md={3} key={achievement.id}>
+                                                    <Tooltip title={achievement.description}>
+                                                        <Card
+                                                            sx={{
+                                                                height: '100%',
+                                                                background: achievement.completed
+                                                                    ? `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`
+                                                                    : `linear-gradient(135deg, ${theme.palette.grey[300]}15, ${theme.palette.grey[400]}15)`,
+                                                                border: `1px solid ${achievement.completed ? theme.palette.success.light : theme.palette.grey[300]}30`,
+                                                                position: 'relative',
+                                                                overflow: 'hidden'
+                                                            }}
+                                                        >
+                                                            <CardContent>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                                                                    {achievement.icon}
+                                                                </Box>
+                                                            </CardContent>
+                                                        </Card>
+                                                    </Tooltip>
+                                                </Grid>
+                                            ))}
+                                        </Grid>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Box>
+                </Paper>
+            </Container>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={handleCloseSnackbar}
+                    severity={snackbar.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </ScrollableContainer>
     );
 };

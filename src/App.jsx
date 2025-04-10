@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -7,11 +7,9 @@ import { LanguageProvider } from './context/LanguageContext';
 import { MealPlanProvider } from './context/MealPlanContext';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Box, CircularProgress } from '@mui/material';
 
 // Components
 import ErrorBoundary from './components/common/ErrorBoundary';
-import Notification from './components/common/Notification';
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -20,7 +18,7 @@ import WelcomeScreen from "./pages/WelcomeScreen";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Profile from "./pages/Profile.jsx";
+import Profile from "./pages/Profile";
 import MealPlan from "./pages/MealPlan";
 import Recipes from "./pages/Recipes";
 import Analytics from "./pages/Analytics";
@@ -33,21 +31,83 @@ import ShoppingList from "./pages/ShoppingList";
 import CalorieCalculator from "./pages/CalorieCalculator";
 import Dashboard from "./pages/Dashboard";
 
-// Route wrapper component to handle route state
-const RouteWrapper = ({ children }) => {
-    const location = useLocation();
-    const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        setIsLoading(true);
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 0);
-        return () => clearTimeout(timer);
-    }, [location]);
-
-    return children;
-};
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <WelcomeScreen />,
+    },
+    {
+        path: '/login',
+        element: <Login />,
+    },
+    {
+        path: '/register',
+        element: <Register />,
+    },
+    {
+        path: '/',
+        element: <Layout />,
+        children: [
+            {
+                path: 'home',
+                element: <Home />,
+            },
+            {
+                path: 'profile',
+                element: <ProtectedRoute><Profile /></ProtectedRoute>,
+            },
+            {
+                path: 'meal-plan',
+                element: <ProtectedRoute><MealPlan /></ProtectedRoute>,
+            },
+            {
+                path: 'recipes',
+                element: <ProtectedRoute><Recipes /></ProtectedRoute>,
+            },
+            {
+                path: 'analytics',
+                element: <ProtectedRoute><Analytics /></ProtectedRoute>,
+            },
+            {
+                path: 'social',
+                element: <ProtectedRoute><Social /></ProtectedRoute>,
+            },
+            {
+                path: 'education',
+                element: <ProtectedRoute><Education /></ProtectedRoute>,
+            },
+            {
+                path: 'settings',
+                element: <ProtectedRoute><Settings /></ProtectedRoute>,
+            },
+            {
+                path: 'achievements',
+                element: <ProtectedRoute><Achievements /></ProtectedRoute>,
+            },
+            {
+                path: 'calendar',
+                element: <ProtectedRoute><Calendar /></ProtectedRoute>,
+            },
+            {
+                path: 'shopping-list',
+                element: <ProtectedRoute><ShoppingList /></ProtectedRoute>,
+            },
+            {
+                path: 'calorie-calculator',
+                element: <ProtectedRoute><CalorieCalculator /></ProtectedRoute>,
+            },
+            {
+                path: 'dashboard',
+                element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+            },
+        ],
+    },
+], {
+    future: {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+    }
+});
 
 function App() {
     return (
@@ -58,106 +118,7 @@ function App() {
                         <NotificationProvider>
                             <MealPlanProvider>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <Router>
-                                        <Notification />
-                                        <Routes>
-                                            <Route path="/" element={<WelcomeScreen />} />
-                                            <Route path="/login" element={<Login />} />
-                                            <Route path="/register" element={<Register />} />
-                                            
-                                            {/* Protected Routes */}
-                                            <Route path="/dashboard" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Dashboard />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/home" element={
-                                                <Layout>
-                                                    <Home />
-                                                </Layout>
-                                            } />
-                                            <Route path="/profile" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Profile />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/meal-plan" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <MealPlan />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/recipes" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Recipes />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/analytics" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Analytics />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/social" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Social />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/education" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Education />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/settings" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Settings />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/achievements" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Achievements />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/calendar" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <Calendar />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/shopping-list" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <ShoppingList />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="/calorie-calculator" element={
-                                                <Layout>
-                                                    <ProtectedRoute>
-                                                        <CalorieCalculator />
-                                                    </ProtectedRoute>
-                                                </Layout>
-                                            } />
-                                            <Route path="*" element={<Navigate to="/" replace />} />
-                                        </Routes>
-                                    </Router>
+                                    <RouterProvider router={router} />
                                 </LocalizationProvider>
                             </MealPlanProvider>
                         </NotificationProvider>

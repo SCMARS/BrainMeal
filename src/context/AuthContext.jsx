@@ -124,7 +124,11 @@ export function AuthProvider({ children }) {
         signup,
         login,
         loginWithGoogle,
-        logout
+        logout,
+        getIdToken: async () => {
+            if (!user) return null;
+            return await user.getIdToken();
+        }
     };
 
     return (
