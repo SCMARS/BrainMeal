@@ -20,28 +20,58 @@ export function useAuth() {
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Set persistence to LOCAL
-        setPersistence(auth, browserLocalPersistence)
-            .catch((error) => {
-                console.error('Error setting persistence:', error);
-            });
+        let mounted = true;
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            setUser(user);
-            setLoading(false);
-        });
+        const setupAuth = async () => {
+            try {
+                await setPersistence(auth, browserLocalPersistence);
+                
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    if (mounted) {
+                        setUser(user);
+                        setLoading(false);
+                        setError(null);
+                    }
+                }, (error) => {
+                    if (mounted) {
+                        console.error('Auth state change error:', error);
+                        setError(error);
+                        setLoading(false);
+                    }
+                });
 
-        return unsubscribe;
+                return unsubscribe;
+            } catch (error) {
+                if (mounted) {
+                    console.error('Auth setup error:', error);
+                    setError(error);
+                    setLoading(false);
+                }
+            }
+        };
+
+        const cleanup = setupAuth();
+
+        return () => {
+            mounted = false;
+            if (cleanup) {
+                cleanup.then(unsubscribe => unsubscribe && unsubscribe());
+            }
+        };
     }, []);
 
     const signup = async (email, password) => {
         try {
             await setPersistence(auth, browserLocalPersistence);
-            return await createUserWithEmailAndPassword(auth, email, password);
+            const result = await createUserWithEmailAndPassword(auth, email, password);
+            setError(null);
+            return result;
         } catch (error) {
             console.error('Signup error:', error);
+            setError(error);
             throw error;
         }
     };
@@ -49,9 +79,12 @@ export function AuthProvider({ children }) {
     const login = async (email, password) => {
         try {
             await setPersistence(auth, browserLocalPersistence);
-            return await signInWithEmailAndPassword(auth, email, password);
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            setError(null);
+            return result;
         } catch (error) {
             console.error('Login error:', error);
+            setError(error);
             throw error;
         }
     };
@@ -63,9 +96,12 @@ export function AuthProvider({ children }) {
                 prompt: 'select_account'
             });
             await setPersistence(auth, browserLocalPersistence);
-            return await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            setError(null);
+            return result;
         } catch (error) {
             console.error('Google login error:', error);
+            setError(error);
             throw error;
         }
     };
@@ -73,8 +109,10 @@ export function AuthProvider({ children }) {
     const logout = async () => {
         try {
             await signOut(auth);
+            setError(null);
         } catch (error) {
             console.error('Logout error:', error);
+            setError(error);
             throw error;
         }
     };
@@ -82,6 +120,7 @@ export function AuthProvider({ children }) {
     const value = {
         user,
         loading,
+        error,
         signup,
         login,
         loginWithGoogle,

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMealPlan } from '../context/MealPlanContext';
 import { updateProfileData } from '../services/profileService';
 import { styled } from '@mui/material/styles';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -41,6 +41,8 @@ import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const ScrollableContainer = styled(Box)(({ theme }) => ({
     height: '100%',
@@ -64,73 +66,196 @@ const ScrollableContainer = styled(Box)(({ theme }) => ({
 const Profile = () => {
     const theme = useTheme();
     const { t } = useLanguage();
-    const { user } = useAuth();
+    const { user, updateUserProfile } = useAuth();
     const { mealPlan, isLoading: isMealPlanLoading, generateMealPlan } = useMealPlan();
     const location = useLocation();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
-    const [editedProfile, setEditedProfile] = useState({
+    const profileRef = useRef(null);
+    const [profileData, setProfileData] = useState({
         name: '',
         email: '',
         age: '',
         gender: '',
         weight: '',
         height: '',
-        activityLevel: 'moderate',
+        dietType: '',
+        calorieTarget: '',
+        activityLevel: '',
         dietaryPreferences: [],
-        healthGoals: [],
         allergies: [],
-        targetCalories: 2000,
-        targetProtein: 150,
-        targetCarbs: 250,
-        targetFat: 70
+        healthConditions: [],
+        fitnessGoals: [],
+        mealPreferences: [],
+        favoriteCuisines: [],
+        cookingSkillLevel: '',
+        timeAvailableForCooking: '',
+        budgetForFood: '',
+        shoppingFrequency: '',
+        kitchenEquipment: [],
+        foodStorage: [],
+        mealPlanningFrequency: '',
+        mealPrepStyle: '',
+        portionSizePreference: '',
+        snackingHabits: '',
+        hydrationGoals: '',
+        supplements: [],
+        trackingMethod: '',
+        socialSharing: false,
+        notifications: true,
+        language: 'en',
+        theme: 'light',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        units: 'metric',
+        profilePicture: '',
+        bio: '',
+        achievements: [],
+        challenges: [],
+        progress: {},
+        settings: {},
+        preferences: {},
+        history: [],
+        favorites: [],
+        savedRecipes: [],
+        mealPlans: [],
+        shoppingLists: [],
+        notes: '',
+        reminders: [],
+        goals: {},
+        stats: {},
+        socialConnections: [],
+        privacySettings: {},
+        subscription: {},
+        lastLogin: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     });
-    const [isLoading, setIsLoading] = useState(false);
-    const [snackbar, setSnackbar] = useState({
-        open: false,
-        message: '',
-        severity: 'success'
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showExportOptions, setShowExportOptions] = useState(false);
+    const [exportFormat, setExportFormat] = useState('json');
+    const [showImportDialog, setShowImportDialog] = useState(false);
+    const [importFile, setImportFile] = useState(null);
+    const [importError, setImportError] = useState(null);
+    const [showThemeDialog, setShowThemeDialog] = useState(false);
+    const [selectedTheme, setSelectedTheme] = useState('light');
+    const [showLanguageDialog, setShowLanguageDialog] = useState(false);
+    const [selectedLanguage, setSelectedLanguage] = useState('en');
+    const [showUnitsDialog, setShowUnitsDialog] = useState(false);
+    const [selectedUnits, setSelectedUnits] = useState('metric');
+    const [showNotificationsDialog, setShowNotificationsDialog] = useState(false);
+    const [notificationSettings, setNotificationSettings] = useState({
+        email: true,
+        push: true,
+        mealReminders: true,
+        shoppingReminders: true,
+        achievementAlerts: true,
+        socialUpdates: true
     });
+    const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
+    const [privacySettings, setPrivacySettings] = useState({
+        profileVisibility: 'public',
+        activityVisibility: 'friends',
+        mealPlanVisibility: 'private',
+        achievementsVisibility: 'public',
+        socialConnectionsVisibility: 'friends'
+    });
+    const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+    const [subscriptionPlan, setSubscriptionPlan] = useState('free');
+    const [showAchievementsDialog, setShowAchievementsDialog] = useState(false);
     const [achievements, setAchievements] = useState([]);
-    const [completedAchievements, setCompletedAchievements] = useState([]);
-    const [selectedAchievement, setSelectedAchievement] = useState(null);
-    const [showAchievementDialog, setShowAchievementDialog] = useState(false);
-    const profileRef = useRef(null);
+    const [showChallengesDialog, setShowChallengesDialog] = useState(false);
+    const [challenges, setChallenges] = useState([]);
+    const [showProgressDialog, setShowProgressDialog] = useState(false);
+    const [progressData, setProgressData] = useState({});
+    const [showStatsDialog, setShowStatsDialog] = useState(false);
+    const [statsData, setStatsData] = useState({});
+    const [showSocialDialog, setShowSocialDialog] = useState(false);
+    const [socialConnections, setSocialConnections] = useState([]);
+    const [showNotesDialog, setShowNotesDialog] = useState(false);
+    const [notes, setNotes] = useState('');
+    const [showRemindersDialog, setShowRemindersDialog] = useState(false);
+    const [reminders, setReminders] = useState([]);
+    const [showGoalsDialog, setShowGoalsDialog] = useState(false);
+    const [goals, setGoals] = useState({});
+    const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+    const [history, setHistory] = useState([]);
+    const [showFavoritesDialog, setShowFavoritesDialog] = useState(false);
+    const [favorites, setFavorites] = useState([]);
+    const [showSavedRecipesDialog, setShowSavedRecipesDialog] = useState(false);
+    const [savedRecipes, setSavedRecipes] = useState([]);
+    const [showMealPlansDialog, setShowMealPlansDialog] = useState(false);
+    const [mealPlans, setMealPlans] = useState([]);
+    const [showShoppingListsDialog, setShowShoppingListsDialog] = useState(false);
+    const [shoppingLists, setShoppingLists] = useState([]);
+    const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+    const [settings, setSettings] = useState({});
+    const [showPreferencesDialog, setShowPreferencesDialog] = useState(false);
+    const [preferences, setPreferences] = useState({});
+    const [mountedRef, setMountedRef] = useState(true);
 
-    // Handle navigation state
+    const getUserProfile = async () => {
+        if (!user) return;
+        try {
+            setLoading(true);
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                setProfileData(userDoc.data());
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // Reset scroll position when navigating to profile
-        window.scrollTo(0, 0);
-        
-        // Reset editing state when navigating away
-        return () => {
+        setMountedRef(true);
+        getUserProfile();
+
+        // Store the cleanup function
+        const cleanup = navigate((location) => {
+            if (!mountedRef) return;
             setIsEditing(false);
-            setEditedProfile({
-                name: '',
-                email: '',
-                age: '',
-                gender: '',
-                weight: '',
-                height: '',
-                activityLevel: 'moderate',
-                dietaryPreferences: [],
-                healthGoals: [],
-                allergies: [],
-                targetCalories: 2000,
-                targetProtein: 150,
-                targetCarbs: 250,
-                targetFat: 70
-            });
-        };
-    }, [location]);
+            setProfileData(prev => ({ ...prev }));
+        });
 
-    // Обработчик скролла
+        return () => {
+            setMountedRef(false);
+            if (typeof cleanup === 'function') {
+                cleanup();
+            }
+        };
+    }, [user, navigate, mountedRef]);
+
+    // Remove the duplicate useEffect for navigation
     useEffect(() => {
+        if (!mountedRef) return;
+
+        const handleNavigation = () => {
+            if (location.pathname === '/profile') {
+                window.scrollTo(0, 0);
+                setIsEditing(false);
+            }
+        };
+
+        handleNavigation();
+    }, [location, mountedRef]);
+
+    // Handle scroll
+    useEffect(() => {
+        if (!mountedRef) return;
+
         const handleScroll = () => {
             if (profileRef.current) {
                 const { scrollTop, scrollHeight, clientHeight } = profileRef.current;
                 const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
                 
-                // Анимация при прокрутке
                 if (scrollPercentage > 20) {
                     profileRef.current.style.transform = `translateY(${scrollPercentage * 0.1}px)`;
                 }
@@ -147,29 +272,7 @@ const Profile = () => {
                 currentRef.removeEventListener('scroll', handleScroll);
             }
         };
-    }, []);
-
-    // Инициализация профиля
-    useEffect(() => {
-        if (user) {
-            setEditedProfile({
-                name: user.name || '',
-                email: user.email || '',
-                age: user.age || '',
-                gender: user.gender || '',
-                weight: user.weight || '',
-                height: user.height || '',
-                activityLevel: user.activityLevel || 'moderate',
-                dietaryPreferences: user.dietaryPreferences || [],
-                healthGoals: user.healthGoals || [],
-                allergies: user.allergies || [],
-                targetCalories: user.targetCalories || 2000,
-                targetProtein: user.targetProtein || 150,
-                targetCarbs: user.targetCarbs || 250,
-                targetFat: user.targetFat || 70
-            });
-        }
-    }, [user]);
+    }, [mountedRef]);
 
     // Инициализация достижений
     useEffect(() => {
@@ -283,10 +386,38 @@ const Profile = () => {
     }, [user, mealPlan, achievements]);
 
     // Обработка сохранения профиля
-    const handleSave = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validate required fields
+        const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
+        const missingFields = requiredFields.filter(field => !profileData[field]);
+        
+        if (missingFields.length > 0) {
+            alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+            return;
+        }
+
+        // Validate numeric fields
+        const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
+        const invalidFields = numericFields.filter(field => 
+            profileData[field] && isNaN(Number(profileData[field]))
+        );
+        
+        if (invalidFields.length > 0) {
+            alert(`Please enter valid numbers for: ${invalidFields.join(', ')}`);
+            return;
+        }
+
         try {
             setIsLoading(true);
-            const updatedUserData = await updateProfileData(user, editedProfile);
+            const updatedUserData = await updateProfileData(user, {
+                ...profileData,
+                age: Number(profileData.age),
+                weight: Number(profileData.weight),
+                height: Number(profileData.height),
+                calorieTarget: Number(profileData.calorieTarget)
+            });
             
             // Обновляем состояние редактирования
             setIsEditing(false);
@@ -448,35 +579,36 @@ const Profile = () => {
 
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} sm={6}>
-                                            <FormControl fullWidth>
+                                            <FormControl fullWidth disabled={!isEditing}>
                                                 <InputLabel>{t('Activity Level')}</InputLabel>
                                                 <Select
-                                                    value={editedProfile?.activityLevel || ''}
-                                                    onChange={(e) => setEditedProfile(prev => ({ ...prev, activityLevel: e.target.value }))}
+                                                    value={profileData?.activityLevel || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, activityLevel: e.target.value }))}
                                                     disabled={!isEditing}
                                                 >
-                                                    <MenuItem value="sedentary">{t('Sedentary')}</MenuItem>
-                                                    <MenuItem value="light">{t('Light')}</MenuItem>
-                                                    <MenuItem value="moderate">{t('Moderate')}</MenuItem>
-                                                    <MenuItem value="active">{t('Active')}</MenuItem>
-                                                    <MenuItem value="very_active">{t('Very Active')}</MenuItem>
+                                                    <MenuItem value="sedentary">Sedentary</MenuItem>
+                                                    <MenuItem value="light">Light</MenuItem>
+                                                    <MenuItem value="moderate">Moderate</MenuItem>
+                                                    <MenuItem value="active">Active</MenuItem>
+                                                    <MenuItem value="very_active">Very Active</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
 
                                         <Grid item xs={12} sm={6}>
-                                            <FormControl fullWidth>
-                                                <InputLabel>{t('Dietary Preferences')}</InputLabel>
+                                            <FormControl fullWidth disabled={!isEditing}>
+                                                <InputLabel>{t('Diet Type')}</InputLabel>
                                                 <Select
-                                                    multiple
-                                                    value={editedProfile?.dietaryPreferences || []}
-                                                    onChange={(e) => setEditedProfile(prev => ({ ...prev, dietaryPreferences: e.target.value }))}
+                                                    value={profileData?.dietType || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, dietType: e.target.value }))}
                                                     disabled={!isEditing}
                                                 >
-                                                    <MenuItem value="vegetarian">{t('Vegetarian')}</MenuItem>
-                                                    <MenuItem value="vegan">{t('Vegan')}</MenuItem>
-                                                    <MenuItem value="keto">{t('Keto')}</MenuItem>
-                                                    <MenuItem value="paleo">{t('Paleo')}</MenuItem>
+                                                    <MenuItem value="balanced">Balanced</MenuItem>
+                                                    <MenuItem value="keto">Keto</MenuItem>
+                                                    <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                                                    <MenuItem value="vegan">Vegan</MenuItem>
+                                                    <MenuItem value="paleo">Paleo</MenuItem>
+                                                    <MenuItem value="mediterranean">Mediterranean</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
@@ -486,8 +618,8 @@ const Profile = () => {
                                                 <InputLabel>{t('Health Goals')}</InputLabel>
                                                 <Select
                                                     multiple
-                                                    value={editedProfile?.healthGoals || []}
-                                                    onChange={(e) => setEditedProfile(prev => ({ ...prev, healthGoals: e.target.value }))}
+                                                    value={profileData?.healthGoals || []}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, healthGoals: e.target.value }))}
                                                     disabled={!isEditing}
                                                 >
                                                     <MenuItem value="weight_loss">{t('Weight Loss')}</MenuItem>
@@ -509,7 +641,7 @@ const Profile = () => {
                                                 <Button
                                                     variant="contained"
                                                     startIcon={<SaveIcon />}
-                                                    onClick={handleSave}
+                                                    onClick={handleSubmit}
                                                 >
                                                     {t('Save Changes')}
                                                 </Button>
@@ -555,8 +687,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Age')}
                                                 type="number"
-                                                value={editedProfile?.age || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, age: e.target.value }))}
+                                                value={profileData?.age || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -565,8 +697,8 @@ const Profile = () => {
                                             <FormControl fullWidth>
                                                 <InputLabel>{t('Gender')}</InputLabel>
                                                 <Select
-                                                    value={editedProfile?.gender || ''}
-                                                    onChange={(e) => setEditedProfile(prev => ({ ...prev, gender: e.target.value }))}
+                                                    value={profileData?.gender || ''}
+                                                    onChange={(e) => setProfileData(prev => ({ ...prev, gender: e.target.value }))}
                                                     disabled={!isEditing}
                                                 >
                                                     <MenuItem value="male">{t('Male')}</MenuItem>
@@ -581,8 +713,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Weight (kg)')}
                                                 type="number"
-                                                value={editedProfile?.weight || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, weight: e.target.value }))}
+                                                value={profileData?.weight || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -592,8 +724,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Height (cm)')}
                                                 type="number"
-                                                value={editedProfile?.height || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, height: e.target.value }))}
+                                                value={profileData?.height || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -637,8 +769,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Target Calories')}
                                                 type="number"
-                                                value={editedProfile?.targetCalories || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, targetCalories: e.target.value }))}
+                                                value={profileData?.calorieTarget || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, calorieTarget: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -648,8 +780,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Protein (g)')}
                                                 type="number"
-                                                value={editedProfile?.targetProtein || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, targetProtein: e.target.value }))}
+                                                value={profileData?.targetProtein || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetProtein: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -659,8 +791,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Carbs (g)')}
                                                 type="number"
-                                                value={editedProfile?.targetCarbs || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, targetCarbs: e.target.value }))}
+                                                value={profileData?.targetCarbs || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetCarbs: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -670,8 +802,8 @@ const Profile = () => {
                                                 fullWidth
                                                 label={t('Fat (g)')}
                                                 type="number"
-                                                value={editedProfile?.targetFat || ''}
-                                                onChange={(e) => setEditedProfile(prev => ({ ...prev, targetFat: e.target.value }))}
+                                                value={profileData?.targetFat || ''}
+                                                onChange={(e) => setProfileData(prev => ({ ...prev, targetFat: e.target.value }))}
                                                 disabled={!isEditing}
                                             />
                                         </Grid>
@@ -687,7 +819,7 @@ const Profile = () => {
                                                 <Button
                                                     variant="contained"
                                                     startIcon={<SaveIcon />}
-                                                    onClick={handleSave}
+                                                    onClick={handleSubmit}
                                                 >
                                                     {t('Save Changes')}
                                                 </Button>
@@ -791,26 +923,9 @@ const Profile = () => {
                                                         }}
                                                     >
                                                         <CardContent>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                                                 {achievement.icon}
-                                                                <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                                                                    {achievement.title}
-                                                                </Typography>
                                                             </Box>
-                                                            {achievement.completed ? (
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
-                                                                    <CheckCircleIcon sx={{ mr: 1 }} />
-                                                                    <Typography variant="body2">
-                                                                        {t('Completed')}
-                                                                    </Typography>
-                                                                </Box>
-                                                            ) : (
-                                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                                    <Typography variant="body2">
-                                                                        {t('Progress')}: {achievement.progress}/{achievement.total}
-                                                                    </Typography>
-                                                                </Box>
-                                                            )}
                                                         </CardContent>
                                                     </Card>
                                                 </Tooltip>
@@ -823,85 +938,6 @@ const Profile = () => {
                     </Grid>
                 </Grid>
             </Box>
-
-            {/* Диалог достижения */}
-            <Dialog
-                open={showAchievementDialog}
-                onClose={handleAchievementDialogClose}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        background: `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`,
-                        border: `2px solid ${theme.palette.success.main}`,
-                        borderRadius: 2
-                    }
-                }}
-            >
-                <DialogTitle>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <EmojiEventsIcon sx={{ mr: 1, color: 'success.main', fontSize: 40 }} />
-                        <Typography variant="h5" sx={{ color: 'success.main' }}>
-                            {t('Achievement Unlocked!')}
-                        </Typography>
-                    </Box>
-                </DialogTitle>
-                <DialogContent>
-                    {selectedAchievement && (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                            <motion.div
-                                animate={{ scale: [1, 1.1, 1] }}
-                                transition={{ duration: 0.5, repeat: 2 }}
-                            >
-                                <Box sx={{ fontSize: 80, color: 'success.main', mb: 2 }}>
-                                    {selectedAchievement.icon}
-                                </Box>
-                            </motion.div>
-                            <Typography variant="h4" gutterBottom>
-                                {selectedAchievement.title}
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" paragraph>
-                                {selectedAchievement.description}
-                            </Typography>
-                            {selectedAchievement.reward && (
-                                <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
-                                    <Typography variant="subtitle1" color="success.main">
-                                        {t('Reward')}:
-                                    </Typography>
-                                    <Typography variant="body1">
-                                        {selectedAchievement.reward}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={handleAchievementDialogClose}
-                        sx={{ minWidth: 120 }}
-                    >
-                        {t('Awesome!')}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Уведомления */}
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-            >
-                <Alert
-                    onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-                    severity={snackbar.severity}
-                    sx={{ width: '100%' }}
-                >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
         </ScrollableContainer>
     );
 };

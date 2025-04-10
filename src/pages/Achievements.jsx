@@ -17,78 +17,167 @@ import {
     DialogActions,
     Button,
     Divider,
-    Fab
+    Fab,
+    Tabs,
+    Tab,
+    Fade,
+    Zoom,
+    Grow
 } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useLanguage } from '../context/LanguageContext';
 import InfoIcon from '@mui/icons-material/Info';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import StarIcon from '@mui/icons-material/Star';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 
-const AchievementCard = ({ title, description, progress, image, isCompleted, category }) => {
+const AchievementCard = ({ title, description, progress, image, isCompleted, category, onCardClick }) => {
     const { t } = useLanguage();
     const theme = useTheme();
     
     return (
-        <Card sx={{ 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column',
-            position: 'relative',
-            opacity: isCompleted ? 1 : 0.7,
-            transition: 'transform 0.3s',
-            '&:hover': {
-                transform: 'translateY(-5px)'
-            }
-        }}>
-            <CardMedia
-                component="img"
-                height="140"
-                image={image}
-                alt={title}
+        <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            <Card 
+                onClick={onCardClick}
                 sx={{ 
-                    opacity: isCompleted ? 1 : 0.5,
-                    backgroundColor: isCompleted ? theme.palette.primary.light : theme.palette.grey[300],
-                    objectFit: 'cover'
+                    height: '100%', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    position: 'relative',
+                    background: isCompleted 
+                        ? `linear-gradient(135deg, ${theme.palette.success.light}15, ${theme.palette.success.main}15)`
+                        : `linear-gradient(135deg, ${theme.palette.grey[300]}15, ${theme.palette.grey[400]}15)`,
+                    border: `1px solid ${isCompleted ? theme.palette.success.light : theme.palette.grey[300]}30`,
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    '&:hover': {
+                        boxShadow: theme.shadows[8],
+                        '& .achievement-icon': {
+                            transform: 'scale(1.1)',
+                        }
+                    }
                 }}
-            />
-            <CardContent sx={{ flexGrow: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="h6" component="h2">
-                        {title}
-                    </Typography>
-                    {isCompleted ? (
-                        <CheckCircleIcon color="success" />
-                    ) : (
-                        <LockIcon color="disabled" />
-                    )}
-                </Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {description}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
-                    {t(category)}
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                    <LinearProgress 
-                        variant="determinate" 
-                        value={progress} 
+            >
+                <Box sx={{ position: 'relative' }}>
+                    <CardMedia
+                        component="img"
+                        height="160"
+                        image={image}
+                        alt={title}
                         sx={{ 
-                            height: 8, 
-                            borderRadius: 4,
-                            backgroundColor: theme.palette.grey[200],
-                            '& .MuiLinearProgress-bar': {
-                                backgroundColor: isCompleted ? theme.palette.success.main : theme.palette.primary.main
-                            }
+                            opacity: isCompleted ? 1 : 0.5,
+                            transition: 'all 0.3s ease',
+                            objectFit: 'cover'
                         }}
                     />
-                    <Typography variant="caption" color="text.secondary" display="block" align="right">
-                        {progress}%
-                    </Typography>
+                    <Box
+                        className="achievement-icon"
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            transition: 'all 0.3s ease',
+                            color: isCompleted ? theme.palette.success.main : theme.palette.grey[400],
+                            fontSize: '3rem',
+                            opacity: 0.8
+                        }}
+                    >
+                        {isCompleted ? <EmojiEventsIcon fontSize="inherit" /> : <LockIcon fontSize="inherit" />}
+                    </Box>
                 </Box>
-            </CardContent>
-        </Card>
+                <CardContent sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
+                            {title}
+                        </Typography>
+                        <Chip 
+                            label={isCompleted ? t('completed') : t('inProgress')} 
+                            color={isCompleted ? 'success' : 'primary'} 
+                            size="small"
+                            sx={{ 
+                                fontWeight: 'bold',
+                                boxShadow: theme.shadows[1]
+                            }}
+                        />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                        {description}
+                    </Typography>
+                    <Chip 
+                        label={t(category)} 
+                        size="small" 
+                        sx={{ 
+                            mt: 1,
+                            backgroundColor: theme.palette.primary.light,
+                            color: theme.palette.primary.dark
+                        }}
+                    />
+                    <Box sx={{ mt: 2 }}>
+                        <LinearProgress 
+                            variant="determinate" 
+                            value={progress} 
+                            sx={{ 
+                                height: 8, 
+                                borderRadius: 4,
+                                backgroundColor: theme.palette.grey[200],
+                                '& .MuiLinearProgress-bar': {
+                                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                                    borderRadius: 4
+                                }
+                            }}
+                        />
+                        <Typography variant="caption" color="text.secondary" display="block" align="right">
+                            {progress}%
+                        </Typography>
+                    </Box>
+                </CardContent>
+            </Card>
+        </motion.div>
+    );
+};
+
+const StatCard = ({ title, value, icon, color }) => {
+    const theme = useTheme();
+    
+    return (
+        <motion.div
+            whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            <Card sx={{ 
+                height: '100%',
+                background: `linear-gradient(135deg, ${theme.palette[color].light}15, ${theme.palette[color].main}15)`,
+                border: `1px solid ${theme.palette[color].light}30`
+            }}>
+                <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        {icon}
+                        <Typography variant="h6" sx={{ ml: 1 }}>
+                            {title}
+                        </Typography>
+                    </Box>
+                    <Typography variant="h3" sx={{ color: theme.palette[color].main }}>
+                        {value}
+                    </Typography>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 };
 
@@ -100,6 +189,7 @@ const Achievements = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [achievements, setAchievements] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('all');
     const achievementsRef = useRef(null);
 
     // Обработчик скролла
@@ -139,8 +229,22 @@ const Achievements = () => {
             return mealDate >= monthAgo && mealDate <= today;
         });
 
-        // Простые достижения
-        // 1. Первый прием пищи
+        // Достижения для начинающих
+        // 1. Первый план питания
+        const hasMealPlan = meals.length > 0;
+        newAchievements.push({
+            id: 'first_meal_plan',
+            title: t('First Meal Plan'),
+            description: t('Generate your first meal plan'),
+            progress: hasMealPlan ? 100 : 0,
+            image: '/images/achievements/first-meal-plan.jpg',
+            isCompleted: hasMealPlan,
+            category: 'beginner',
+            icon: <RestaurantMenuIcon />,
+            reward: t('Unlocked meal plan customization features')
+        });
+
+        // 2. Первый прием пищи
         if (meals.length > 0) {
             newAchievements.push({
                 id: 'first_meal',
@@ -149,11 +253,12 @@ const Achievements = () => {
                 progress: 100,
                 image: '/images/achievements/first-meal.jpg',
                 isCompleted: true,
-                category: 'beginner'
+                category: 'beginner',
+                icon: <RestaurantIcon />
             });
         }
 
-        // 2. Достижение за регулярное питание (базовое)
+        // 3. Достижение за регулярное питание (базовое)
         const mealCount = weeklyMeals.length;
         newAchievements.push({
             id: 'regular_meals',
@@ -162,10 +267,11 @@ const Achievements = () => {
             progress: Math.min(mealCount / 21, 1) * 100,
             image: '/images/achievements/meal-plan.jpg',
             isCompleted: mealCount >= 21,
-            category: 'consistency'
+            category: 'consistency',
+            icon: <ScheduleIcon />
         });
 
-        // 3. Достижение за разнообразие питания (базовое)
+        // 4. Достижение за разнообразие питания (базовое)
         const uniqueMeals = new Set(weeklyMeals.map(meal => meal.name));
         newAchievements.push({
             id: 'meal_variety',
@@ -178,7 +284,7 @@ const Achievements = () => {
         });
 
         // Средние достижения
-        // 4. Достижение за сбалансированное питание
+        // 5. Достижение за сбалансированное питание
         const balancedMeals = weeklyMeals.filter(meal => {
             const protein = parseInt(meal.protein) || 0;
             const carbs = parseInt(meal.carbs) || 0;
@@ -195,7 +301,7 @@ const Achievements = () => {
             category: 'nutrition'
         });
 
-        // 5. Достижение за здоровые перекусы
+        // 6. Достижение за здоровые перекусы
         const healthySnacks = weeklyMeals.filter(meal => 
             meal.type === 'snack' && parseInt(meal.calories) < 200
         );
@@ -209,7 +315,7 @@ const Achievements = () => {
             category: 'health'
         });
 
-        // 6. Достижение за соблюдение калорий
+        // 7. Достижение за соблюдение калорий
         const calorieTarget = 2000;
         const daysWithinCalories = weeklyMeals.reduce((acc, meal) => {
             const date = new Date(meal.date).toISOString().split('T')[0];
@@ -231,7 +337,7 @@ const Achievements = () => {
         });
 
         // Сложные достижения
-        // 7. Достижение за месячную последовательность
+        // 8. Достижение за месячную последовательность
         const monthlyStreak = monthlyMeals.length;
         newAchievements.push({
             id: 'monthly_streak',
@@ -243,7 +349,7 @@ const Achievements = () => {
             category: 'mastery'
         });
 
-        // 8. Достижение за разнообразие блюд
+        // 9. Достижение за разнообразие блюд
         const allUniqueMeals = new Set(meals.map(meal => meal.name));
         newAchievements.push({
             id: 'meal_master',
@@ -255,7 +361,7 @@ const Achievements = () => {
             category: 'mastery'
         });
 
-        // 9. Достижение за идеальный баланс
+        // 10. Достижение за идеальный баланс
         const perfectBalance = weeklyMeals.filter(meal => {
             const protein = parseInt(meal.protein) || 0;
             const carbs = parseInt(meal.carbs) || 0;
@@ -276,7 +382,7 @@ const Achievements = () => {
             category: 'mastery'
         });
 
-        // 10. Достижение за точное соблюдение калорий
+        // 11. Достижение за точное соблюдение калорий
         const perfectCalories = Object.values(daysWithinCalories).filter(calories => 
             Math.abs(calories - calorieTarget) <= 50
         ).length;
@@ -290,7 +396,7 @@ const Achievements = () => {
             category: 'mastery'
         });
 
-        // 11. Достижение за раннее питание
+        // 12. Достижение за раннее питание
         const earlyMeals = weeklyMeals.filter(meal => {
             const mealTime = new Date(meal.date).getHours();
             return mealTime >= 6 && mealTime <= 9;
@@ -305,7 +411,7 @@ const Achievements = () => {
             category: 'lifestyle'
         });
 
-        // 12. Достижение за позднее питание
+        // 13. Достижение за позднее питание
         const lateMeals = weeklyMeals.filter(meal => {
             const mealTime = new Date(meal.date).getHours();
             return mealTime >= 18 && mealTime <= 21;
@@ -322,7 +428,9 @@ const Achievements = () => {
 
         // Обновляем пути к изображениям
         newAchievements.forEach(achievement => {
-            achievement.image = `/images/achievements/${achievement.id}.jpg`;
+            if (!achievement.image) {
+                achievement.image = `/images/achievements/${achievement.id}.jpg`;
+            }
         });
 
         setAchievements(newAchievements);
@@ -331,13 +439,48 @@ const Achievements = () => {
     // Проверяем достижения при изменении данных о приемах пищи
     useEffect(() => {
         checkAchievements();
-    }, [meals]);
+    }, [meals, t]);
+
+    // Показываем диалог при получении нового достижения
+    useEffect(() => {
+        const newlyCompleted = achievements.filter(a => a.isCompleted && !a.wasShown);
+        if (newlyCompleted.length > 0) {
+            const latestAchievement = newlyCompleted[newlyCompleted.length - 1];
+            setSelectedAchievement(latestAchievement);
+            setOpenDialog(true);
+            
+            // Помечаем достижение как показанное
+            setAchievements(prev => prev.map(a => 
+                a.id === latestAchievement.id ? { ...a, wasShown: true } : a
+            ));
+        }
+    }, [achievements]);
 
     const stats = {
         totalAchievements: achievements.length,
         completedAchievements: achievements.filter(a => a.isCompleted).length,
         completionRate: Math.round((achievements.filter(a => a.isCompleted).length / achievements.length) * 100) || 0
     };
+
+    const handleCategoryChange = (event, newValue) => {
+        setSelectedCategory(newValue);
+    };
+
+    const filteredAchievements = selectedCategory === 'all' 
+        ? achievements 
+        : achievements.filter(a => a.category === selectedCategory);
+
+    const categories = [
+        { value: 'all', label: t('allCategories') },
+        { value: 'beginner', label: t('beginner') },
+        { value: 'consistency', label: t('consistency') },
+        { value: 'cooking', label: t('cooking') },
+        { value: 'nutrition', label: t('nutrition') },
+        { value: 'health', label: t('health') },
+        { value: 'control', label: t('control') },
+        { value: 'mastery', label: t('mastery') },
+        { value: 'lifestyle', label: t('lifestyle') }
+    ];
 
     return (
         <Box sx={{ 
@@ -364,74 +507,179 @@ const Achievements = () => {
                 background: '#f1f1f1',
             }
         }}>
-            <Typography variant="h4" gutterBottom>
-                {t('achievements')}
-            </Typography>
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+                    {t('achievements')}
+                </Typography>
+            </motion.div>
 
             {/* Статистика достижений */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={4}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('totalAchievements')}
-                            </Typography>
-                            <Typography variant="h3">
-                                {stats.totalAchievements}
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard
+                        title={t('totalAchievements')}
+                        value={stats.totalAchievements}
+                        icon={<EmojiEventsIcon sx={{ color: theme.palette.primary.main }} />}
+                        color="primary"
+                    />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('completedAchievements')}
-                            </Typography>
-                            <Typography variant="h3">
-                                {stats.completedAchievements}
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard
+                        title={t('completedAchievements')}
+                        value={stats.completedAchievements}
+                        icon={<CheckCircleIcon sx={{ color: theme.palette.success.main }} />}
+                        color="success"
+                    />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                {t('completionRate')}
-                            </Typography>
-                            <Typography variant="h3">
-                                {stats.completionRate}%
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard
+                        title={t('completionRate')}
+                        value={`${stats.completionRate}%`}
+                        icon={<TrendingUpIcon sx={{ color: theme.palette.info.main }} />}
+                        color="info"
+                    />
                 </Grid>
             </Grid>
+
+            {/* Категории */}
+            <Box sx={{ mb: 4 }}>
+                <Tabs
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    sx={{
+                        '& .MuiTab-root': {
+                            minWidth: 'auto',
+                            px: 2,
+                            py: 1,
+                            mx: 0.5,
+                            borderRadius: 2,
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                backgroundColor: theme.palette.primary.light,
+                                color: theme.palette.primary.main,
+                            },
+                            '&.Mui-selected': {
+                                backgroundColor: theme.palette.primary.main,
+                                color: theme.palette.primary.contrastText,
+                            }
+                        }
+                    }}
+                >
+                    {categories.map((category) => (
+                        <Tab
+                            key={category.value}
+                            value={category.value}
+                            label={category.label}
+                        />
+                    ))}
+                </Tabs>
+            </Box>
 
             {/* Список достижений */}
             <Grid container spacing={3} ref={achievementsRef}>
-                {achievements.map((achievement) => (
-                    <Grid item key={achievement.id} xs={12} sm={6} md={4}>
-                        <AchievementCard {...achievement} />
-                    </Grid>
-                ))}
+                <AnimatePresence>
+                    {filteredAchievements.map((achievement) => (
+                        <Grid item key={achievement.id} xs={12} sm={6} md={4}>
+                            <AchievementCard
+                                {...achievement}
+                                onCardClick={() => {
+                                    setSelectedAchievement(achievement);
+                                    setOpenDialog(true);
+                                }}
+                            />
+                        </Grid>
+                    ))}
+                </AnimatePresence>
             </Grid>
+
+            {/* Диалог достижения */}
+            <Dialog
+                open={openDialog}
+                onClose={() => setOpenDialog(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        background: `linear-gradient(135deg, ${theme.palette.primary.light}15, ${theme.palette.primary.main}15)`,
+                        border: `2px solid ${theme.palette.primary.main}`,
+                        borderRadius: 2
+                    }
+                }}
+            >
+                {selectedAchievement && (
+                    <>
+                        <DialogTitle>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <motion.div
+                                    animate={{ 
+                                        scale: [1, 1.2, 1],
+                                        rotate: [0, 10, -10, 0]
+                                    }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <EmojiEventsIcon sx={{ mr: 1, color: 'primary.main', fontSize: 40 }} />
+                                </motion.div>
+                                <Typography variant="h5" sx={{ color: 'primary.main' }}>
+                                    {selectedAchievement.title}
+                                </Typography>
+                            </Box>
+                        </DialogTitle>
+                        <DialogContent>
+                            <Box sx={{ textAlign: 'center', py: 2 }}>
+                                <motion.div
+                                    animate={{ scale: [1, 1.1, 1] }}
+                                    transition={{ duration: 0.5, repeat: 2 }}
+                                >
+                                    <Box sx={{ fontSize: 80, color: 'primary.main', mb: 2 }}>
+                                        {selectedAchievement.icon}
+                                    </Box>
+                                </motion.div>
+                                <Typography variant="body1" color="text.secondary" paragraph>
+                                    {selectedAchievement.description}
+                                </Typography>
+                                {selectedAchievement.reward && (
+                                    <Box sx={{ mt: 2, p: 2, bgcolor: 'primary.light', borderRadius: 1 }}>
+                                        <Typography variant="subtitle1" color="primary.main">
+                                            {t('Reward')}:
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            {selectedAchievement.reward}
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+                        </DialogContent>
+                    </>
+                )}
+            </Dialog>
 
             {/* Кнопка прокрутки вверх */}
             {showScrollTop && (
-                <Fab
-                    color="primary"
-                    aria-label="scroll to top"
-                    onClick={scrollToTop}
-                    sx={{
-                        position: 'fixed',
-                        bottom: 16,
-                        right: 16,
-                        zIndex: 1000
-                    }}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
                 >
-                    <KeyboardArrowUpIcon />
-                </Fab>
+                    <Fab
+                        color="primary"
+                        aria-label="scroll to top"
+                        onClick={scrollToTop}
+                        sx={{
+                            position: 'fixed',
+                            bottom: 16,
+                            right: 16,
+                            zIndex: 1000
+                        }}
+                    >
+                        <KeyboardArrowUpIcon />
+                    </Fab>
+                </motion.div>
             )}
         </Box>
     );

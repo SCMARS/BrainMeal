@@ -170,10 +170,11 @@ const Login = () => {
         });
     };
 
-    if (user) {
-        navigate('/dashboard');
-        return null;
-    }
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     return (
         <LoginContainer>

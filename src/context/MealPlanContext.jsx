@@ -143,7 +143,38 @@ export const MealPlanProvider = ({ children }) => {
         setError(null);
 
         try {
-            const plan = await generateMealPlanService(userData, existingMeals);
+            // Validate required user profile fields
+            const requiredFields = ['age', 'gender', 'weight', 'height', 'dietType', 'calorieTarget', 'activityLevel'];
+            const missingFields = requiredFields.filter(field => !userData[field]);
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Missing required profile fields: ${missingFields.join(', ')}. Please complete your profile first.`);
+            }
+
+            // Ensure numeric fields are numbers
+            const numericFields = ['age', 'weight', 'height', 'calorieTarget'];
+            const invalidFields = numericFields.filter(field => 
+                userData[field] && isNaN(Number(userData[field]))
+            );
+            
+            if (invalidFields.length > 0) {
+                throw new Error(`Invalid numeric values in fields: ${invalidFields.join(', ')}`);
+            }
+
+            // Prepare the user profile data
+            const userProfile = {
+                age: Number(userData.age),
+                gender: userData.gender,
+                weight: Number(userData.weight),
+                height: Number(userData.height),
+                dietType: userData.dietType,
+                calorieTarget: Number(userData.calorieTarget),
+                activityLevel: userData.activityLevel,
+                foodPreferences: userData.dietaryPreferences || [],
+                allergies: userData.allergies || []
+            };
+
+            const plan = await generateMealPlanService(userProfile, existingMeals);
             setMealPlan(plan);
 
             // Увеличиваем счетчик сгенерированных планов
