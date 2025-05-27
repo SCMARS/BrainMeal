@@ -1,0 +1,136 @@
+
+
+/* Стили формы регистрации */
+.register-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    font-weight: bold;
+    padding: 10px 15px;
+    background-color: rgba(255, 90, 0, 0.1);
+    border-radius: 8px;
+    width: 60vw;
+    max-width: 800px;
+    text-align: center;
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Стили для полей с несовпадающими паролями */
+.password-mismatch input {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(255, 90, 0, 0.2);
+}
+
+.validation-error {
+    color: var(--accent-color);
+    font-size: 14px;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* Спиннер загрузки */
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin: 0 auto;
+}
+
+.warning-message {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Update for dark mode */
+.dark .warning-message {
+    background-color: #3a3000;
+    color: #ffdb7d;
+    border: 1px solid #5c4c00;
+}
+
+/* Анимация вращения спиннера */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Анимация встряхивания для сообщения об ошибке */
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+    40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+/* Дополнительные адаптивные стили специфичные для формы регистрации */
+@media (max-width: 480px) {
+    .register-form {
+        width: 95%;
+    }
+
+    .error-message {
+        width: 90%;
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    /* Улучшение отступов для формы на маленьких экранах */
+    .login-box {
+        padding-bottom: 60px; /* Увеличиваем отступ внизу для длинной формы */
+    }
+
+    /* Разные размеры шрифтов полей в зависимости от устройства */
+    .input-group label {
+        font-size: 14px;
+    }
+
+    /* Минимальная высота для полей, чтобы влезли все кнопки без скролла */
+    .checkbox-group {
+        margin-bottom: 15px;
+    }
+}
+
+/* Обработка ориентации экрана для формы регистрации */
+@media (max-height: 700px) {
+    .login-box {
+        height: auto;
+        overflow-y: auto;
+        padding-top: 40px;
+    }
+
+    .form-title {
+        margin-bottom: 15px;
+    }
+
+    .input-group {
+        margin-bottom: 10px;
+    }
+}
+
+/* Стили для устройств iOS */
+@supports (-webkit-touch-callout: none) {
+    /* Исправление для iOS Safari с учетом отступов сверху и снизу */
+    .register-form {
+        padding-bottom: env(safe-area-inset-bottom, 10px);
+    }
+
+    /* Фиксация размера шрифта для предотвращения масштабирования на iOS */
+    .input-group input {
+        font-size: 16px; /* Минимальный размер шрифта, предотвращающий масштабирование */
+    }
+}

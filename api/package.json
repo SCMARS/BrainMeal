@@ -1,0 +1,13 @@
+{
+  "name": "brainmeal-api",
+  "version": "1.0.0",
+  "description": "BrainMeal API functions for Vercel",
+  "main": "stripe-webhook.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "stripe": "^14.0.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

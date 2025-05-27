@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // Разрешаем чтение всем авторизованным пользователям
+      allow read: if request.auth != null;
+
+      // Разрешаем запись только авторизованным пользователям с ограничением по размеру
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024 // 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+

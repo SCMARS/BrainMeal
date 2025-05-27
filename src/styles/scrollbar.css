@@ -1,0 +1,209 @@
+/* Кастомный скролл в темно-оранжевом стиле */
+
+/* Основные стили для всех скроллбаров */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b35 rgba(26, 26, 26, 0.3);
+}
+
+/* Webkit браузеры (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(
+        135deg,
+        rgba(26, 26, 26, 0.8) 0%,
+        rgba(45, 24, 16, 0.8) 50%,
+        rgba(74, 44, 23, 0.8) 100%
+    );
+    border-radius: 10px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+        135deg,
+        #ff6b35 0%,
+        #ff8c42 50%,
+        #ffa726 100%
+    );
+    border-radius: 10px;
+    box-shadow:
+        0 0 10px rgba(255, 107, 53, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+        135deg,
+        #e55a2b 0%,
+        #e57a35 50%,
+        #ff9800 100%
+    );
+    box-shadow:
+        0 0 15px rgba(255, 107, 53, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(
+        135deg,
+        #d84315 0%,
+        #e65100 50%,
+        #f57c00 100%
+    );
+    box-shadow:
+        0 0 20px rgba(255, 107, 53, 1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Угловой элемент скроллбара */
+::-webkit-scrollbar-corner {
+    background: linear-gradient(
+        135deg,
+        rgba(26, 26, 26, 0.8) 0%,
+        rgba(45, 24, 16, 0.8) 50%,
+        rgba(74, 44, 23, 0.8) 100%
+    );
+}
+
+/* Стили для тонкого скролла */
+.thin-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    border-radius: 6px;
+}
+
+/* Стили для скрытого скролла */
+.hidden-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Анимированный скролл для карточек */
+.card-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 107, 53, 0.1);
+    border-radius: 3px;
+}
+
+.card-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.card-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #e55a2b, #e57a35);
+    box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 6px;
+    }
+}
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 480px) {
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+    }
+}
+
+/* Плавная прокрутка для всего документа */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Стили для контейнеров с прокруткой */
+.scroll-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.scroll-container-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.scroll-container-both {
+    overflow: auto;
+}
+
+/* Анимация появления скроллбара */
+@keyframes scrollbar-appear {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+::-webkit-scrollbar-thumb {
+    animation: scrollbar-appear 0.3s ease-out;
+}
+
+/* Стили для Firefox */
+@-moz-document url-prefix() {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #ff6b35 rgba(26, 26, 26, 0.3);
+    }
+}
+
+/* Дополнительные стили для лучшей видимости */
+.custom-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b35 rgba(26, 26, 26, 0.3);
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: rgba(26, 26, 26, 0.5);
+    border-radius: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35, #ff8c42);
+    border-radius: 8px;
+    border: 2px solid rgba(26, 26, 26, 0.5);
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #e55a2b, #e57a35);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.7);
+}
