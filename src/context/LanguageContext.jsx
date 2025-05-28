@@ -19,6 +19,7 @@ export const LanguageProvider = ({ children }) => {
             'Profile': 'Profile',
             profile: 'Profile',
             settings: 'Settings',
+            'Subscription': 'Subscription',
             logout: 'Logout',
             login: 'Login',
             register: 'Register',
@@ -43,6 +44,8 @@ export const LanguageProvider = ({ children }) => {
             'Generate Plan': 'Generate Plan',
             'Сгенерировать план питания': 'Generate Meal Plan',
             generateMealPlan: 'Generate Meal Plan',
+            notSpecified: 'Not specified',
+            comingSoon: 'Coming Soon',
 
             // Profile
             personalInfo: 'Personal Information',
@@ -629,6 +632,7 @@ export const LanguageProvider = ({ children }) => {
             'Profile': 'Профиль',
             profile: 'Профиль',
             settings: 'Настройки',
+            'Subscription': 'Подписка',
             logout: 'Выйти',
             login: 'Войти',
             register: 'Регистрация',
@@ -653,6 +657,8 @@ export const LanguageProvider = ({ children }) => {
             'Generate Plan': 'Сгенерировать план',
             'Сгенерировать план питания': 'Сгенерировать план питания',
             generateMealPlan: 'Сгенерировать план питания',
+            notSpecified: 'Не указан',
+            comingSoon: 'Скоро',
 
             // Profile
             personalInfo: 'Личная информация',

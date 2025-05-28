@@ -63,7 +63,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, isMobile }) => {
         { text: t('Meal Plan'), icon: <RestaurantIcon />, path: '/meal-plan' },
         { text: t('Analytics'), icon: <TimelineIcon />, path: '/analytics' },
         { text: t('Achievements'), icon: <EmojiEventsIcon />, path: '/achievements' },
-        { text: 'Подписка', icon: <StarIcon />, path: '/subscription' },
+        { text: t('Subscription'), icon: <StarIcon />, path: '/subscription' },
         { text: t('Profile'), icon: <PersonIcon />, path: '/profile' },
         { text: t('Settings'), icon: <SettingsIcon />, path: '/settings' }
     ];

@@ -526,8 +526,8 @@ export default function Settings() {
                                             <PersonIcon />
                                         </ListItemIcon>
                                         <ListItemText
-                                            primary="Профиль пользователя"
-                                            secondary={user?.email || 'Не указан'}
+                                            primary={t('userProfile')}
+                                            secondary={user?.email || t('notSpecified')}
                                         />
                                         <Button
                                             variant="outlined"
@@ -542,7 +542,7 @@ export default function Settings() {
                                                 }
                                             }}
                                         >
-                                            Редактировать
+                                            {t('edit')}
                                         </Button>
                                     </ListItem>
                                     <ListItem>
@@ -550,8 +550,8 @@ export default function Settings() {
                                             <SecurityIcon />
                                         </ListItemIcon>
                                         <ListItemText
-                                            primary="Безопасность"
-                                            secondary="Управление паролем и безопасностью"
+                                            primary={t('security')}
+                                            secondary={t('passwordManagement')}
                                         />
                                         <Button
                                             variant="outlined"
@@ -562,7 +562,7 @@ export default function Settings() {
                                                 color: 'rgba(255, 107, 53, 0.5)'
                                             }}
                                         >
-                                            Скоро
+                                            {t('comingSoon')}
                                         </Button>
                                     </ListItem>
                                 </List>
