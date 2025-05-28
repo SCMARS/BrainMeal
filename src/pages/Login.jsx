@@ -6,7 +6,7 @@ import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from '../context/AuthContext';
 import { Button, TextField, Typography, Box, Alert } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, keyframes } from '@mui/material/styles';
 
 const translations = {
     en: {
@@ -41,24 +41,163 @@ const translations = {
     }
 };
 
-const LoginContainer = styled(Box)(({ theme }) => ({
+// Анимации
+const pulse = keyframes`
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+// Контейнер для всей страницы
+const LoginPageContainer = styled(Box)({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #4a2c17 100%)',
   display: 'flex',
-  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '100vh',
-  padding: theme.spacing(3),
-  backgroundColor: theme.palette.background.default,
+  position: 'relative',
+  overflow: 'hidden',
+});
+
+// Анимированные фоновые элементы
+const BackgroundShape = styled(Box)(({ size, top, left, delay }) => ({
+  position: 'absolute',
+  width: size,
+  height: size,
+  background: 'radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%)',
+  borderRadius: '50%',
+  filter: 'blur(40px)',
+  top: top,
+  left: left,
+  animation: `${pulse} 3s ease-in-out infinite`,
+  animationDelay: delay,
 }));
 
-const LoginForm = styled(Box)(({ theme }) => ({
+// Контейнер формы
+const LoginFormContainer = styled(Box)({
+  position: 'relative',
+  zIndex: 10,
   width: '100%',
-  maxWidth: 400,
-  padding: theme.spacing(4),
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[3],
-}));
+  maxWidth: '400px',
+  padding: '0 24px',
+});
+
+// Карточка формы
+const LoginCard = styled(Box)({
+  background: 'rgba(255, 255, 255, 0.05)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 107, 53, 0.2)',
+  borderRadius: '24px',
+  padding: '48px 32px',
+  boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 107, 53, 0.1)',
+  animation: `${float} 6s ease-in-out infinite`,
+});
+
+// Заголовок с логотипом
+const LogoContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '12px',
+  marginBottom: '32px',
+});
+
+const LogoIcon = styled('span')({
+  fontSize: '48px',
+  filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))',
+});
+
+const LogoText = styled(Typography)({
+  fontSize: '28px',
+  fontWeight: 'bold',
+  background: 'linear-gradient(45deg, #ff6b35, #ff8c42)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+});
+
+// Стилизованные поля ввода
+const StyledInput = styled('input')({
+  width: '100%',
+  padding: '16px 20px',
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: '1px solid rgba(255, 107, 53, 0.3)',
+  borderRadius: '12px',
+  color: 'white',
+  fontSize: '16px',
+  outline: 'none',
+  transition: 'all 0.3s ease',
+  '&::placeholder': {
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+  '&:focus': {
+    borderColor: '#ff6b35',
+    background: 'rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 0 0 3px rgba(255, 107, 53, 0.2)',
+  },
+});
+
+// Стилизованная кнопка
+const StyledButton = styled(Button)({
+  width: '100%',
+  padding: '16px',
+  background: 'linear-gradient(45deg, #ff6b35, #ff8c42)',
+  color: 'white',
+  fontSize: '16px',
+  fontWeight: '600',
+  borderRadius: '12px',
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  textTransform: 'none',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #e55a2b, #e57a35)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 25px rgba(255, 107, 53, 0.3)',
+  },
+  '&:disabled': {
+    opacity: 0.7,
+    cursor: 'not-allowed',
+    transform: 'none',
+  },
+});
+
+// Стилизованные ссылки
+const StyledLink = styled('button')({
+  background: 'none',
+  border: 'none',
+  color: '#ff6b35',
+  textDecoration: 'underline',
+  cursor: 'pointer',
+  fontSize: '14px',
+  fontWeight: '500',
+  transition: 'color 0.3s ease',
+  '&:hover': {
+    color: '#ff8c42',
+  },
+});
+
+const RegisterButton = styled(Button)({
+  width: '100%',
+  padding: '12px',
+  background: 'transparent',
+  border: '2px solid #ff6b35',
+  color: '#ff6b35',
+  fontSize: '14px',
+  fontWeight: '500',
+  borderRadius: '12px',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  textTransform: 'none',
+  '&:hover': {
+    background: '#ff6b35',
+    color: 'white',
+  },
+});
 
 const Login = () => {
     const location = useLocation();
@@ -177,43 +316,69 @@ const Login = () => {
     }, [user, navigate]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center relative overflow-hidden">
-            {/* Animated Background Shapes */}
-            <div className="absolute inset-0">
-                <div className="absolute top-10 left-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-            </div>
+        <LoginPageContainer>
+            {/* Анимированные фоновые элементы */}
+            <BackgroundShape size="300px" top="10%" left="10%" delay="0s" />
+            <BackgroundShape size="400px" top="60%" left="70%" delay="1s" />
+            <BackgroundShape size="250px" top="30%" left="60%" delay="0.5s" />
 
-            <div className="relative z-10 w-full max-w-md px-6">
-                {/* Login Form Container */}
-                <div className="bg-white/5 backdrop-blur-xl border border-orange-500/20 rounded-2xl p-8 shadow-2xl">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="flex items-center justify-center gap-3 mb-6">
-                            <span className="text-4xl filter drop-shadow-lg">🧠</span>
-                            <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent">
-                                BrainMeal
-                            </span>
-                        </div>
-                        <h1 className="text-3xl font-bold text-white mb-2">{t.loginTitle}</h1>
-                        <p className="text-gray-400">Добро пожаловать в BrainMeal</p>
-                    </div>
+            <LoginFormContainer>
+                <LoginCard>
+                    {/* Логотип и заголовок */}
+                    <LogoContainer>
+                        <LogoIcon>🧠</LogoIcon>
+                        <LogoText>BrainMeal</LogoText>
+                    </LogoContainer>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                color: 'white',
+                                fontWeight: 'bold',
+                                mb: 1
+                            }}
+                        >
+                            {t.loginTitle}
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }}
+                        >
+                            Добро пожаловать в BrainMeal
+                        </Typography>
+                    </Box>
+
+                    {/* Форма */}
+                    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-center text-sm">
+                            <Alert
+                                severity="error"
+                                sx={{
+                                    background: 'rgba(244, 67, 54, 0.1)',
+                                    border: '1px solid rgba(244, 67, 54, 0.3)',
+                                    color: '#f44336',
+                                    borderRadius: '12px'
+                                }}
+                            >
                                 {error}
-                            </div>
+                            </Alert>
                         )}
 
-                        <div>
-                            <label htmlFor="email" className="block text-white font-medium mb-2">
+                        <Box>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'white',
+                                    fontWeight: '500',
+                                    mb: 1
+                                }}
+                            >
                                 {t.emailLabel}
-                            </label>
-                            <input
-                                id="email"
+                            </Typography>
+                            <StyledInput
                                 type="email"
                                 value={email}
                                 onChange={(e) => {
@@ -221,17 +386,22 @@ const Login = () => {
                                     setError("");
                                 }}
                                 placeholder={t.emailPlaceholder}
-                                className="w-full px-4 py-3 bg-white/10 border border-orange-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:bg-white/15 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                                 required
                             />
-                        </div>
+                        </Box>
 
-                        <div>
-                            <label htmlFor="password" className="block text-white font-medium mb-2">
+                        <Box>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'white',
+                                    fontWeight: '500',
+                                    mb: 1
+                                }}
+                            >
                                 {t.passwordLabel}
-                            </label>
-                            <input
-                                id="password"
+                            </Typography>
+                            <StyledInput
                                 type="password"
                                 value={password}
                                 onChange={(e) => {
@@ -239,44 +409,46 @@ const Login = () => {
                                     setError("");
                                 }}
                                 placeholder={t.passwordPlaceholder}
-                                className="w-full px-4 py-3 bg-white/10 border border-orange-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:bg-white/15 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                                 required
                             />
-                        </div>
+                        </Box>
 
-                        <button
+                        <StyledButton
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-xl hover:shadow-orange-500/25 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                         >
                             {loading ? 'Вход...' : t.loginButton}
-                        </button>
-                    </form>
+                        </StyledButton>
+                    </Box>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 space-y-4">
-                        <button
-                            onClick={handleForgotPassword}
-                            className="text-orange-500 hover:text-orange-400 font-medium underline transition-colors duration-300"
-                        >
+                    {/* Футер */}
+                    <Box sx={{ textAlign: 'center', mt: 4 }}>
+                        <StyledLink onClick={handleForgotPassword}>
                             {t.forgotPassword}
-                        </button>
+                        </StyledLink>
 
-                        <div className="border-t border-gray-600 pt-4">
-                            <p className="text-gray-400 mb-3">
-                                Нет аккаунта?
-                            </p>
-                            <button
-                                onClick={handleRegister}
-                                className="w-full border-2 border-orange-500 text-orange-500 py-2 px-6 rounded-xl font-medium hover:bg-orange-500 hover:text-white transition-all duration-300"
+                        <Box sx={{
+                            borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+                            pt: 3,
+                            mt: 3
+                        }}>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    mb: 2
+                                }}
                             >
+                                Нет аккаунта?
+                            </Typography>
+                            <RegisterButton onClick={handleRegister}>
                                 {t.register}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                            </RegisterButton>
+                        </Box>
+                    </Box>
+                </LoginCard>
+            </LoginFormContainer>
+        </LoginPageContainer>
     );
 };
 

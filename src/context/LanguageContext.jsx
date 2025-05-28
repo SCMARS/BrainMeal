@@ -23,6 +23,11 @@ export const LanguageProvider = ({ children }) => {
             login: 'Login',
             register: 'Register',
 
+            // Tab Bar Navigation
+            mealPlan: 'Meal Plan',
+            analytics: 'Analytics',
+            achievements: 'Achievements',
+
             // Common
             save: 'Save',
             cancel: 'Cancel',
@@ -34,6 +39,8 @@ export const LanguageProvider = ({ children }) => {
             success: 'Success',
             warning: 'Warning',
             info: 'Info',
+            'Add Meal': 'Add Meal',
+            'Generate Plan': 'Generate Plan',
 
             // Profile
             personalInfo: 'Personal Information',
@@ -138,6 +145,10 @@ export const LanguageProvider = ({ children }) => {
             rememberMe: 'Remember Me',
             noAccount: "Don't have an account?",
             haveAccount: 'Already have an account?',
+            loginTitle: 'Sign In',
+            emailLabel: 'Email',
+            passwordLabel: 'Password',
+            loginButton: 'Sign In',
 
             // Settings
             accountSettings: 'Account Settings',
@@ -613,6 +624,11 @@ export const LanguageProvider = ({ children }) => {
             login: 'Войти',
             register: 'Регистрация',
 
+            // Tab Bar Navigation
+            mealPlan: 'План питания',
+            analytics: 'Аналитика',
+            achievements: 'Достижения',
+
             // Common
             save: 'Сохранить',
             cancel: 'Отмена',
@@ -624,6 +640,8 @@ export const LanguageProvider = ({ children }) => {
             success: 'Успешно',
             warning: 'Предупреждение',
             info: 'Информация',
+            'Add Meal': 'Добавить блюдо',
+            'Generate Plan': 'Сгенерировать план',
 
             // Profile
             personalInfo: 'Личная информация',
@@ -729,6 +747,10 @@ export const LanguageProvider = ({ children }) => {
             rememberMe: 'Запомнить меня',
             noAccount: 'Нет аккаунта?',
             haveAccount: 'Уже есть аккаунт?',
+            loginTitle: 'Вход в систему',
+            emailLabel: 'Email',
+            passwordLabel: 'Пароль',
+            loginButton: 'Войти',
 
             // Settings
             accountSettings: 'Настройки аккаунта',
