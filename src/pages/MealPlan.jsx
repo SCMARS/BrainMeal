@@ -1080,7 +1080,7 @@ function MealPlan() {
                                     }
                                 }}
                             >
-                                {isLoading ? 'Генерация...' : 'Сгенерировать план питания'}
+                                {isLoading ? t('loading') : t('generateMealPlan')}
                             </Button>
                         </Box>
 

@@ -35,7 +35,7 @@ import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ScrollableContainer = styled(Box)(({ theme }) => ({
-    height: '100vh',
+    height: '130vh',
     overflowY: 'auto',
     overflowX: 'hidden',
     '&::-webkit-scrollbar': {

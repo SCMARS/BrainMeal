@@ -41,6 +41,8 @@ export const LanguageProvider = ({ children }) => {
             info: 'Info',
             'Add Meal': 'Add Meal',
             'Generate Plan': 'Generate Plan',
+            'Сгенерировать план питания': 'Generate Meal Plan',
+            generateMealPlan: 'Generate Meal Plan',
 
             // Profile
             personalInfo: 'Personal Information',
@@ -152,6 +154,13 @@ export const LanguageProvider = ({ children }) => {
 
             // Settings
             accountSettings: 'Account Settings',
+            'Account Settings': 'Account Settings',
+            userProfile: 'User Profile',
+            'Профиль пользователя': 'User Profile',
+            security: 'Security',
+            'Безопасность': 'Security',
+            passwordManagement: 'Password and Security Management',
+            'Управление паролем и безопасностью': 'Password and Security Management',
             notificationSettings: 'Notification Settings',
             appearanceSettings: 'Appearance Settings',
             languageSettings: 'Language Settings',
@@ -642,6 +651,8 @@ export const LanguageProvider = ({ children }) => {
             info: 'Информация',
             'Add Meal': 'Добавить блюдо',
             'Generate Plan': 'Сгенерировать план',
+            'Сгенерировать план питания': 'Сгенерировать план питания',
+            generateMealPlan: 'Сгенерировать план питания',
 
             // Profile
             personalInfo: 'Личная информация',
@@ -754,6 +765,13 @@ export const LanguageProvider = ({ children }) => {
 
             // Settings
             accountSettings: 'Настройки аккаунта',
+            'Account Settings': 'Настройки аккаунта',
+            userProfile: 'Профиль пользователя',
+            'Профиль пользователя': 'Профиль пользователя',
+            security: 'Безопасность',
+            'Безопасность': 'Безопасность',
+            passwordManagement: 'Управление паролем и безопасностью',
+            'Управление паролем и безопасностью': 'Управление паролем и безопасностью',
             notificationSettings: 'Настройки уведомлений',
             appearanceSettings: 'Настройки внешнего вида',
             languageSettings: 'Настройки языка',

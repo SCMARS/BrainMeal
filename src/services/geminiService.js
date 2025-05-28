@@ -10,62 +10,7 @@ export const generateMealPlan = async (profileData, existingMeals = []) => {
     // Определяем язык (по умолчанию русский)
     const language = profileData.language || 'ru';
 
-    // Функция для получения списка продуктов с пищевой ценностью
-    const getNutritionList = (lang) => {
-        if (lang === 'en') {
-            return `   - Cooked chicken breast: 165 kcal, 31g protein, 3.6g fat, 0g carbs
-   - Fried chicken breast: 197 kcal, 30g protein, 8g fat, 0g carbs
-   - Cooked beef: 254 kcal, 25.8g protein, 16.8g fat, 0g carbs
-   - Lean pork: 259 kcal, 16.4g protein, 21.7g fat, 0g carbs
-   - Cod fish: 78 kcal, 17.7g protein, 0.7g fat, 0g carbs
-   - Salmon: 142 kcal, 19.8g protein, 6.3g fat, 0g carbs
-   - Cooked buckwheat: 92 kcal, 3.4g protein, 0.6g fat, 18g carbs
-   - Cooked rice: 116 kcal, 2.2g protein, 0.5g fat, 23g carbs
-   - Oatmeal with water: 88 kcal, 3g protein, 1.7g fat, 15g carbs
-   - Cooked pasta: 112 kcal, 3.5g protein, 0.4g fat, 23g carbs
-   - Boiled potato: 82 kcal, 2g protein, 0.4g fat, 16.3g carbs
-   - Chicken egg: 155 kcal, 12.7g protein, 10.9g fat, 0.7g carbs
-   - Cottage cheese 5%: 121 kcal, 17.2g protein, 5g fat, 1.8g carbs
-   - Cottage cheese 9%: 159 kcal, 16.7g protein, 9g fat, 2g carbs
-   - Milk 2.5%: 52 kcal, 2.8g protein, 2.5g fat, 4.7g carbs
-   - Kefir 2.5%: 50 kcal, 2.8g protein, 2.5g fat, 4g carbs
-   - Rye bread: 174 kcal, 6.6g protein, 1.2g fat, 34g carbs
-   - Banana: 96 kcal, 1.5g protein, 0.2g fat, 21g carbs
-   - Apple: 52 kcal, 0.4g protein, 0.4g fat, 9.8g carbs
-   - Cucumber: 15 kcal, 0.8g protein, 0.1g fat, 2.8g carbs
-   - Tomato: 20 kcal, 0.6g protein, 0.2g fat, 4.2g carbs
-   - Carrot: 35 kcal, 1.3g protein, 0.1g fat, 6.9g carbs
-   - White cabbage: 27 kcal, 1.8g protein, 0.1g fat, 4.7g carbs
-   - Walnuts: 654 kcal, 15.2g protein, 65.2g fat, 7g carbs
-   - Sunflower oil: 899 kcal, 0g protein, 99.9g fat, 0g carbs`;
-        } else {
-            return `   - Куриная грудка отварная: 165 ккал, 31г белка, 3.6г жира, 0г углеводов
-   - Куриная грудка жареная: 197 ккал, 30г белка, 8г жира, 0г углеводов
-   - Говядина отварная: 254 ккал, 25.8г белка, 16.8г жира, 0г углеводов
-   - Свинина нежирная: 259 ккал, 16.4г белка, 21.7г жира, 0г углеводов
-   - Рыба (треска): 78 ккал, 17.7г белка, 0.7г жира, 0г углеводов
-   - Лосось: 142 ккал, 19.8г белка, 6.3г жира, 0г углеводов
-   - Гречка отварная: 92 ккал, 3.4г белка, 0.6г жира, 18г углеводов
-   - Рис отварной: 116 ккал, 2.2г белка, 0.5г жира, 23г углеводов
-   - Овсянка на воде: 88 ккал, 3г белка, 1.7г жира, 15г углеводов
-   - Макароны отварные: 112 ккал, 3.5г белка, 0.4г жира, 23г углеводов
-   - Картофель отварной: 82 ккал, 2г белка, 0.4г жира, 16.3г углеводов
-   - Яйцо куриное: 155 ккал, 12.7г белка, 10.9г жира, 0.7г углеводов
-   - Творог 5%: 121 ккал, 17.2г белка, 5г жира, 1.8г углеводов
-   - Творог 9%: 159 ккал, 16.7г белка, 9г жира, 2г углеводов
-   - Молоко 2.5%: 52 ккал, 2.8г белка, 2.5г жира, 4.7г углеводов
-   - Кефир 2.5%: 50 ккал, 2.8г белка, 2.5г жира, 4г углеводов
-   - Хлеб ржаной: 174 ккал, 6.6г белка, 1.2г жира, 34г углеводов
-   - Банан: 96 ккал, 1.5г белка, 0.2г жира, 21г углеводов
-   - Яблоко: 52 ккал, 0.4г белка, 0.4г жира, 9.8г углеводов
-   - Огурец: 15 ккал, 0.8г белка, 0.1г жира, 2.8г углеводов
-   - Помидор: 20 ккал, 0.6г белка, 0.2г жира, 4.2г углеводов
-   - Морковь: 35 ккал, 1.3г белка, 0.1г жира, 6.9г углеводов
-   - Капуста белокочанная: 27 ккал, 1.8г белка, 0.1г жира, 4.7г углеводов
-   - Орехи грецкие: 654 ккал, 15.2г белка, 65.2г жира, 7г углеводов
-   - Масло подсолнечное: 899 ккал, 0г белка, 99.9г жира, 0г углеводов`;
-        }
-    };
+
 
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDvp5H76M33BQvmFa87T4jvHpBI8y4FG7g");
 
@@ -319,33 +264,14 @@ RESPONSE LANGUAGE: Generate ALL meal names, ingredients, and content in ENGLISH 
 
 CRITICAL ACCURACY REQUIREMENTS:
 1. MANDATORY: Specify EXACT WEIGHT of each product in grams (e.g., "Cooked buckwheat 200g", "Fried chicken breast 300g")
-2. Use precise nutritional characteristics per 100g:
-   - Cooked chicken breast: 165 kcal, 31g protein, 3.6g fat, 0g carbs
-   - Fried chicken breast: 197 kcal, 30g protein, 8g fat, 0g carbs
-   - Cooked beef: 254 kcal, 25.8g protein, 16.8g fat, 0g carbs
-   - Lean pork: 259 kcal, 16.4g protein, 21.7g fat, 0g carbs
-   - Cod fish: 78 kcal, 17.7g protein, 0.7g fat, 0g carbs
-   - Salmon: 142 kcal, 19.8g protein, 6.3g fat, 0g carbs
-   - Cooked buckwheat: 92 kcal, 3.4g protein, 0.6g fat, 18g carbs
-   - Cooked rice: 116 kcal, 2.2g protein, 0.5g fat, 23g carbs
-   - Oatmeal with water: 88 kcal, 3g protein, 1.7g fat, 15g carbs
-   - Cooked pasta: 112 kcal, 3.5g protein, 0.4g fat, 23g carbs
-   - Boiled potato: 82 kcal, 2g protein, 0.4g fat, 16.3g carbs
-   - Chicken egg: 155 kcal, 12.7g protein, 10.9g fat, 0.7g carbs
-   - Cottage cheese 5%: 121 kcal, 17.2g protein, 5g fat, 1.8g carbs
-   - Milk 2.5%: 52 kcal, 2.8g protein, 2.5g fat, 4.7g carbs
-   - Banana: 96 kcal, 1.5g protein, 0.2g fat, 21g carbs
-   - Apple: 52 kcal, 0.4g protein, 0.4g fat, 9.8g carbs
-   - Cucumber: 15 kcal, 0.8g protein, 0.1g fat, 2.8g carbs
-   - Tomato: 20 kcal, 0.6g protein, 0.2g fat, 4.2g carbs
-   - Walnuts: 654 kcal, 15.2g protein, 65.2g fat, 7g carbs
-   - Sunflower oil: 899 kcal, 0g protein, 99.9g fat, 0g carbs
-3. PRECISELY calculate KBJU for specified weight using formula: (value_per_100g * weight_in_grams) / 100
-4. Daily KBJU totals must hit target values with ±1% accuracy
-5. MANDATORY: Check math - sum of all meal calories = ${targetCalories} kcal
-6. If totals don't match, adjust product portions to hit exact target
-7. Break complex dishes into separate ingredients with weight for each
-8. Specify meal time for each dish`;
+2. Use your knowledge of precise nutritional characteristics per 100g for common foods
+3. Focus on SIMPLE and ACCESSIBLE products: buckwheat, rice, chicken breast, eggs, cottage cheese, simple vegetables
+4. PRECISELY calculate KBJU for specified weight using formula: (value_per_100g * weight_in_grams) / 100
+5. Daily KBJU totals must hit target values with ±1% accuracy
+6. MANDATORY: Check math - sum of all meal calories = ${targetCalories} kcal
+7. If totals don't match, adjust product portions to hit exact target
+8. Break complex dishes into separate ingredients with weight for each
+9. Specify meal time for each dish`;
         } else {
             return `Создай детальный недельный план питания для человека со следующими параметрами. Ты профессиональный нутрициолог и должен генерировать планы питания, которые ТОЧНО соответствуют целевым калориям и макронутриентам.
 
@@ -437,11 +363,12 @@ ${profileData.singleMealType === 'snack' ?
 ${language === 'en' ?
 `CRITICAL ACCURACY REQUIREMENTS:
 1. MANDATORY: Specify EXACT WEIGHT of each product in grams (e.g., "Cooked buckwheat 200g", "Fried chicken breast 300g")
-2. Use precise nutritional characteristics per 100g:` :
+2. Use your knowledge of precise nutritional characteristics per 100g for common foods
+3. Focus on SIMPLE and ACCESSIBLE products: buckwheat, rice, chicken breast, eggs, cottage cheese, simple vegetables` :
 `КРИТИЧЕСКИ ВАЖНЫЕ ТРЕБОВАНИЯ К ТОЧНОСТИ:
 1. ОБЯЗАТЕЛЬНО указывай ТОЧНЫЙ ВЕС каждого продукта в граммах (например: "Гречка отварная 200г", "Куриная грудка жареная 300г")
-2. Используй точные пищевые характеристики продуктов на 100г:`}
-${getNutritionList(language)}
+2. Используй свои знания точных пищевых характеристик продуктов на 100г
+3. Фокусируйся на ПРОСТЫХ и ДОСТУПНЫХ продуктах: гречка, рис, куриная грудка, яйца, творог, простые овощи`}
 3. ТОЧНО рассчитывай КБЖУ для указанного веса продукта по формуле: (значение_на_100г * вес_в_граммах) / 100
 4. Суммарные КБЖУ за день должны попадать в целевые значения с точностью ±1%
 5. ОБЯЗАТЕЛЬНО проверяй математику: сумма калорий всех приемов пищи = ${targetCalories} ккал
