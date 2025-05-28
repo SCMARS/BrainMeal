@@ -714,11 +714,6 @@ export default function Dashboard() {
             title: `👤 ${t('edit')} ${t('profile')}`,
             icon: <CalendarIcon />,
             onClick: () => navigate('/profile')
-        },
-        {
-            title: `🎯 ${t('Detailed Meal Planner')}`,
-            icon: <AddIcon />,
-            onClick: () => navigate('/detailed-meal-planner')
         }
     ];
 

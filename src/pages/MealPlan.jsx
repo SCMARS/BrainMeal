@@ -1063,8 +1063,9 @@ function MealPlan() {
                             </Typography>
                             <Button
                                 variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => handleOpenDialog()}
+                                startIcon={isLoading ? <CircularProgress size={20} /> : <AutoAwesomeIcon />}
+                                onClick={handleGeneratePlan}
+                                disabled={isLoading || !userProfile}
                                 sx={{
                                     background: `linear-gradient(45deg, ${muiTheme.palette.primary.main}, ${muiTheme.palette.secondary.main})`,
                                     color: 'white',
@@ -1072,10 +1073,14 @@ function MealPlan() {
                                         background: `linear-gradient(45deg, ${muiTheme.palette.primary.dark}, ${muiTheme.palette.secondary.dark})`,
                                         transform: 'scale(1.05)',
                                         transition: 'all 0.3s'
+                                    },
+                                    '&:disabled': {
+                                        background: 'rgba(0,0,0,0.12)',
+                                        color: 'rgba(0,0,0,0.26)'
                                     }
                                 }}
                             >
-                                {t('Add Meal')}
+                                {isLoading ? 'Генерация...' : 'Сгенерировать план питания'}
                             </Button>
                         </Box>
 
@@ -1715,22 +1720,7 @@ function MealPlan() {
                         loading={isLoading}
                     />
 
-                    <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Button
-                            variant="contained"
-                            onClick={handleGeneratePlan}
-                            disabled={isLoading || !userProfile}
-                            startIcon={isLoading ? <CircularProgress size={20} /> : null}
-                        >
-                            {isLoading ? 'Генерация...' : 'Сгенерировать план питания'}
-                        </Button>
 
-                        {!userProfile && (
-                            <Typography color="error" sx={{ mt: 1 }}>
-                                Пожалуйста, заполните профиль пользователя
-                            </Typography>
-                        )}
-                    </Box>
                 </MotionDiv>
             </ScrollableContainer>
 
