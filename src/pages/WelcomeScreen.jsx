@@ -92,32 +92,6 @@ const WelcomeScreen = () => {
 
     return (
         <div className={`welcome-container ${darkMode ? "dark" : "light"}`}>
-            <header className="header">
-                <div className="logo">
-                    <span className="logo-icon">🍴</span>
-                    <span className="logo-text">BrainMeal</span>
-                </div>
-
-                <div className="controls">
-                    <div className="language-control">
-                        <span>{t.language}</span>
-                        <button
-                            className="language-dropdown"
-                            onClick={toggleLanguage}
-                        >
-                            {language === "en" ? "English" : "Українська"}
-                        </button>
-                    </div>
-                    <div className="theme-control">
-                        <span>{t.theme}</span>
-                        <label className="switch">
-                            <input type="checkbox" checked={darkMode} onChange={toggleTheme} />
-                            <span className="slider round"></span>
-                        </label>
-                    </div>
-                </div>
-            </header>
-
             <div className="welcome-content">
                 <h1 className="welcome-title">{t.title}</h1>
 
@@ -147,4 +121,4 @@ const WelcomeScreen = () => {
     );
 };
 
-export default WelcomeScreen; 
+export default WelcomeScreen;
